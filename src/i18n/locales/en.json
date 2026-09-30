@@ -1,0 +1,39 @@
+{
+  "common": {
+    "skip": "SKIP",
+    "next": "NEXT",
+    "continue": "Continue",
+    "login": "Log in",
+    "save": "Save",
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "retry": "Retry"
+  },
+  "splash": {
+    "tagline": "SCIENCE, SOUL & SUPPORT"
+  },
+  "onboarding": {
+    "title": "Pregnancy Together",
+    "subtitle": "Every heartbeat, every step — we're with you"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signInSubtitle": "Sign in or create an account with your email address.",
+    "phoneNumber": "Phone Number",
+    "phonePlaceholder": "Enter phone number",
+    "selectLocation": "Select your location",
+    "searchLocation": "Search your city...",
+    "invalidPhone": "Please enter a valid 10-digit mobile number",
+    "otpTitle": "OTP",
+    "otpSubtitle": "Enter the 6-digit code we sent to your Phone Number.",
+    "otpLabel": "OTP",
+    "autoVerifying": "Auto verifying your OTP",
+    "resendTimer": "Didn't get the OTP? Resend OTP in {{seconds}} sec",
+    "resendNow": "Resend OTP",
+    "otpError": "Invalid OTP. Please check and try again."
+  },
+  "language": {
+    "title": "Choose your language",
+    "subtitle": "This helps us to provide content in your preferred language"
+  }
+}
