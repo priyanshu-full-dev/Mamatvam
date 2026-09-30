@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
-import '@/global.css';
+import '../global.css';
 import '@/i18n';
 
 // Prevent splash screen from auto-hiding until ready
@@ -40,10 +40,8 @@ export default function RootLayout() {
             }}
           >
             <Stack.Screen name="index" />
-            <Stack.Screen name="onboarding/carousel" />
-            <Stack.Screen name="(auth)/sign-in" />
-            <Stack.Screen name="(auth)/otp" />
-            <Stack.Screen name="(auth)/language" />
+            <Stack.Screen name="onboarding" />
+            <Stack.Screen name="(auth)" />
             <Stack.Screen name="(tabs)" />
           </Stack>
         </QueryClientProvider>
