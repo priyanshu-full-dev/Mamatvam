@@ -14,7 +14,13 @@
   },
   "onboarding": {
     "title": "Pregnancy Together",
-    "subtitle": "Every heartbeat, every step — we're with you"
+    "subtitle": "Every heartbeat, every step — we're with you",
+    "slide2Title": "Pregnancy Track",
+    "slide2Subtitle": "Welcome to the Pregnancy Track",
+    "slide3Title": "Tracking",
+    "slide3Highlight": "Tools",
+    "slide3Subtitle": "Monitor your progress seamlessly with us!",
+    "getStarted": "Get Started"
   },
   "auth": {
     "signIn": "Sign in",
@@ -25,15 +31,24 @@
     "searchLocation": "Search your city...",
     "invalidPhone": "Please enter a valid 10-digit mobile number",
     "otpTitle": "OTP",
-    "otpSubtitle": "Enter the 6-digit code we sent to your Phone Number.",
+    "otpSubtitle": "Enter the 4-digit code we sent to your Phone Number.",
     "otpLabel": "OTP",
     "autoVerifying": "Auto verifying your OTP",
-    "resendTimer": "Didn't get the OTP? Resend OTP in {{seconds}} sec",
+    "resendTimer": "Didn't get the OTP? Resend OTP in {{seconds}}",
     "resendNow": "Resend OTP",
     "otpError": "Invalid OTP. Please check and try again."
   },
   "language": {
     "title": "Choose your language",
     "subtitle": "This helps us to provide content in your preferred language"
+  },
+  "stage": {
+    "title": "Choose your stage",
+    "subtitle": "So your journey feels truly personalized",
+    "pregnant": "Pregnant",
+    "mother": "Mother",
+    "conceive": "Conceive",
+    "explore": "Explore",
+    "continue": "Continue"
   }
 }

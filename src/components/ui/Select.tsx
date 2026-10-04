@@ -6,8 +6,8 @@ import {
   Modal,
   FlatList,
   TextInput,
-  SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ChevronDown, Search, X, Check } from 'lucide-react-native';
 
 export interface SelectOption {
@@ -82,7 +82,7 @@ export function Select({
         presentationStyle="pageSheet"
         onRequestClose={() => setModalVisible(false)}
       >
-        <SafeAreaView className="flex-1 bg-white">
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
           <View className="px-5 py-4 border-b border-[#F1F5F9] flex-row items-center justify-between">
             <Text className="text-lg font-bold text-[#1E1E1E]">
               {placeholder}
@@ -128,7 +128,7 @@ export function Select({
                     setModalVisible(false);
                   }}
                   className={`flex-row items-center justify-between py-3.5 border-b border-[#F1F5F9] ${
-                    isSelected ? 'bg-[#FFF1EE]/40 px-3 rounded-xl' : ''
+                    isSelected ? 'bg-[#FFF8F6] px-3 rounded-xl' : ''
                   }`}
                 >
                   <View>

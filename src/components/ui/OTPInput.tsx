@@ -1,5 +1,11 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { View, TextInput, Pressable, NativeSyntheticEvent, TextInputKeyPressEventData } from 'react-native';
+import React, { useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  StyleSheet,
+} from 'react-native';
 
 export interface OTPInputProps {
   length?: number;
@@ -7,6 +13,7 @@ export interface OTPInputProps {
   onChange: (otp: string) => void;
   onComplete?: (otp: string) => void;
   hasError?: boolean;
+  autoFocus?: boolean;
 }
 
 export function OTPInput({
@@ -15,88 +22,88 @@ export function OTPInput({
   onChange,
   onComplete,
   hasError = false,
+  autoFocus = true,
 }: OTPInputProps) {
-  const inputsRef = useRef<(TextInput | null)[]>([]);
-  const [focusedIndex, setFocusedIndex] = useState<number>(0);
+  const inputRef = useRef<TextInput>(null);
+  const [isFocused, setIsFocused] = useState(false);
 
-  const otpDigits = Array.from({ length }, (_, i) => value[i] || '');
+  const digits = value.split('').slice(0, length);
 
-  const handleChangeText = (text: string, index: number) => {
-    // Handle paste of multiple characters
-    if (text.length > 1) {
-      const sanitized = text.replace(/[^0-9]/g, '').slice(0, length);
-      onChange(sanitized);
-      if (sanitized.length === length) {
-        inputsRef.current[length - 1]?.focus();
-        onComplete?.(sanitized);
-      } else {
-        inputsRef.current[sanitized.length]?.focus();
-      }
-      return;
-    }
-
-    const sanitizedChar = text.replace(/[^0-9]/g, '');
-    const newDigits = [...otpDigits];
-    newDigits[index] = sanitizedChar;
-    const newOtp = newDigits.join('');
-    onChange(newOtp);
-
-    if (sanitizedChar && index < length - 1) {
-      inputsRef.current[index + 1]?.focus();
-    }
-
-    if (newOtp.length === length && !newDigits.includes('')) {
-      onComplete?.(newOtp);
+  const handleChangeText = (text: string) => {
+    const cleaned = text.replace(/[^0-9]/g, '').slice(0, length);
+    onChange(cleaned);
+    if (cleaned.length === length) {
+      onComplete?.(cleaned);
     }
   };
 
-  const handleKeyPress = (
-    e: NativeSyntheticEvent<TextInputKeyPressEventData>,
-    index: number
-  ) => {
-    if (e.nativeEvent.key === 'Backspace') {
-      if (!otpDigits[index] && index > 0) {
-        inputsRef.current[index - 1]?.focus();
-        const newDigits = [...otpDigits];
-        newDigits[index - 1] = '';
-        onChange(newDigits.join(''));
-      }
-    }
+  const handlePress = () => {
+    inputRef.current?.focus();
   };
 
   return (
-    <View className="flex-row justify-between items-center w-full px-2">
-      {Array.from({ length }).map((_, index) => {
-        const isFocused = focusedIndex === index;
-        const hasValue = !!otpDigits[index];
+    <Pressable onPress={handlePress} className="w-full items-center my-2">
+      {/* Invisible Single TextInput: Keeps soft keyboard open and handles paste/SMS autofill */}
+      <TextInput
+        ref={inputRef}
+        value={value}
+        onChangeText={handleChangeText}
+        keyboardType="number-pad"
+        textContentType="oneTimeCode"
+        autoComplete="sms-otp"
+        maxLength={length}
+        autoFocus={autoFocus}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+        style={[StyleSheet.absoluteFill, { opacity: 0.01 }]}
+        caretHidden
+      />
 
-        return (
-          <TextInput
-            key={index}
-            ref={(ref) => {
-              inputsRef.current[index] = ref;
-            }}
-            value={otpDigits[index]}
-            onChangeText={(text) => handleChangeText(text, index)}
-            onKeyPress={(e) => handleKeyPress(e, index)}
-            onFocus={() => setFocusedIndex(index)}
-            onBlur={() => setFocusedIndex(-1)}
-            keyboardType="number-pad"
-            maxLength={index === 0 ? length : 1}
-            textAlign="center"
-            className={`w-[68px] h-[68px] rounded-2xl text-2xl font-bold text-[#1E1E1E] bg-white border ${
-              hasError
-                ? 'border-red-500 bg-red-50/20'
-                : isFocused
-                ? 'border-[#EE4D38] shadow-sm'
-                : hasValue
-                ? 'border-[#D1D5DB]'
-                : 'border-[#E5E7EB]'
-            }`}
-            selectTextOnFocus
-          />
-        );
-      })}
-    </View>
+      {/* Visual OTP Boxes */}
+      <View
+        className="flex-row justify-between items-center w-full px-2"
+        pointerEvents="none"
+      >
+        {Array.from({ length }).map((_, index) => {
+          const char = digits[index] || '';
+          const isCurrentActive =
+            isFocused &&
+            (index === digits.length || (digits.length === length && index === length - 1));
+          const hasValue = !!char;
+
+          return (
+            <View
+              key={index}
+              style={{
+                width: 68,
+                height: 68,
+                borderRadius: 18,
+                backgroundColor: '#FFFFFF',
+                borderWidth: isCurrentActive ? 2 : 1.5,
+                borderColor: hasError
+                  ? '#EF4444'
+                  : isCurrentActive
+                  ? '#EE4D38'
+                  : hasValue
+                  ? '#9CA3AF'
+                  : '#E5E7EB',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 26,
+                  fontWeight: '700',
+                  color: '#1E1E1E',
+                }}
+              >
+                {char}
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+    </Pressable>
   );
 }

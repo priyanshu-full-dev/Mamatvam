@@ -1,94 +1,103 @@
 import React from 'react';
 import {
-  Pressable,
+  TouchableOpacity,
   Text,
   ActivityIndicator,
-  GestureResponderEvent,
   ViewStyle,
   StyleProp,
+  TextStyle,
+  GestureResponderEvent,
 } from 'react-native';
 
 export interface ButtonProps {
   title?: string;
   children?: React.ReactNode;
-  onPress?: (event: GestureResponderEvent) => void;
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'disabled';
-  size?: 'sm' | 'md' | 'lg';
+  onPress?: (event?: GestureResponderEvent) => void;
+  onClick?: (event?: GestureResponderEvent) => void;
   disabled?: boolean;
   loading?: boolean;
-  fullWidth?: boolean;
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
   className?: string;
   textClassName?: string;
-  style?: StyleProp<ViewStyle>;
 }
 
 export function Button({
   title,
   children,
   onPress,
-  variant = 'primary',
-  size = 'md',
+  onClick,
   disabled = false,
   loading = false,
-  fullWidth = true,
-  className = '',
-  textClassName = '',
+  variant = 'primary',
   style,
+  textStyle,
 }: ButtonProps) {
-  const isDisabled = disabled || loading || variant === 'disabled';
+  const handlePress = onPress || onClick;
 
-  const sizeClasses = {
-    sm: 'py-2.5 px-4 rounded-lg',
-    md: 'py-4 px-6 rounded-2xl',
-    lg: 'py-4.5 px-8 rounded-2xl',
-  }[size];
+  // Primary brand styling
+  let containerStyle: ViewStyle = {
+    width: '100%',
+    height: 54,
+    backgroundColor: '#EE4D38',
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  };
 
-  const textSizeClasses = {
-    sm: 'text-sm font-semibold',
-    md: 'text-base font-semibold',
-    lg: 'text-lg font-bold',
-  }[size];
+  let labelColor = '#FFFFFF';
 
-  let variantBg = 'bg-[#EE4D38]';
-  let variantText = 'text-white';
-
-  if (isDisabled) {
-    variantBg = 'bg-[#C5CCD6]';
-    variantText = 'text-white';
-  } else if (variant === 'secondary') {
-    variantBg = 'bg-[#FFF1EE]';
-    variantText = 'text-[#EE4D38]';
+  if (variant === 'secondary') {
+    containerStyle.backgroundColor = '#FFF1EE';
+    labelColor = '#EE4D38';
   } else if (variant === 'outline') {
-    variantBg = 'bg-transparent border border-[#EE4D38]';
-    variantText = 'text-[#EE4D38]';
+    containerStyle.backgroundColor = 'transparent';
+    containerStyle.borderWidth = 1.5;
+    containerStyle.borderColor = '#EE4D38';
+    labelColor = '#EE4D38';
   } else if (variant === 'ghost') {
-    variantBg = 'bg-transparent';
-    variantText = 'text-[#6B7280]';
+    containerStyle.backgroundColor = 'transparent';
+    labelColor = '#6B7280';
+  }
+
+  // When disabled: keep the button visible with lowered opacity so it is NEVER hidden
+  if (disabled) {
+    containerStyle.opacity = 0.55;
   }
 
   return (
-    <Pressable
-      onPress={isDisabled ? undefined : onPress}
-      disabled={isDisabled}
-      style={({ pressed }) => [
-        pressed && !isDisabled ? { opacity: 0.9, transform: [{ scale: 0.99 }] } : {},
-        style,
-      ]}
-      className={`items-center justify-center flex-row ${fullWidth ? 'w-full' : ''} ${sizeClasses} ${variantBg} ${className}`}
+    <TouchableOpacity
+      activeOpacity={0.85}
+      onPress={disabled || loading ? undefined : handlePress}
+      disabled={disabled || loading}
+      style={[containerStyle, style]}
     >
       {loading ? (
-        <ActivityIndicator size="small" color={variant === 'secondary' ? '#EE4D38' : '#FFFFFF'} />
+        <ActivityIndicator
+          size="small"
+          color={variant === 'secondary' || variant === 'outline' ? '#EE4D38' : '#FFFFFF'}
+        />
+      ) : children ? (
+        children
       ) : (
-        <>
-          {children ? (
-            children
-          ) : (
-            <Text className={`text-center ${textSizeClasses} ${variantText} ${textClassName}`}>
-              {title}
-            </Text>
-          )}
-        </>
+        <Text
+          style={[
+            {
+              color: labelColor,
+              fontSize: 16,
+              fontWeight: '700',
+              textAlign: 'center',
+            },
+            textStyle,
+          ]}
+        >
+          {title}
+        </Text>
       )}
-    </Pressable>
+    </TouchableOpacity>
   );
 }
+
+export default Button;

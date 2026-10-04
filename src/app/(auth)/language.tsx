@@ -53,23 +53,20 @@ export default function LanguageScreen() {
 
   const handleSelectLanguage = (lang: SupportedLanguage) => {
     setSelectedLang(lang);
-    setLanguage(lang);
   };
 
   const handleNext = () => {
     setLanguage(selectedLang);
-    // Proceed to Stage Selection or Home
-    router.replace('/(tabs)/home');
+    router.push('/(auth)/stage');
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1 }}
+        contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
-        className="px-6"
       >
         {/* Globe illustration */}
         <View className="items-center justify-center pt-2 pb-2">
@@ -105,14 +102,15 @@ export default function LanguageScreen() {
                 key={item.id}
                 onPress={() => handleSelectLanguage(item.id)}
                 style={{ backgroundColor: item.bgColor }}
-                className={`relative overflow-hidden rounded-2xl px-5 py-4 flex-row items-center justify-between border ${
-                  isSelected ? 'border-[#EE4D38] shadow-sm' : 'border-transparent'
+                className={`relative overflow-hidden rounded-2xl px-5 py-4 flex-row items-center justify-between border-2 ${
+                  isSelected ? 'border-[#EE4D38]' : 'border-transparent'
                 }`}
               >
                 {/* Watermark "Aa" on right */}
                 <View
                   pointerEvents="none"
-                  className="absolute right-12 -bottom-4 opacity-15"
+                  className="absolute right-12 -bottom-4"
+                  style={{ opacity: 0.15 }}
                 >
                   <Text className="text-7xl font-extrabold text-[#000000]">
                     Aa
@@ -144,7 +142,7 @@ export default function LanguageScreen() {
         </View>
 
         {/* Next Button */}
-        <View className="mt-8 mb-8">
+        <View style={{ marginTop: 28, width: '100%' }}>
           <Button
             title={t('common.next', 'Next')}
             onPress={handleNext}

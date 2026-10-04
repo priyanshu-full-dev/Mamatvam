@@ -51,22 +51,14 @@ export default function SplashScreen() {
     <View className="flex-1 bg-white items-center justify-center px-6">
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      <Animated.View style={animatedStyle} className="items-center">
+      <Animated.View style={animatedStyle} className="items-center justify-center">
         <Image
           source={require('@/assets/images/mamatvam-logo.png')}
-          style={{ width: 140, height: 140 }}
+          style={{ width: 250, height: 250 }}
           contentFit="contain"
           cachePolicy="memory-disk"
           priority="high"
         />
-
-        <Text className="text-3xl font-extrabold tracking-[4px] text-[#EE4D38] mt-4">
-          MAMATVAM
-        </Text>
-
-        <Text className="text-[11px] font-semibold tracking-[3px] text-[#EE4D38] mt-1.5 uppercase">
-          SCIENCE, SOUL & SUPPORT
-        </Text>
       </Animated.View>
     </View>
   );

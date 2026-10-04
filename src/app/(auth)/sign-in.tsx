@@ -52,7 +52,7 @@ export default function SignInScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       <KeyboardAvoidingView
@@ -60,9 +60,9 @@ export default function SignInScreen() {
         className="flex-1"
       >
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
+          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingBottom: 40 }}
           keyboardShouldPersistTaps="handled"
-          className="px-6"
+          showsVerticalScrollIndicator={false}
         >
           {/* Top Logo */}
           <View className="items-center pt-8 pb-4">
@@ -70,11 +70,11 @@ export default function SignInScreen() {
           </View>
 
           {/* Heading & Subtitle */}
-          <View className="items-center mt-3 mb-6">
-            <Text className="text-2xl font-bold text-[#1E1E1E]">
+          <View className="items-center mt-4 mb-8">
+            <Text style={{ fontSize: 32, fontWeight: '800', color: '#111827', textAlign: 'center', letterSpacing: -0.5 }}>
               {t('auth.signIn', 'Sign in')}
             </Text>
-            <Text className="text-xs text-[#6B7280] text-center mt-1.5 px-4 leading-relaxed">
+            <Text style={{ fontSize: 16, lineHeight: 24, color: '#475569', textAlign: 'center', marginTop: 8, paddingHorizontal: 12 }}>
               {t(
                 'auth.signInSubtitle',
                 'Sign in or create an account with your email address.'
@@ -110,7 +110,7 @@ export default function SignInScreen() {
           </View>
 
           {/* Continue Button */}
-          <View className="mt-6 mb-8">
+          <View style={{ marginTop: 28, width: '100%' }}>
             <Button
               title={t('common.continue', 'Continue')}
               onPress={handleContinue}

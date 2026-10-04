@@ -8,6 +8,8 @@ export default function OnboardingLayout() {
         animation: 'slide_from_right',
         contentStyle: { backgroundColor: '#FFFFFF' },
       }}
-    />
+    >
+      <Stack.Screen name="carousel" />
+    </Stack>
   );
 }

@@ -38,9 +38,9 @@ export function Input({
       <View
         className={`w-full flex-row items-center bg-white border rounded-2xl px-4 py-3.5 ${
           error
-            ? 'border-red-500 bg-red-50/20'
+            ? 'border-red-500 bg-red-50'
             : isFocused
-            ? 'border-[#EE4D38] shadow-sm'
+            ? 'border-[#EE4D38]'
             : 'border-[#E5E7EB]'
         }`}
       >

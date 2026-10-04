@@ -8,6 +8,14 @@ export default function AuthLayout() {
         animation: 'slide_from_right',
         contentStyle: { backgroundColor: '#FFFFFF' },
       }}
-    />
+    >
+      <Stack.Screen name="sign-in" />
+      <Stack.Screen name="otp" />
+      <Stack.Screen name="language" />
+      <Stack.Screen name="stage" />
+      <Stack.Screen name="pregnancy" />
+      <Stack.Screen name="baby-gender" />
+      <Stack.Screen name="mother" />
+    </Stack>
   );
 }

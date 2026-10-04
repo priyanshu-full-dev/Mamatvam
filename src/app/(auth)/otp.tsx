@@ -26,11 +26,17 @@ export default function OTPScreen() {
   const [otp, setOtp] = useState('');
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
-  const [countdown, setCountdown] = useState(30);
+  const [countdown, setCountdown] = useState(120);
   const [canResend, setCanResend] = useState(false);
 
   const verifyOtpMutation = useVerifyOtpMutation();
   const sendOtpMutation = useSendOtpMutation();
+
+  const formatCountdown = (totalSeconds: number) => {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
 
   // Timer countdown
   useEffect(() => {
@@ -73,18 +79,17 @@ export default function OTPScreen() {
     if (!canResend) return;
     try {
       await sendOtpMutation.mutateAsync({ phone: phone || '9999999999' });
-      setCountdown(30);
+      setCountdown(120);
       setCanResend(false);
       setHasError(false);
       setErrorMessage('');
-      Alert.alert('Success', 'A fresh OTP has been sent to your phone number.');
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to resend OTP');
     }
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       <KeyboardAvoidingView
@@ -92,9 +97,9 @@ export default function OTPScreen() {
         className="flex-1"
       >
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
+          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingBottom: 40 }}
           keyboardShouldPersistTaps="handled"
-          className="px-6"
+          showsVerticalScrollIndicator={false}
         >
           {/* Top Logo */}
           <View className="items-center pt-8 pb-4">
@@ -102,21 +107,21 @@ export default function OTPScreen() {
           </View>
 
           {/* Heading & Subtitle */}
-          <View className="items-center mt-3 mb-6">
-            <Text className="text-2xl font-bold text-[#1E1E1E]">
+          <View className="items-center mt-4 mb-8">
+            <Text style={{ fontSize: 32, fontWeight: '800', color: '#111827', textAlign: 'center', letterSpacing: -0.5 }}>
               {t('auth.otpTitle', 'OTP')}
             </Text>
-            <Text className="text-xs text-[#6B7280] text-center mt-1.5 px-6 leading-relaxed">
+            <Text style={{ fontSize: 16, lineHeight: 24, color: '#475569', textAlign: 'center', marginTop: 8, paddingHorizontal: 12 }}>
               {t(
                 'auth.otpSubtitle',
-                'Enter the 6-digit code we sent to your Phone Number.'
+                'Enter the 4-digit code we sent to your Phone Number.'
               )}
             </Text>
           </View>
 
           {/* OTP Section */}
           <View className="w-full mt-2">
-            <Text className="text-sm font-semibold text-[#1E1E1E] mb-3 ml-2">
+            <Text style={{ fontSize: 16, fontWeight: '700', color: '#1E1E1E', marginBottom: 12, marginLeft: 4 }}>
               {t('auth.otpLabel', 'OTP')}
             </Text>
 
@@ -132,28 +137,29 @@ export default function OTPScreen() {
             />
 
             {errorMessage ? (
-              <Text className="text-xs text-red-500 text-center mt-2">
+              <Text className="text-sm text-red-500 text-center mt-2.5">
                 {errorMessage}
               </Text>
             ) : null}
 
             {/* Auto verifying indicator */}
-            <Text className="text-xs text-[#94A3B8] text-center mt-4">
+            <Text style={{ fontSize: 13, color: '#94A3B8', textAlign: 'center', marginTop: 18 }}>
               {t('auth.autoVerifying', 'Auto verifying your OTP')}
             </Text>
 
             {/* Resend timer */}
-            <View className="items-center justify-center mt-2">
+            <View className="items-center justify-center mt-3">
               {canResend ? (
                 <Pressable onPress={handleResend} hitSlop={10}>
-                  <Text className="text-xs font-semibold text-[#EE4D38]">
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#EE4D38' }}>
                     {t('auth.resendNow', 'Resend OTP')}
                   </Text>
                 </Pressable>
               ) : (
-                <Text className="text-xs text-[#64748B]">
-                  {t('auth.resendTimer', `Didn't get the OTP? Resend OTP in ${countdown} sec`, {
-                    seconds: countdown,
+                <Text style={{ fontSize: 14, color: '#64748B' }}>
+                  {t('auth.resendTimer', `Didn't get the OTP? Resend OTP in ${formatCountdown(countdown)}`, {
+                    seconds: formatCountdown(countdown),
+                    time: formatCountdown(countdown),
                   })}
                 </Text>
               )}
@@ -161,7 +167,7 @@ export default function OTPScreen() {
           </View>
 
           {/* Log in Button */}
-          <View className="mt-8 mb-8">
+          <View style={{ marginTop: 28, width: '100%' }}>
             <Button
               title={t('common.login', 'Log in')}
               onPress={() => handleVerify(otp)}
