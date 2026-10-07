@@ -2,6 +2,7 @@
   "expo": {
     "name": "mamatvam",
     "slug": "mamatvam",
+    "owner": "prish07s-team",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -37,6 +38,11 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "7b0d9736-17db-4e3b-93f9-925f17199725"
+      }
     }
   }
 }
