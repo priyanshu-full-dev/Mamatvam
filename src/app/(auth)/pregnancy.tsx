@@ -11,7 +11,7 @@ import {
   FlatList,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Calendar, ChevronDown, ChevronLeft, ChevronRight, Droplet, HeartPulse, X, Check } from 'lucide-react-native';
 import { Button } from '@/components/ui/Button';
 import { Radio } from '@/components/ui/Radio';
@@ -26,6 +26,7 @@ const MONTH_NAMES = [
 
 export default function PregnancyScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { pregnancyData, setPregnancyData } = useAppStore();
 
   const [date, setDate] = useState(pregnancyData.firstDate || '');
@@ -95,11 +96,15 @@ export default function PregnancyScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top', 'left', 'right', 'bottom']}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       <ScrollView
-        contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingBottom: 40 }}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingHorizontal: 24,
+          paddingBottom: insets.bottom > 0 ? 28 : 48,
+        }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >

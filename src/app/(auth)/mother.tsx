@@ -100,7 +100,7 @@ export default function MotherScreen() {
   };
 
   const topPadding = Math.max(insets.top, 24) + 10;
-  const bottomPadding = Math.max(insets.bottom, 24) + 12;
+  const bottomPadding = Math.max(insets.bottom, 24) + 24;
 
   return (
     <View style={styles.container}>
