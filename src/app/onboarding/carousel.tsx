@@ -45,7 +45,7 @@ const SLIDES: Slide[] = [
   },
   {
     id: '2',
-    image: require('@/assets/images/slider-2.png'),
+    image: require('@/assets/images/slider/715d6844830cf10a08bbeba6157bf0e6695f12bc (1).png'),
     titleKey: 'onboarding.slide2Title',
     defaultTitle: 'Pregnancy Track',
     titleColor: '#111827',
@@ -54,7 +54,7 @@ const SLIDES: Slide[] = [
   },
   {
     id: '3',
-    image: require('@/assets/images/slider-3.png'),
+    image: require('@/assets/images/slider/Screenshot 2026-10-04 at 10.19.42 PM.png'),
     splitTitle: {
       first: 'Tracking',
       second: 'Tools',
@@ -192,10 +192,11 @@ export default function CarouselScreen() {
 
       {/* Slide 3 Action Button */}
       {currentIndex === 2 && (
-        <View className="px-6 mb-3">
+        <View className="px-8 mb-3">
           <Button
             title={t('onboarding.getStarted', 'Get Started')}
             onPress={handleFinish}
+            style={{ borderRadius: 24, height: 50 }}
           />
         </View>
       )}
@@ -212,15 +213,15 @@ export default function CarouselScreen() {
           </Text>
         </Pressable>
 
-        {/* 3 Pagination Dots */}
+        {/* 3 Pagination Dots matching screenshot */}
         <View className="flex-row items-center justify-center">
           {SLIDES.map((_, i) => (
             <Pressable
               key={i}
               hitSlop={10}
               onPress={() => goToSlide(i)}
-              className={`h-2 rounded-full mx-1.5 transition-all ${
-                currentIndex === i ? 'w-6 bg-[#EE4D38]' : 'w-2 bg-[#E2E8F0]'
+              className={`w-2.5 h-2.5 rounded-full mx-1.5 transition-all ${
+                currentIndex === i ? 'bg-[#EE4D38]' : 'bg-[#E5E7EB]'
               }`}
             />
           ))}

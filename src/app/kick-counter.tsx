@@ -9,9 +9,11 @@ import {
   Modal,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
 import {
+  ArrowLeft,
   Info,
   X,
   Plus,
@@ -101,6 +103,7 @@ const PAST_HISTORY_DATA = [
 ];
 
 export default function KickCounterScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
 
   // Counts for each meal window
@@ -139,7 +142,19 @@ export default function KickCounterScreen() {
           style={styles.heroBanner}
         >
           <View style={styles.heroContentRow}>
-            <View style={{ flex: 1, paddingRight: 8 }}>
+            {/* Back Button */}
+            <TouchableOpacity
+              activeOpacity={0.75}
+              onPress={() => router.back()}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              style={styles.backButton}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
+              <ArrowLeft size={20} color="#FFFFFF" strokeWidth={2.4} />
+            </TouchableOpacity>
+
+            <View style={{ flex: 1, paddingHorizontal: 12 }}>
               <Text style={styles.heroTitle}>Baby Kick Counter</Text>
               <Text style={styles.heroSubtitle}>Daily Fetal Movement Tracker</Text>
             </View>
@@ -149,6 +164,8 @@ export default function KickCounterScreen() {
               activeOpacity={0.75}
               onPress={() => setShowInfoModal(true)}
               style={styles.infoButton}
+              accessibilityRole="button"
+              accessibilityLabel="Tracker info"
             >
               <Info size={19} color="#FFFFFF" strokeWidth={2.4} />
             </TouchableOpacity>
@@ -424,6 +441,14 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.9)',
     fontWeight: '500',
     marginTop: 4,
+  },
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.28)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   infoButton: {
     width: 34,

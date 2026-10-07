@@ -16,6 +16,7 @@ export default function AuthLayout() {
       <Stack.Screen name="pregnancy" />
       <Stack.Screen name="baby-gender" />
       <Stack.Screen name="mother" />
+      <Stack.Screen name="conceive" />
     </Stack>
   );
 }

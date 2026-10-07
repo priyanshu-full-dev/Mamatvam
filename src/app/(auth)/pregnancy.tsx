@@ -144,7 +144,7 @@ export default function PregnancyScreen() {
           {/* Expected Delivery Date */}
           <View style={{ marginBottom: 20 }}>
             <Text style={{ fontSize: 15, fontWeight: '700', color: '#1E1E1E', marginBottom: 8 }}>
-              Expected delivery date?
+              Expected delivery date
             </Text>
             <Pressable
               onPress={() => {

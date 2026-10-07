@@ -8,9 +8,11 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Path } from 'react-native-svg';
 import {
+  ArrowLeft,
   ChevronUp,
   ChevronDown,
   Check,
@@ -167,6 +169,7 @@ const CHECKLIST_CATEGORIES: CategoryGroup[] = [
 ];
 
 export default function HospitalBagScreen() {
+  const router = useRouter();
   const insets = useSafeAreaInsets();
 
   // Set of packed item IDs
@@ -225,7 +228,19 @@ export default function HospitalBagScreen() {
           style={styles.heroBanner}
         >
           <View style={styles.heroRow}>
-            <View style={{ flex: 1, paddingRight: 8 }}>
+            {/* Back Button */}
+            <TouchableOpacity
+              activeOpacity={0.75}
+              onPress={() => router.back()}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              style={styles.backButton}
+              accessibilityRole="button"
+              accessibilityLabel="Go back"
+            >
+              <ArrowLeft size={20} color="#FFFFFF" strokeWidth={2.4} />
+            </TouchableOpacity>
+
+            <View style={{ flex: 1, paddingHorizontal: 12 }}>
               <Text style={styles.heroTitle}>Hospital Bag</Text>
               <Text style={styles.heroSubtitle}>Delivery Checklist</Text>
             </View>
@@ -390,6 +405,14 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.9)',
     fontWeight: '500',
     marginTop: 4,
+  },
+  backButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.28)',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   heroIconBadge: {
     width: 38,

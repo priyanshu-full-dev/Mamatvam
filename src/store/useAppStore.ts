@@ -7,6 +7,7 @@ export type PregnancyStage = 'conceive' | 'pregnant' | 'mother' | 'explore';
 export interface PregnancyData {
   firstDate?: string;
   deliveryDate?: string;
+  lastPeriodDate?: string;
   babyBirthDate?: string;
   motherHeight?: string;
   motherWeight?: string;
@@ -25,10 +26,12 @@ interface AppState {
   stage: PregnancyStage | null;
   pregnancyData: PregnancyData;
   hasSeenOnboarding: boolean;
+  hasSeenMotherWelcomePopup: boolean;
   setLanguage: (lang: SupportedLanguage) => void;
   setStage: (stage: PregnancyStage) => void;
   setPregnancyData: (data: Partial<PregnancyData>) => void;
   setHasSeenOnboarding: (seen: boolean) => void;
+  setHasSeenMotherWelcomePopup: (seen: boolean) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -42,6 +45,7 @@ export const useAppStore = create<AppState>((set) => ({
     babyGender: 'girl',
   },
   hasSeenOnboarding: false,
+  hasSeenMotherWelcomePopup: false,
   setLanguage: (lang) => {
     i18n.changeLanguage(lang);
     set({ language: lang });
@@ -50,4 +54,5 @@ export const useAppStore = create<AppState>((set) => ({
   setPregnancyData: (data) =>
     set((state) => ({ pregnancyData: { ...state.pregnancyData, ...data } })),
   setHasSeenOnboarding: (seen) => set({ hasSeenOnboarding: seen }),
+  setHasSeenMotherWelcomePopup: (seen) => set({ hasSeenMotherWelcomePopup: seen }),
 }));

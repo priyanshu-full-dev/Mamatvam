@@ -9,7 +9,7 @@ import {
   Share,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import Svg, { Path, Circle, Polyline } from 'react-native-svg';
 import { ArrowLeft, ArrowRight, Lightbulb } from 'lucide-react-native';
@@ -66,8 +66,22 @@ function ShareArrowIcon({ size = 20, color = '#1E1E1E' }: { size?: number; color
 
 export default function TodayTipsScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [feedback, setFeedback] = useState<'yes' | 'no' | null>(null);
+  const [isSaved, setIsSaved] = useState(false);
+
+  const handleSaveToggle = () => {
+    setIsSaved(!isSaved);
+    Alert.alert(
+      isSaved ? 'Removed' : 'Tip Saved! 🌸',
+      isSaved
+        ? 'Removed from your saved tips.'
+        : 'You can access this tip anytime offline.'
+    );
+  };
+
+  const bottomPadding = Math.max(insets.bottom, 20) + 12;
 
   const currentTip = TIPS_DATA[currentIndex];
   const hasPrevious = currentIndex < TIPS_DATA.length - 1;
@@ -129,7 +143,7 @@ export default function TodayTipsScreen() {
 
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding + 85 }]}
       >
         {/* Main Tip Card */}
         <View style={styles.mainCard}>
@@ -257,6 +271,30 @@ export default function TodayTipsScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Bottom Fixed Action Bar */}
+      <View style={[styles.bottomBarContainer, { paddingBottom: bottomPadding }]}>
+        <View style={styles.bottomBarRow}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => router.push('/record-symptoms')}
+            style={styles.trackSymptomsButton}
+          >
+            <Text style={styles.trackSymptomsText}>Track Your Symptoms</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={handleSaveToggle}
+            style={[
+              styles.saveNowButton,
+              isSaved && { backgroundColor: '#10B981' },
+            ]}
+          >
+            <Text style={styles.saveNowText}>{isSaved ? 'Saved ✓' : 'Save Now'}</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -414,5 +452,65 @@ const styles = StyleSheet.create({
   },
   feedbackBtnTextSelected: {
     color: '#DC2626',
+  },
+  bottomBarContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#FFFFFF',
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    paddingTop: 12,
+    paddingHorizontal: 16,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 6,
+  },
+  bottomBarRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  trackSymptomsButton: {
+    flex: 1.4,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#71717A',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  trackSymptomsText: {
+    fontSize: 13.5,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: -0.1,
+  },
+  saveNowButton: {
+    flex: 1,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#EF4444',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#EF4444',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  saveNowText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: -0.1,
   },
 });

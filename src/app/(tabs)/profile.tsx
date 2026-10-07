@@ -1,31 +1,31 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StatusBar,
-  Alert,
-  StyleSheet,
-  Dimensions,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuthStore } from '@/store/useAuthStore';
 import { useRouter } from 'expo-router';
-import Svg, { Path, Circle } from 'react-native-svg';
 import {
-  User,
-  LogOut,
-  ChevronRight,
-  TicketPercent,
-  Crown,
+  ArrowLeft,
   Banknote,
   Bookmark,
-  Users,
-  Shield,
+  ChevronRight,
   CircleQuestionMark,
+  Crown,
+  LogOut,
   MessageCircleQuestionMark,
+  Shield,
+  TicketPercent,
+  User,
+  Users,
 } from 'lucide-react-native';
-import { useAuthStore } from '@/store/useAuthStore';
+import {
+  Alert,
+  Dimensions,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Circle, Path } from 'react-native-svg';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HORIZONTAL_PADDING = 16;
@@ -98,7 +98,23 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F5F6F8" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+
+      {/* Top Header Bar with Back Button */}
+      <View style={styles.topHeader}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={() => router.back()}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          style={styles.backButton}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <ArrowLeft size={22} color="#1E293B" strokeWidth={2.4} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>My Profile</Text>
+        <View style={{ width: 40 }} />
+      </View>
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -310,9 +326,31 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F6F8',
   },
+  topHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1E293B',
+    textAlign: 'center',
+  },
   scrollContent: {
     paddingHorizontal: HORIZONTAL_PADDING,
-    paddingTop: 12,
+    paddingTop: 14,
     paddingBottom: 40,
   },
   profileCard: {

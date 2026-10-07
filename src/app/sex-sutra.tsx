@@ -8,11 +8,10 @@ import {
   StyleSheet,
   TextInput,
   Image,
-  Alert,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, Search, X, Play, Heart, Bookmark } from 'lucide-react-native';
+import { ArrowLeft, Search, X, Play } from 'lucide-react-native';
 
 export interface MasterclassItem {
   id: string;
@@ -73,17 +72,7 @@ export default function SexSutraScreen() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchActive, setIsSearchActive] = useState(false);
-  const [savedItems, setSavedItems] = useState<string[]>(['1']);
 
-  const toggleSave = (id: string) => {
-    if (savedItems.includes(id)) {
-      setSavedItems(savedItems.filter((i) => i !== id));
-      Alert.alert('Removed', 'Removed from your saved masterclasses.');
-    } else {
-      setSavedItems([...savedItems, id]);
-      Alert.alert('Saved! 🌸', 'Added to your saved masterclasses.');
-    }
-  };
 
   const filteredData = MASTERCLASS_DATA.filter((item) => {
     if (!searchQuery.trim()) return true;
@@ -156,43 +145,40 @@ export default function SexSutraScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[
           styles.scrollList,
-          { paddingBottom: bottomPadding + 85 },
+          { paddingBottom: bottomPadding + 20 },
         ]}
       >
-        {filteredData.map((item) => {
-          const isSaved = savedItems.includes(item.id);
-          return (
-            <TouchableOpacity
-              key={item.id}
-              activeOpacity={0.88}
-              onPress={() =>
-                router.push({
-                  pathname: '/sex-sutra-detail',
-                  params: { id: item.id },
-                })
-              }
-              style={styles.card}
-            >
-              {/* Left Media Thumbnail */}
-              <View style={styles.thumbnailContainer}>
-                <Image source={item.image} style={styles.thumbnailImage} resizeMode="cover" />
-                <View style={styles.playBadge}>
-                  <Play size={12} color="#FFFFFF" fill="#FFFFFF" />
-                </View>
+        {filteredData.map((item) => (
+          <TouchableOpacity
+            key={item.id}
+            activeOpacity={0.88}
+            onPress={() =>
+              router.push({
+                pathname: '/sex-sutra-detail',
+                params: { id: item.id },
+              })
+            }
+            style={styles.card}
+          >
+            {/* Left Media Thumbnail */}
+            <View style={styles.thumbnailContainer}>
+              <Image source={item.image} style={styles.thumbnailImage} resizeMode="cover" />
+              <View style={styles.playBadge}>
+                <Play size={12} color="#FFFFFF" fill="#FFFFFF" />
               </View>
+            </View>
 
-              {/* Right Text Content */}
-              <View style={styles.cardRightContent}>
-                <Text style={styles.cardTitle} numberOfLines={2}>
-                  {item.title}
-                </Text>
-                <Text style={styles.cardSubtitle} numberOfLines={3}>
-                  {item.subtitle}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          );
-        })}
+            {/* Right Text Content */}
+            <View style={styles.cardRightContent}>
+              <Text style={styles.cardTitle} numberOfLines={2}>
+                {item.title}
+              </Text>
+              <Text style={styles.cardSubtitle} numberOfLines={3}>
+                {item.subtitle}
+              </Text>
+            </View>
+          </TouchableOpacity>
+        ))}
 
         {filteredData.length === 0 && (
           <View style={styles.emptyState}>
@@ -201,29 +187,6 @@ export default function SexSutraScreen() {
           </View>
         )}
       </ScrollView>
-
-      {/* Bottom Fixed Action Bar matching Screenshot */}
-      <View style={[styles.bottomBarContainer, { paddingBottom: bottomPadding }]}>
-        <View style={styles.bottomBarRow}>
-          {/* Left Button: Track Your Symptoms */}
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => router.push('/record-symptoms')}
-            style={styles.trackSymptomsButton}
-          >
-            <Text style={styles.trackSymptomsText}>Track Your Symptoms</Text>
-          </TouchableOpacity>
-
-          {/* Right Button: Save Now */}
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => toggleSave('1')}
-            style={styles.saveNowButton}
-          >
-            <Text style={styles.saveNowText}>Save Now</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
     </View>
   );
 }
@@ -356,64 +319,5 @@ const styles = StyleSheet.create({
     color: '#94A3B8',
     textAlign: 'center',
   },
-  bottomBarContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
-    paddingTop: 12,
-    paddingHorizontal: 16,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
-    elevation: 6,
-  },
-  bottomBarRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  trackSymptomsButton: {
-    flex: 1.4,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: '#71717A',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  trackSymptomsText: {
-    fontSize: 13.5,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    letterSpacing: -0.1,
-  },
-  saveNowButton: {
-    flex: 1,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: '#EF4444',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#EF4444',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  saveNowText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    letterSpacing: -0.1,
-  },
+
 });

@@ -71,6 +71,9 @@ export default function StageScreen() {
     } else if (stageId === 'mother') {
       setStage('mother');
       router.push('/(auth)/baby-gender');
+    } else if (stageId === 'conceive') {
+      setStage('conceive');
+      router.push('/(auth)/conceive');
     }
   };
 
@@ -80,6 +83,8 @@ export default function StageScreen() {
       router.push('/(auth)/pregnancy');
     } else if (selectedStage === 'mother') {
       router.push('/(auth)/baby-gender');
+    } else if (selectedStage === 'conceive') {
+      router.push('/(auth)/conceive');
     } else {
       router.replace('/(tabs)/home');
     }

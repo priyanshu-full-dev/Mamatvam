@@ -8,93 +8,124 @@ import {
   StyleSheet,
   TextInput,
   Image,
+  useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, Search, X } from 'lucide-react-native';
 
-export interface CourseItem {
+export interface CourseGridItem {
   id: string;
-  category: string;
   title: string;
-  duration: string;
-  lessons: string;
+  subtitle: string;
+  discount: string;
   price: string;
   image: any;
+  masterclassTitle: string;
 }
 
-export const COURSES_LIST: CourseItem[] = [
+export const HOLISTIC_COURSES: CourseGridItem[] = [
   {
     id: '1',
-    category: 'PRENATAL FITNESS',
-    title: 'Safe Prenatal Yoga: 30-Day Program',
-    duration: '2h 15min',
-    lessons: '18 Lessons',
-    price: '$49',
-    image: require('@/assets/images/courses/succulent_thumbnail.jpg'),
+    title: 'Basic Plan',
+    subtitle: 'Essential guides for every stage',
+    discount: '20% off',
+    price: '$ 099',
+    image: require('@/assets/images/home/course_baby.jpg'),
+    masterclassTitle: 'Complete Pregnancy Masterclass: From Conception to Birth',
   },
   {
     id: '2',
-    category: 'PRENATAL FITNESS',
-    title: 'Complete Pregnancy Masterclass: From Conception to Birth',
-    duration: '2h 15min',
-    lessons: '18 Lessons',
-    price: '$49',
-    image: require('@/assets/images/courses/succulent_thumbnail.jpg'),
+    title: 'Basic Plan',
+    subtitle: 'Essential guides for every stage',
+    discount: '20% off',
+    price: '$ 099',
+    image: require('@/assets/images/home/course_baby.jpg'),
+    masterclassTitle: 'Safe Prenatal Yoga: 30-Day Guided Flow',
   },
   {
     id: '3',
-    category: 'PRENATAL FITNESS',
-    title: 'Safe Prenatal Yoga: 30-Day Program',
-    duration: '2h 15min',
-    lessons: '18 Lessons',
-    price: '$49',
-    image: require('@/assets/images/courses/succulent_thumbnail.jpg'),
+    title: 'Basic Plan',
+    subtitle: 'Essential guides for every stage',
+    discount: '20% off',
+    price: '$ 099',
+    image: require('@/assets/images/home/course_baby.jpg'),
+    masterclassTitle: 'Understanding Your Trimester Nutritional Needs',
   },
   {
     id: '4',
-    category: 'PRENATAL FITNESS',
-    title: 'Safe Prenatal Yoga: 30-Day Program',
-    duration: '2h 15min',
-    lessons: '18 Lessons',
-    price: '$49',
-    image: require('@/assets/images/courses/succulent_thumbnail.jpg'),
+    title: 'Basic Plan',
+    subtitle: 'Essential guides for every stage',
+    discount: '20% off',
+    price: '$ 099',
+    image: require('@/assets/images/home/course_baby.jpg'),
+    masterclassTitle: 'Pelvic Mobility & Alignment Routine for Labor',
   },
   {
     id: '5',
-    category: 'PRENATAL FITNESS',
-    title: 'Safe Prenatal Yoga: 30-Day Program',
-    duration: '2h 15min',
-    lessons: '18 Lessons',
-    price: '$49',
-    image: require('@/assets/images/courses/succulent_thumbnail.jpg'),
+    title: 'Basic Plan',
+    subtitle: 'Essential guides for every stage',
+    discount: '20% off',
+    price: '$ 099',
+    image: require('@/assets/images/home/course_baby.jpg'),
+    masterclassTitle: 'Breathing for Labor & Contraction Ease',
+  },
+  {
+    id: '6',
+    title: 'Basic Plan',
+    subtitle: 'Essential guides for every stage',
+    discount: '20% off',
+    price: '$ 099',
+    image: require('@/assets/images/home/course_baby.jpg'),
+    masterclassTitle: 'Postpartum Core & Gentle Rebuilding Program',
+  },
+  {
+    id: '7',
+    title: 'Basic Plan',
+    subtitle: 'Essential guides for every stage',
+    discount: '20% off',
+    price: '$ 099',
+    image: require('@/assets/images/home/course_baby.jpg'),
+    masterclassTitle: 'Ayurvedic Garbh Sanskar & Mindful Bonding',
+  },
+  {
+    id: '8',
+    title: 'Basic Plan',
+    subtitle: 'Essential guides for every stage',
+    discount: '20% off',
+    price: '$ 099',
+    image: require('@/assets/images/home/course_baby.jpg'),
+    masterclassTitle: 'Newborn Care & Lactation Foundations',
   },
 ];
 
 export default function CoursesScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchActive, setIsSearchActive] = useState(false);
 
-  const filteredCourses = COURSES_LIST.filter((course) => {
+  const filteredCourses = HOLISTIC_COURSES.filter((course) => {
     if (!searchQuery.trim()) return true;
     const query = searchQuery.toLowerCase();
     return (
       course.title.toLowerCase().includes(query) ||
-      course.category.toLowerCase().includes(query)
+      course.subtitle.toLowerCase().includes(query) ||
+      course.masterclassTitle.toLowerCase().includes(query)
     );
   });
 
-  const topPadding = Math.max(insets.top, 28) + 8;
+  const topPadding = Math.max(insets.top, 24) + 8;
   const bottomPadding = Math.max(insets.bottom, 24) + 16;
+  const cardWidth = (width - 44) / 2;
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FAF9F6" translucent={true} />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" translucent={true} />
 
-      {/* Top Header Bar matching Screenshot */}
+      {/* Top Header Bar */}
       <View style={[styles.headerBar, { paddingTop: topPadding }]}>
         <TouchableOpacity
           activeOpacity={0.7}
@@ -105,7 +136,7 @@ export default function CoursesScreen() {
           <ArrowLeft size={22} color="#1E293B" strokeWidth={2.4} />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Course</Text>
+        <Text style={styles.headerTitle}>Holistic Courses</Text>
 
         <TouchableOpacity
           activeOpacity={0.7}
@@ -127,7 +158,7 @@ export default function CoursesScreen() {
           <View style={styles.searchBarInner}>
             <Search size={18} color="#94A3B8" style={{ marginRight: 8 }} />
             <TextInput
-              placeholder="Search courses, fitness, yoga..."
+              placeholder="Search holistic courses & guides..."
               placeholderTextColor="#94A3B8"
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -143,55 +174,53 @@ export default function CoursesScreen() {
         </View>
       )}
 
-      {/* Courses List matching Screenshot */}
+      {/* 2-Column Grid Layout matching Screenshot */}
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={[styles.scrollContent, { paddingBottom: bottomPadding }]}
       >
-        {filteredCourses.map((item, index) => (
-          <TouchableOpacity
-            key={`${item.id}-${index}`}
-            activeOpacity={0.88}
-            onPress={() =>
-              router.push({
-                pathname: '/course-detail',
-                params: { id: item.id },
-              })
-            }
-            style={styles.courseCard}
-          >
-            {/* Left Thumbnail Image */}
-            <View style={styles.thumbnailWrapper}>
-              <Image source={item.image} style={styles.thumbnailImage} resizeMode="cover" />
-            </View>
-
-            {/* Right Course Info */}
-            <View style={styles.infoWrapper}>
-              {/* Category Pill Tag */}
-              <View style={styles.categoryPill}>
-                <Text style={styles.categoryText}>{item.category}</Text>
+        <View style={styles.gridContainer}>
+          {filteredCourses.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              activeOpacity={0.88}
+              onPress={() =>
+                router.push({
+                  pathname: '/course-detail',
+                  params: {
+                    id: item.id,
+                    title: item.masterclassTitle,
+                  },
+                })
+              }
+              style={[styles.courseCard, { width: cardWidth }]}
+            >
+              {/* Card Image with Yellow Price Badge */}
+              <View style={styles.cardImageWrapper}>
+                <Image
+                  source={item.image}
+                  style={styles.cardImage}
+                  resizeMode="cover"
+                />
+                <View style={styles.priceBadge}>
+                  <Text style={styles.priceBadgeText}>{item.price}</Text>
+                </View>
               </View>
 
-              {/* Title */}
-              <Text style={styles.courseTitle} numberOfLines={2}>
-                {item.title}
-              </Text>
-
-              {/* Duration & Lessons */}
-              <Text style={styles.metaText}>
-                {item.duration}   {item.lessons}
-              </Text>
-
-              {/* Price */}
-              <Text style={styles.priceText}>{item.price}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+              {/* Card Info: Title, Subtitle, Discount */}
+              <View style={styles.cardInfo}>
+                <Text style={styles.cardTitle}>{item.title}</Text>
+                <Text style={styles.cardSubtitle}>{item.subtitle}</Text>
+                <Text style={styles.cardDiscount}>{item.discount}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </View>
 
         {filteredCourses.length === 0 && (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyTitle}>No courses found</Text>
-            <Text style={styles.emptySubtitle}>Try searching for "Yoga" or "Fitness"</Text>
+            <Text style={styles.emptySubtitle}>Try searching for "Yoga" or "Nutrition"</Text>
           </View>
         )}
       </ScrollView>
@@ -224,7 +253,7 @@ const styles = StyleSheet.create({
     padding: 6,
   },
   headerTitle: {
-    fontSize: 18.5,
+    fontSize: 18,
     fontWeight: '800',
     color: '#1E293B',
     letterSpacing: -0.2,
@@ -252,71 +281,70 @@ const styles = StyleSheet.create({
     padding: 0,
   },
   scrollContent: {
+    paddingTop: 12,
+  },
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
     paddingHorizontal: 16,
-    paddingTop: 14,
   },
   courseCard: {
-    flexDirection: 'row',
     backgroundColor: '#FFFFFF',
     borderRadius: 18,
-    padding: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1.5,
-    alignItems: 'center',
-  },
-  thumbnailWrapper: {
-    width: 82,
-    height: 82,
-    borderRadius: 14,
+    marginBottom: 14,
     overflow: 'hidden',
-    backgroundColor: '#E2E8F0',
-    marginRight: 14,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
   },
-  thumbnailImage: {
+  cardImageWrapper: {
+    position: 'relative',
+    width: '100%',
+    height: 105,
+    backgroundColor: '#F1F5F9',
+  },
+  cardImage: {
     width: '100%',
     height: '100%',
   },
-  infoWrapper: {
-    flex: 1,
-    justifyContent: 'center',
+  priceBadge: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    backgroundColor: '#EAB308',
+    borderRadius: 10,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
   },
-  categoryPill: {
-    backgroundColor: '#F0FDF4',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
-    marginBottom: 4,
-  },
-  categoryText: {
-    fontSize: 9.5,
+  priceBadgeText: {
+    fontSize: 10,
     fontWeight: '800',
-    color: '#166534',
-    letterSpacing: 0.2,
+    color: '#FFFFFF',
   },
-  courseTitle: {
+  cardInfo: {
+    padding: 10,
+  },
+  cardTitle: {
     fontSize: 13.5,
-    fontWeight: '700',
-    color: '#1E293B',
-    lineHeight: 18,
-    letterSpacing: -0.1,
-  },
-  metaText: {
-    fontSize: 11.5,
-    color: '#64748B',
-    marginTop: 3,
-  },
-  priceText: {
-    fontSize: 14,
     fontWeight: '800',
-    color: '#EF4444',
-    marginTop: 3,
+    color: '#1E1E1E',
+  },
+  cardSubtitle: {
+    fontSize: 10.5,
+    color: '#64748B',
+    marginTop: 2,
+    lineHeight: 14,
+  },
+  cardDiscount: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#EE4D38',
+    marginTop: 4,
   },
   emptyContainer: {
     alignItems: 'center',

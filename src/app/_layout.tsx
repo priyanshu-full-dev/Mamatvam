@@ -1,15 +1,15 @@
-import React, { useEffect } from 'react';
-import { Stack } from 'expo-router';
+import i18n from '@/i18n';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+import { useEffect } from 'react';
+import { I18nextProvider } from 'react-i18next';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { I18nextProvider } from 'react-i18next';
-import * as SplashScreen from 'expo-splash-screen';
 import '../global.css';
-import i18n from '@/i18n';
 
 // Prevent splash screen from auto-hiding until ready
-SplashScreen.preventAutoHideAsync().catch(() => {});
+SplashScreen.preventAutoHideAsync().catch(() => { });
 
 // High-performance QueryClient configuration for 1M daily users
 const queryClient = new QueryClient({
@@ -26,7 +26,7 @@ const queryClient = new QueryClient({
 export default function RootLayout() {
   useEffect(() => {
     // Hide splash screen smoothly after app is ready
-    SplashScreen.hideAsync().catch(() => {});
+    SplashScreen.hideAsync().catch(() => { });
   }, []);
 
   return (
@@ -61,6 +61,20 @@ export default function RootLayout() {
               <Stack.Screen name="sex-sutra-detail" />
               <Stack.Screen name="courses" />
               <Stack.Screen name="course-detail" />
+              <Stack.Screen name="notifications" />
+              <Stack.Screen name="motor-skills" />
+              <Stack.Screen name="vaccination-schedule" />
+              <Stack.Screen name="baby-names" />
+              <Stack.Screen name="nutrition-values" />
+              <Stack.Screen name="sleep-pattern" />
+              <Stack.Screen name="feed-pattern" />
+              <Stack.Screen name="baby-care-messages" />
+              <Stack.Screen name="mother-care-messages" />
+              <Stack.Screen name="types-of-tests" />
+              <Stack.Screen name="ovulation-tracker" />
+              <Stack.Screen name="fertility-guide" />
+              <Stack.Screen name="expert-directory" />
+              <Stack.Screen name="expert-profile" />
             </Stack>
           </QueryClientProvider>
         </I18nextProvider>
