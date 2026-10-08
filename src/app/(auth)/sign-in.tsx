@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   StyleSheet,
+  Keyboard,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -91,6 +92,7 @@ export default function SignInScreen() {
     setPincodeError('');
 
     if (cleanText.length === 6) {
+      Keyboard.dismiss();
       if (FALLBACK_PINCODES[cleanText]) {
         setLocations(FALLBACK_PINCODES[cleanText]);
         setSelectedArea(FALLBACK_PINCODES[cleanText][0]);
@@ -235,6 +237,8 @@ export default function SignInScreen() {
                 value={pincode}
                 onChangeText={handlePincodeChange}
                 keyboardType="number-pad"
+                returnKeyType="done"
+                onSubmitEditing={Keyboard.dismiss}
                 maxLength={6}
                 error={pincodeError}
               />
@@ -266,6 +270,7 @@ export default function SignInScreen() {
                     contentContainerStyle={{ paddingBottom: 6 }}
                     nestedScrollEnabled={true}
                     showsVerticalScrollIndicator={true}
+                    keyboardShouldPersistTaps="handled"
                   >
                     {locations.map((item, index) => {
                       const isSelected = selectedArea?.name === item.name;
@@ -273,7 +278,10 @@ export default function SignInScreen() {
                         <TouchableOpacity
                           key={`${item.name}-${index}`}
                           activeOpacity={0.8}
-                          onPress={() => setSelectedArea(item)}
+                          onPress={() => {
+                            Keyboard.dismiss();
+                            setSelectedArea(item);
+                          }}
                           style={[
                             styles.locationCard,
                             isSelected && styles.locationCardSelected,
