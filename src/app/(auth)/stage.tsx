@@ -29,28 +29,28 @@ const STAGES: StageOption[] = [
   {
     id: 'pregnant',
     titleKey: 'stage.pregnant',
-    defaultTitle: 'Pregnant',
+    defaultTitle: 'Pregnancy',
     bgColor: '#FFE8E5',
     image: require('@/assets/images/stages/pregnant.png'),
   },
   {
     id: 'mother',
     titleKey: 'stage.mother',
-    defaultTitle: 'Mother',
+    defaultTitle: 'Post Pregnancy',
     bgColor: '#E5F9EA',
     image: require('@/assets/images/stages/mother.png'),
   },
   {
     id: 'conceive',
     titleKey: 'stage.conceive',
-    defaultTitle: 'Conceive',
+    defaultTitle: 'Try To Conceive',
     bgColor: '#DEF2FB',
     image: require('@/assets/images/stages/conceive.png'),
   },
   {
     id: 'explore',
     titleKey: 'stage.explore',
-    defaultTitle: 'Explore',
+    defaultTitle: 'IUI, IVF',
     bgColor: '#F3E8FF',
     image: require('@/assets/images/stages/explore.png'),
   },
@@ -74,6 +74,8 @@ export default function StageScreen() {
     } else if (stageId === 'conceive') {
       setStage('conceive');
       router.push('/(auth)/conceive');
+    } else if (stageId === 'explore') {
+      setStage('explore');
     }
   };
 
@@ -158,11 +160,21 @@ export default function StageScreen() {
                 >
                   <Image
                     source={item.image}
-                    style={{ width: 75, height: 75 }}
+                    style={{ width: 70, height: 70 }}
                     contentFit="contain"
                     cachePolicy="memory-disk"
                   />
-                  <Text style={{ fontSize: 16, fontWeight: '700', color: '#1E1E1E', marginTop: 12, textAlign: 'center' }}>
+                  <Text
+                    numberOfLines={2}
+                    style={{
+                      fontSize: 15,
+                      fontWeight: '700',
+                      color: '#1E1E1E',
+                      marginTop: 10,
+                      textAlign: 'center',
+                      lineHeight: 19,
+                    }}
+                  >
                     {t(item.titleKey, item.defaultTitle)}
                   </Text>
                 </Pressable>

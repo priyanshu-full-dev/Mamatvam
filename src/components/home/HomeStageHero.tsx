@@ -45,7 +45,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
       <View style={styles.stageSwitcherRow}>
         {(['pregnant', 'mother', 'conceive'] as PregnancyStage[]).map((st) => {
           const isActive = currentStage === st;
-          const label = st === 'pregnant' ? 'Pregnant' : st === 'mother' ? 'Mother' : 'Conceive';
+          const label = st === 'pregnant' ? 'Pregnancy' : st === 'mother' ? 'Post Pregnancy' : 'Try To Conceive';
           return (
             <TouchableOpacity
               key={st}

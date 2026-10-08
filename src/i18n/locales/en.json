@@ -45,10 +45,10 @@
   "stage": {
     "title": "Choose your stage",
     "subtitle": "So your journey feels truly personalized",
-    "pregnant": "Pregnant",
-    "mother": "Mother",
-    "conceive": "Conceive",
-    "explore": "Explore",
+    "pregnant": "Pregnancy",
+    "mother": "Post Pregnancy",
+    "conceive": "Try To Conceive",
+    "explore": "IUI, IVF",
     "continue": "Continue"
   }
 }

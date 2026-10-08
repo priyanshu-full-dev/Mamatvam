@@ -285,7 +285,7 @@ export default function PracticalToolsScreen() {
       <View style={styles.stageSwitcherRow}>
         {(['pregnant', 'mother', 'conceive'] as PregnancyStage[]).map((st) => {
           const isActive = currentStage === st;
-          const label = st === 'pregnant' ? 'Pregnant' : st === 'mother' ? 'Mother' : 'Conceive';
+          const label = st === 'pregnant' ? 'Pregnancy' : st === 'mother' ? 'Post Pregnancy' : 'Try To Conceive';
           return (
             <TouchableOpacity
               key={st}
@@ -318,9 +318,9 @@ export default function PracticalToolsScreen() {
         {/* Section Heading: Daily Utilities */}
         <Text style={{ fontSize: 22, fontWeight: '800', color: '#1E1E1E', marginBottom: 16 }}>
           {currentStage === 'mother'
-            ? 'Mother Daily Utilities'
+            ? 'Post Pregnancy Daily Utilities'
             : currentStage === 'conceive'
-            ? 'Daily Utilities'
+            ? 'Try To Conceive Daily Utilities'
             : 'Pregnancy Daily Utilities'}
         </Text>
 
