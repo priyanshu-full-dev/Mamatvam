@@ -204,7 +204,7 @@ export default function SignInScreen() {
             >
               {t(
                 'auth.signInSubtitle',
-                'Sign in or create an account with your email address.'
+                'Sign in or create an account with your mobile number.'
               )}
             </Text>
           </View>
@@ -214,8 +214,8 @@ export default function SignInScreen() {
             {/* Phone Number Field */}
             <View>
               <Input
-                label={t('auth.phoneNumber', 'Phone Number')}
-                placeholder={t('auth.phonePlaceholder', 'Enter phone number')}
+                label={t('auth.phoneNumber', 'Mobile Number')}
+                placeholder={t('auth.phonePlaceholder', 'Enter mobile number')}
                 value={inputPhone}
                 onChangeText={(text) => {
                   setInputPhone(text);
