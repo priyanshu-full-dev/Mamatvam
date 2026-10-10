@@ -76,6 +76,7 @@ export default function StageScreen() {
       router.push('/(auth)/conceive');
     } else if (stageId === 'explore') {
       setStage('explore');
+      router.push('/(auth)/iui-ivf');
     }
   };
 
@@ -87,6 +88,8 @@ export default function StageScreen() {
       router.push('/(auth)/baby-gender');
     } else if (selectedStage === 'conceive') {
       router.push('/(auth)/conceive');
+    } else if (selectedStage === 'explore') {
+      router.push('/(auth)/iui-ivf');
     } else {
       router.replace('/(tabs)/home');
     }
@@ -116,8 +119,8 @@ export default function StageScreen() {
             <Text style={{ fontSize: 32, fontWeight: '800', color: '#1A1A1A', letterSpacing: -0.5 }}>
               {t('stage.title', 'Choose your stage')}
             </Text>
-            <Text style={{ fontSize: 15, color: '#6B7280', marginTop: 8, fontWeight: '500' }}>
-              {t('stage.subtitle', 'So your journey feels truly personalized')}
+            <Text style={{ fontSize: 15, color: '#6B7280', marginTop: 8, fontWeight: '500', lineHeight: 21 }}>
+              {t('stage.subtitle', 'Select your stage to unlock your personalized, step-by-step pregnancy roadmap')}
             </Text>
           </View>
         </SafeAreaView>

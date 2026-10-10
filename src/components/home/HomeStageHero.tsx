@@ -41,34 +41,47 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
 
   return (
     <View style={styles.heroOuterContainer}>
-      {/* 1. Stage Switcher Chips - Quick toggle for testing/viewing all 3 stages */}
-      <View style={styles.stageSwitcherRow}>
-        {(['pregnant', 'mother', 'conceive'] as PregnancyStage[]).map((st) => {
-          const isActive = currentStage === st;
-          const label = st === 'pregnant' ? 'Pregnancy' : st === 'mother' ? 'Post Pregnancy' : 'Try To Conceive';
-          return (
-            <TouchableOpacity
-              key={st}
-              activeOpacity={0.8}
-              onPress={() => onStageChange?.(st)}
-              style={[
-                styles.stageChip,
-                isActive && styles.stageChipActive,
-                isActive && st === 'mother' && { backgroundColor: '#10B981' },
-                isActive && st === 'conceive' && { backgroundColor: '#0284C7' },
-              ]}
-            >
-              <Text
+      {/* 1. Stage Switcher Chips - Fixed row fitting all 4 stages on screen without scroll */}
+      <View style={styles.stageSwitcherContainer}>
+        <View style={styles.stageSwitcherRow}>
+          {(['pregnant', 'mother', 'conceive', 'explore'] as PregnancyStage[]).map((st) => {
+            const isActive = currentStage === st;
+            const label =
+              st === 'pregnant'
+                ? 'Pregnancy'
+                : st === 'mother'
+                ? 'Post Pregnancy'
+                : st === 'conceive'
+                ? 'Try To Conceive'
+                : 'IUI, IVF';
+            return (
+              <TouchableOpacity
+                key={st}
+                activeOpacity={0.8}
+                onPress={() => onStageChange?.(st)}
                 style={[
-                  styles.stageChipText,
-                  isActive && styles.stageChipTextActive,
+                  styles.stageChip,
+                  isActive && styles.stageChipActive,
+                  isActive && st === 'mother' && { backgroundColor: '#10B981' },
+                  isActive && st === 'conceive' && { backgroundColor: '#0284C7' },
+                  isActive && st === 'explore' && { backgroundColor: '#8B5CF6' },
                 ]}
               >
-                {label}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
+                <Text
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.8}
+                  style={[
+                    styles.stageChipText,
+                    isActive && styles.stageChipTextActive,
+                  ]}
+                >
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
       </View>
 
       {/* 2. Stage-Specific Hero Content & Gradients */}
@@ -147,16 +160,16 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
             </TouchableOpacity>
           </View>
         </View>
-      ) : currentStage === 'conceive' ? (
-        /* ==================== CONCEIVE STAGE HERO (Exact to screenshot) ==================== */
+      ) : currentStage === 'conceive' || currentStage === 'explore' ? (
+        /* ==================== CONCEIVE & IUI, IVF STAGE HERO ==================== */
         <View style={styles.motherSectionWrapper}>
-          {/* Multi-tone Pastel Background Gradient (Matching Mother & Conceive) */}
+          {/* Multi-tone Pastel Background Gradient */}
           <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" preserveAspectRatio="none">
             <Defs>
               <LinearGradient id="conceiveGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <Stop offset="0%" stopColor="#EBF2FE" stopOpacity="0.9" />
-                <Stop offset="35%" stopColor="#FFF1EB" stopOpacity="0.8" />
-                <Stop offset="70%" stopColor="#EAF8F0" stopOpacity="0.65" />
+                <Stop offset="0%" stopColor={currentStage === 'explore' ? "#F3E8FF" : "#EBF2FE"} stopOpacity="0.9" />
+                <Stop offset="35%" stopColor={currentStage === 'explore' ? "#FAF5FF" : "#FFF1EB"} stopOpacity="0.8" />
+                <Stop offset="70%" stopColor={currentStage === 'explore' ? "#F5F3FF" : "#EAF8F0"} stopOpacity="0.65" />
                 <Stop offset="100%" stopColor="#FAF9F6" stopOpacity="0.1" />
               </LinearGradient>
             </Defs>
@@ -164,54 +177,67 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
           </Svg>
 
           <View style={styles.sectionInnerContent}>
-            {/* Center Circular Card with Coral Ring, Flower & Pregnancy Chance */}
-            <View style={styles.avatarCenterRow}>
-              <View style={styles.conceiveRingContainer}>
-                <Image
-                  source={require('@/assets/images/home/conceive_flower_final.png')}
-                  style={styles.conceiveFlowerImage}
-                  contentFit="contain"
-                />
-                <Text style={styles.pregnancyChanceLabel}>Pregnancy Chance</Text>
-                <Text style={styles.pregnancyChanceValue}>Low</Text>
+            {/* Horizontal Section: Circle Card on Left + 2 Cards on Right */}
+            <View style={styles.conceiveHeroHorizontalRow}>
+              {/* Left Side: White Card with Red Circle and Baby label */}
+              <View style={styles.conceiveLeftCircleCard}>
+                <View style={styles.conceiveRingContainer}>
+                  <Image
+                    source={
+                      currentStage === 'explore'
+                        ? require('@/assets/images/stages/explore.png')
+                        : require('@/assets/images/home/conceive_flower_final.png')
+                    }
+                    style={styles.conceiveFlowerImage}
+                    contentFit="contain"
+                  />
+                  <Text style={styles.pregnancyChanceLabel}>
+                    {currentStage === 'explore' ? 'Fertility Chance' : 'Pregnancy Chance'}
+                  </Text>
+                  <Text style={styles.pregnancyChanceValue}>
+                    {currentStage === 'explore' ? 'High' : 'Low'}
+                  </Text>
+                </View>
+                <Text style={styles.conceiveBabyTitle}>
+                  {currentStage === 'explore' ? 'Fertility' : 'Baby'}
+                </Text>
+              </View>
+
+              {/* Right Side: 2 Metric Cards Stacked Vertically */}
+              <View style={styles.conceiveRightCardsCol}>
+                {/* Top Card: Next Period */}
+                <View style={styles.conceiveMetricCard}>
+                  <View style={styles.conceiveCardHeader}>
+                    <Calendar size={18} color="#EE4D38" />
+                  </View>
+                  <Text style={styles.conceiveCardLabel}>Next Period</Text>
+                  <Text style={styles.conceiveCardValue}>13 Feb</Text>
+                  <Text style={styles.conceiveCardSub}>in 3 days</Text>
+                </View>
+
+                {/* Bottom Card: Ovulation */}
+                <View style={styles.conceiveMetricCard}>
+                  <View style={styles.conceiveCardHeader}>
+                    <Sparkles size={18} color="#EAB308" fill="#FDE047" />
+                  </View>
+                  <Text style={styles.conceiveCardLabel}>Ovulation</Text>
+                  <Text style={styles.conceiveCardValue}>13 Feb</Text>
+                  <Text style={styles.conceiveCardSub}>in 3 days</Text>
+                </View>
               </View>
             </View>
 
-            {/* Baby Title */}
-            <Text style={styles.conceiveBabyTitle}>Baby</Text>
-
-            {/* Two Measurement / Metric Cards */}
-            <View style={styles.conceiveCardsRow}>
-              {/* Left Card: Next Period */}
-              <View style={styles.conceiveMetricCard}>
-                <View style={styles.conceiveCardHeader}>
-                  <Calendar size={18} color="#EE4D38" />
-                </View>
-                <Text style={styles.conceiveCardLabel}>Next Period</Text>
-                <Text style={styles.conceiveCardValue}>13 Feb</Text>
-                <Text style={styles.conceiveCardSub}>in 3 days</Text>
-              </View>
-
-              {/* Right Card: Ovulation */}
-              <View style={styles.conceiveMetricCard}>
-                <View style={styles.conceiveCardHeader}>
-                  <Sparkles size={18} color="#EAB308" fill="#FDE047" />
-                </View>
-                <Text style={styles.conceiveCardLabel}>Ovulation</Text>
-                <Text style={styles.conceiveCardValue}>13 Feb</Text>
-                <Text style={styles.conceiveCardSub}>in 3 days</Text>
-              </View>
-            </View>
-
-            {/* Daily Utility CTA */}
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => router.push('/practical-tools')}
-              style={styles.dailyUtilityBtn}
-            >
-              <Text style={styles.dailyUtilityText}>Check out my daily utility</Text>
-              <ArrowRight size={14} color="#EE4D38" />
-            </TouchableOpacity>
+            {/* Daily Utility CTA - Hidden for IUI, IVF stage */}
+            {currentStage !== 'explore' && (
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => router.push('/practical-tools')}
+                style={styles.dailyUtilityBtn}
+              >
+                <Text style={styles.dailyUtilityText}>Check out my daily utility</Text>
+                <ArrowRight size={14} color="#EE4D38" />
+              </TouchableOpacity>
+            )}
 
             {/* Action Buttons Row (Calendar & End Period) */}
             <View style={styles.conceiveActionsRow}>
@@ -337,7 +363,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
           <Text style={styles.tipsDescription}>
             {currentStage === 'mother'
               ? 'Try some gentle pelvic tilts today to relieve lower back pressure and improve circulation.'
-              : currentStage === 'conceive'
+              : currentStage === 'conceive' || currentStage === 'explore'
               ? 'Nourish your body with folate and vitamin E rich foods today to support healthy ovulation.'
               : 'Try some gentle pelvic tilts today to relieve lower back pressure and improve circulation.'}
           </Text>
@@ -371,32 +397,38 @@ const styles = StyleSheet.create({
   heroOuterContainer: {
     width: '100%',
   },
+  stageSwitcherContainer: {
+    backgroundColor: '#FAF9F6',
+    paddingHorizontal: 12,
+    paddingTop: 4,
+    paddingBottom: 10,
+  },
   stageSwitcherRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 4,
-    paddingBottom: 10,
-    backgroundColor: '#FAF9F6',
-    gap: 8,
+    justifyContent: 'space-between',
+    gap: 6,
   },
   stageChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 5,
+    flex: 1,
+    paddingVertical: 6.5,
+    paddingHorizontal: 2,
     borderRadius: 16,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   stageChipActive: {
     backgroundColor: '#EE4D38',
     borderColor: 'transparent',
   },
   stageChipText: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 11,
+    fontWeight: '700',
     color: '#64748B',
+    textAlign: 'center',
   },
   stageChipTextActive: {
     color: '#FFFFFF',
@@ -622,30 +654,52 @@ const styles = StyleSheet.create({
     width: 80,
     height: 100,
   },
+  conceiveHeroHorizontalRow: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    gap: 12,
+    marginTop: 4,
+  },
+  conceiveLeftCircleCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    paddingVertical: 18,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+  },
   conceiveRingContainer: {
-    width: 126,
-    height: 126,
-    borderRadius: 63,
+    width: 108,
+    height: 108,
+    borderRadius: 54,
     borderWidth: 3.5,
     borderColor: '#FF7060',
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
     shadowColor: '#EE4D38',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
   },
   conceiveFlowerImage: {
-    width: 50,
-    height: 24,
-    marginBottom: 4,
+    width: 44,
+    height: 22,
+    marginBottom: 2,
   },
   pregnancyChanceLabel: {
-    fontSize: 11.5,
+    fontSize: 10.5,
     fontWeight: '600',
     color: '#475569',
     textAlign: 'center',
@@ -658,25 +712,25 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   conceiveBabyTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '800',
     color: '#1E293B',
     textAlign: 'center',
-    marginTop: 10,
-    marginBottom: 14,
+    marginTop: 14,
   },
-  conceiveCardsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  conceiveRightCardsCol: {
+    flex: 1,
+    flexDirection: 'column',
     justifyContent: 'space-between',
-    gap: 12,
+    gap: 10,
   },
   conceiveMetricCard: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 18,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+    borderRadius: 20,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#F1F5F9',
     shadowColor: '#000',
@@ -689,12 +743,12 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   conceiveCardLabel: {
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '600',
     color: '#64748B',
   },
   conceiveCardValue: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '800',
     color: '#1E1E1E',
     marginTop: 2,

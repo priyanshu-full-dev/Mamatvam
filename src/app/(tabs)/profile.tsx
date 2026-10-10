@@ -121,13 +121,17 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.scrollContent}
       >
         {/* User Profile Card */}
-        <View style={styles.profileCard}>
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => router.push('/user-profile')}
+          style={styles.profileCard}
+        >
           <View style={styles.avatar}>
             <User size={38} color="#71717A" />
           </View>
           <View style={styles.profileInfo}>
             <Text style={styles.userName} numberOfLines={1}>
-              {user?.name || 'Saved Items'}
+              {user?.name || 'Mamatvam Mother'}
             </Text>
             <Text style={styles.pregnancyStage} numberOfLines={1}>
               40 Weeks & 0 Day Pregnant
@@ -136,7 +140,8 @@ export default function ProfileScreen() {
               Member since December 2025
             </Text>
           </View>
-        </View>
+          <ChevronRight size={18} color="#94A3B8" />
+        </TouchableOpacity>
 
         {/* Section 1: Navigation */}
         <Text style={styles.sectionHeader}>Navigation</Text>
@@ -223,7 +228,7 @@ export default function ProfileScreen() {
         <View style={[styles.row, { marginTop: GAP }]}>
           <TouchableOpacity
             activeOpacity={0.75}
-            onPress={() => handleNavigation('/(tabs)/community', 'Community Guidelines')}
+            onPress={() => router.push('/community-guidelines')}
             style={styles.halfCard}
           >
             <View style={styles.halfCardLeft}>
@@ -256,7 +261,7 @@ export default function ProfileScreen() {
         {/* Account Settings */}
         <TouchableOpacity
           activeOpacity={0.75}
-          onPress={() => handleNavigation(undefined, 'Account Settings')}
+          onPress={() => router.push('/account-settings')}
           style={styles.moreCard}
         >
           <View style={styles.moreCardLeft}>
@@ -272,7 +277,7 @@ export default function ProfileScreen() {
         {/* Privacy */}
         <TouchableOpacity
           activeOpacity={0.75}
-          onPress={() => handleNavigation(undefined, 'Privacy')}
+          onPress={() => router.push('/privacy')}
           style={styles.moreCard}
         >
           <View style={styles.moreCardLeft}>
@@ -288,7 +293,7 @@ export default function ProfileScreen() {
         {/* Help & Support */}
         <TouchableOpacity
           activeOpacity={0.75}
-          onPress={() => handleNavigation(undefined, 'Help & Support')}
+          onPress={() => router.push('/help-support')}
           style={styles.moreCard}
         >
           <View style={styles.moreCardLeft}>

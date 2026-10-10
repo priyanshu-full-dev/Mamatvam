@@ -299,6 +299,9 @@ export default function PracticalToolsScreen() {
               ]}
             >
               <Text
+                numberOfLines={1}
+                adjustsFontSizeToFit
+                minimumFontScale={0.8}
                 style={[
                   styles.stageChipText,
                   isActive && styles.stageChipTextActive,
@@ -695,7 +698,7 @@ export default function PracticalToolsScreen() {
             {/* Card 2: Contractions - Royal Violet/Purple Gradient Badge */}
             <TouchableOpacity
               activeOpacity={0.75}
-              onPress={() => setActiveModal('contractions')}
+              onPress={() => router.push('/contractions')}
               style={[
                 styles.utilityCard,
                 {
@@ -766,7 +769,7 @@ export default function PracticalToolsScreen() {
                 <HydrationWhiteIcon size={24} />
               </ColorfulBadge>
 
-              <Text style={styles.cardTitle}>Hydration</Text>
+              <Text style={styles.cardTitle}>Water Tracker</Text>
               <Text style={styles.cardSubtitle1}>3 of 8 glasses</Text>
             </TouchableOpacity>
           </View>
@@ -977,7 +980,7 @@ export default function PracticalToolsScreen() {
                 <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#E0F2FE', alignItems: 'center', justifyContent: 'center', marginRight: 10 }}>
                   <Droplets size={20} color="#0284C7" />
                 </View>
-                <Text style={{ fontSize: 18, fontWeight: '800', color: '#1E1E1E' }}>Hydration Tracker</Text>
+                <Text style={{ fontSize: 18, fontWeight: '800', color: '#1E1E1E' }}>Water Tracker</Text>
               </View>
               <TouchableOpacity onPress={() => setActiveModal(null)} style={{ padding: 4 }}>
                 <X size={22} color="#64748B" />
@@ -1505,12 +1508,15 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   stageChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+    flex: 1,
+    paddingVertical: 7,
+    paddingHorizontal: 4,
     borderRadius: 16,
     backgroundColor: '#F8FAFC',
     borderWidth: 1,
     borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   stageChipActive: {
     backgroundColor: '#EE4D38',

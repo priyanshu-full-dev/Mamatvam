@@ -8,8 +8,9 @@ import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import {
   Bell,
-  CalendarClock,
+  BookOpen,
   Lightbulb,
+  Video,
 } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import {
@@ -24,6 +25,41 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
+
+const EXPERT_ADVICE_LIST = [
+  {
+    id: 'exp-1',
+    type: 'video' as const,
+    date: '5-01-2025',
+    title: 'Essential nutrition tips for healthy pregnancy development',
+    author: 'expert one',
+    image: require('@/assets/images/home/course_baby.jpg'),
+  },
+  {
+    id: 'exp-2',
+    type: 'text' as const,
+    date: '5-01-2025',
+    title: 'Essential nutrition tips for healthy pregnancy development',
+    author: 'expert one',
+    image: require('@/assets/images/home/course_baby.jpg'),
+  },
+  {
+    id: 'exp-3',
+    type: 'video' as const,
+    date: '3-01-2025',
+    title: 'Safe daily movement & breathing for expecting mothers',
+    author: 'expert two',
+    image: require('@/assets/images/home/course_baby.jpg'),
+  },
+  {
+    id: 'exp-4',
+    type: 'text' as const,
+    date: '2-01-2025',
+    title: 'Managing morning sickness & fatigue naturally',
+    author: 'expert three',
+    image: require('@/assets/images/home/course_baby.jpg'),
+  },
+];
 
 const CATEGORIES = [
   { id: '1', title: 'Astrologers &\nPandits', image: require('@/assets/images/home/categories/astrologer.jpg') },
@@ -110,23 +146,34 @@ export default function HomeScreen() {
       >
         <TouchableOpacity
           activeOpacity={0.8}
-          onPress={() => router.push('/(tabs)/profile')}
+          onPress={() => router.push('/hospital-profile')}
           style={{ flexDirection: 'row', alignItems: 'center' }}
         >
           <View
             style={{
-              width: 40,
-              height: 40,
-              borderRadius: 20,
-              backgroundColor: '#D4D4D8',
+              width: 42,
+              height: 42,
+              borderRadius: 21,
+              backgroundColor: '#FFF0EE',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderWidth: 1.5,
+              borderColor: '#FBDCD5',
+              overflow: 'hidden',
             }}
-          />
+          >
+            <Image
+              source={require('@/assets/images/mamatvam-icon.png')}
+              style={{ width: 26, height: 26 }}
+              contentFit="contain"
+            />
+          </View>
           <View style={{ marginLeft: 12 }}>
-            <Text style={{ fontSize: 12, fontWeight: '500', color: currentStage === 'mother' ? '#8E8E93' : '#EE4D38', letterSpacing: 0.2 }}>
-              {currentStage === 'mother' ? 'Strawberry' : currentStage === 'conceive' ? 'Fertility Care' : 'Healthcare pvt limited'}
+            <Text style={{ fontSize: 12, fontWeight: '600', color: currentStage === 'mother' ? '#8E8E93' : currentStage === 'explore' ? '#8B5CF6' : currentStage === 'conceive' ? '#0284C7' : '#EE4D38', letterSpacing: 0.2 }}>
+              {currentStage === 'mother' ? 'Strawberry' : (currentStage === 'conceive' || currentStage === 'explore') ? 'Fertility Care' : 'Healthcare pvt limited'}
             </Text>
             <Text style={{ fontSize: 17, fontWeight: '800', color: '#1E1E1E' }}>
-              {user?.name || 'Miss sarah'}
+              {user?.name || 'Mamatvam Hospital'}
             </Text>
           </View>
         </TouchableOpacity>
@@ -191,7 +238,7 @@ export default function HomeScreen() {
             {[1, 2, 3, 4].map((item) => (
               <Pressable
                 key={item}
-                onPress={() => router.push('/course-detail')}
+                onPress={() => router.push('/playlist')}
                 style={{
                   width: (width - 44) / 2,
                   backgroundColor: '#FFFFFF',
@@ -249,65 +296,13 @@ export default function HomeScreen() {
         {/* Dynamic Helpful Tools Section for 3 Stages */}
         <HomeHelpfulTools stage={currentStage} />
 
-        {/* Next Appointment Card matching Image 1 */}
-        <View style={{ marginTop: 16, paddingHorizontal: 16 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <CalendarClock size={16} color="#475569" style={{ marginRight: 6 }} />
-              <Text style={{ fontSize: 11.5, fontWeight: '800', color: '#1E293B', letterSpacing: 0.5 }}>
-                NEXT APPOINTMENT
-              </Text>
-            </View>
-            <Text style={{ fontSize: 11.5, fontWeight: '700', color: '#64748B' }}>
-              JUNE 15
-            </Text>
-          </View>
-
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => router.push('/new-appointment')}
-            style={{
-              backgroundColor: '#FFE4E6',
-              borderRadius: 16,
-              paddingVertical: 12,
-              paddingHorizontal: 14,
-              flexDirection: 'row',
-              alignItems: 'center',
-            }}
-          >
-            <View
-              style={{
-                backgroundColor: '#FFFFFF',
-                borderRadius: 10,
-                paddingVertical: 6,
-                paddingHorizontal: 10,
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginRight: 12,
-              }}
-            >
-              <Text style={{ fontSize: 16, fontWeight: '800', color: '#1E293B' }}>15</Text>
-              <Text style={{ fontSize: 9.5, fontWeight: '700', color: '#64748B' }}>JUNE</Text>
-            </View>
-
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 13, fontWeight: '700', color: '#1E293B' }}>
-                Dr. Aris • Morphology Scan
-              </Text>
-              <Text style={{ fontSize: 11, color: '#64748B', marginTop: 2 }}>
-                10:30 AM • City Maternity Center
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
         {/* Expert Advice For You */}
         <View style={{ marginTop: 14, paddingHorizontal: 16 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <Text style={{ fontSize: 17, fontWeight: '800', color: '#1E1E1E' }}>
               Expert Advice For You
             </Text>
-            <Pressable>
+            <Pressable onPress={() => router.push('/playlist')} hitSlop={8}>
               <Text style={{ fontSize: 12, color: '#94A3B8', fontWeight: '500' }}>
                 See more
               </Text>
@@ -315,9 +310,30 @@ export default function HomeScreen() {
           </View>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -16, paddingHorizontal: 16 }}>
-            {[1, 2].map((item) => (
-              <View
-                key={item}
+            {EXPERT_ADVICE_LIST.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                activeOpacity={0.85}
+                onPress={() => {
+                  if (item.type === 'video') {
+                    router.push({
+                      pathname: '/course-detail',
+                      params: {
+                        id: item.id,
+                        title: item.title,
+                      },
+                    });
+                  } else {
+                    router.push({
+                      pathname: '/course-article',
+                      params: {
+                        id: item.id,
+                        title: item.title,
+                        category: 'EXPERT ADVICE',
+                      },
+                    });
+                  }
+                }}
                 style={{
                   width: 260,
                   backgroundColor: '#FFFFFF',
@@ -333,14 +349,52 @@ export default function HomeScreen() {
                   elevation: 2,
                 }}
               >
-                <Image
-                  source={require('@/assets/images/home/course_baby.jpg')}
-                  style={{ width: '100%', height: 115 }}
-                  contentFit="cover"
-                />
+                <View style={{ position: 'relative' }}>
+                  <Image
+                    source={item.image}
+                    style={{ width: '100%', height: 115 }}
+                    contentFit="cover"
+                  />
+                  {/* Top-Right Badge: Video or Text */}
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      backgroundColor: '#FFFFFF',
+                      borderRadius: 8,
+                      paddingHorizontal: 7,
+                      paddingVertical: 3,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 1 },
+                      shadowOpacity: 0.1,
+                      shadowRadius: 2,
+                      elevation: 2,
+                    }}
+                  >
+                    {item.type === 'video' ? (
+                      <Video size={10.5} color="#DC2626" strokeWidth={2.4} style={{ marginRight: 3.5 }} />
+                    ) : (
+                      <BookOpen size={10.5} color="#2563EB" strokeWidth={2.4} style={{ marginRight: 3.5 }} />
+                    )}
+                    <Text
+                      style={{
+                        fontSize: 10,
+                        fontWeight: '800',
+                        color: item.type === 'video' ? '#DC2626' : '#2563EB',
+                        letterSpacing: 0.2,
+                      }}
+                    >
+                      {item.type === 'video' ? 'Video' : 'Text'}
+                    </Text>
+                  </View>
+                </View>
+
                 <View style={{ padding: 12 }}>
                   <Text style={{ fontSize: 11, color: '#94A3B8', fontWeight: '500' }}>
-                    5-01-2025
+                    {item.date}
                   </Text>
                   <Text
                     style={{
@@ -352,7 +406,7 @@ export default function HomeScreen() {
                     }}
                     numberOfLines={2}
                   >
-                    Essential nutrition tips for healthy pregnancy development
+                    {item.title}
                   </Text>
 
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
@@ -365,11 +419,11 @@ export default function HomeScreen() {
                       }}
                     />
                     <Text style={{ fontSize: 11, fontWeight: '700', color: '#1E1E1E', marginLeft: 8 }}>
-                      expert one
+                      {item.author}
                     </Text>
                   </View>
                 </View>
-              </View>
+              </TouchableOpacity>
             ))}
           </ScrollView>
         </View>

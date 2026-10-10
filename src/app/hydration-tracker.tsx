@@ -174,7 +174,7 @@ export default function HydrationTrackerScreen() {
             </TouchableOpacity>
 
             <View style={{ flex: 1, paddingHorizontal: 12 }}>
-              <Text style={styles.heroTitle}>Hydration Tracker</Text>
+              <Text style={styles.heroTitle}>Water Tracker</Text>
               <Text style={styles.heroSubtitle}>Pee color & water intake</Text>
             </View>
 

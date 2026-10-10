@@ -103,7 +103,7 @@ export function HomeHelpfulTools({ stage = 'pregnant' }: HomeHelpfulToolsProps) 
           },
           {
             id: 'm6',
-            title: 'Water Tracker',
+            title: 'Water\nTracker',
             route: '/hydration-tracker',
             iconType: 'lucide',
             lucideIcon: Droplets,
@@ -114,6 +114,7 @@ export function HomeHelpfulTools({ stage = 'pregnant' }: HomeHelpfulToolsProps) 
         ];
 
       case 'conceive':
+      case 'explore':
         return [
           {
             id: 'c1',

@@ -26,6 +26,7 @@ import {
   Share2,
   X,
   Send,
+  MapPin,
 } from 'lucide-react-native';
 
 const AVATAR_MAP: Record<string, any> = {
@@ -60,11 +61,13 @@ export default function ExpertProfileScreen() {
     specialty?: string;
     category?: string;
     hospital?: string;
+    location?: string;
     rating?: string;
   }>();
 
   const expertName = (params.name as string) || 'Mis sara';
   const expertSubtitle = (params.hospital as string) || 'Healthcare pvt limited';
+  const expertLocation = (params.location as string) || '';
   const expertCategory = (params.category as string) || 'Motherhood';
 
   const expertAvatar =
@@ -252,6 +255,16 @@ export default function ExpertProfileScreen() {
 
           {/* Subtitle / Company in Red */}
           <Text style={styles.doctorSubtitle}>{expertSubtitle}</Text>
+
+          {/* Location with MapPin */}
+          {expertLocation ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+              <MapPin size={12} color="#64748B" strokeWidth={2} style={{ marginRight: 4 }} />
+              <Text style={{ fontSize: 13, color: '#64748B', fontWeight: '500' }}>
+                {expertLocation}
+              </Text>
+            </View>
+          ) : null}
         </View>
 
         {/* ================= BIO CARD ================= */}

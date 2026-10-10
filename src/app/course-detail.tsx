@@ -223,7 +223,7 @@ export default function CourseDetailScreen() {
         {/* 2. Course Info Card */}
         <View style={styles.infoCard}>
           <Text style={styles.courseMainTitle}>
-            Complete Pregnancy Masterclass: From Conception to Birth
+            {params.title ? String(params.title) : 'Safe Prenatal Yoga: 30-Day Program'}
           </Text>
 
           <View style={styles.statsRow}>

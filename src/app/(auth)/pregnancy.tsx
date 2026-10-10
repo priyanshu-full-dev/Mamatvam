@@ -29,7 +29,6 @@ export default function PregnancyScreen() {
   const insets = useSafeAreaInsets();
   const { pregnancyData, setPregnancyData } = useAppStore();
 
-  const [date, setDate] = useState(pregnancyData.firstDate || '');
   const [deliveryDate, setDeliveryDate] = useState(pregnancyData.deliveryDate || '');
   const [height, setHeight] = useState(pregnancyData.height || '165');
   const [weight, setWeight] = useState(pregnancyData.weight || '60');
@@ -41,7 +40,6 @@ export default function PregnancyScreen() {
 
   // Modal states
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [activeDatePicker, setActiveDatePicker] = useState<'firstDate' | 'deliveryDate' | null>(null);
   const [showBloodGroupPicker, setShowBloodGroupPicker] = useState(false);
 
   // Calendar modal state
@@ -73,18 +71,12 @@ export default function PregnancyScreen() {
 
   const handleConfirmDate = () => {
     const formatted = `${String(pickerDay).padStart(2, '0')}/${String(pickerMonth + 1).padStart(2, '0')}/${pickerYear}`;
-    if (activeDatePicker === 'firstDate') {
-      setDate(formatted);
-    } else if (activeDatePicker === 'deliveryDate') {
-      setDeliveryDate(formatted);
-    }
+    setDeliveryDate(formatted);
     setShowDatePicker(false);
-    setActiveDatePicker(null);
   };
 
   const handleContinue = () => {
     setPregnancyData({
-      firstDate: date,
       deliveryDate,
       height,
       weight,
@@ -117,35 +109,6 @@ export default function PregnancyScreen() {
 
         {/* Form Fields */}
         <View style={{ width: '100%' }}>
-          {/* Pregnancy First Date */}
-          <View style={{ marginBottom: 20 }}>
-            <Text style={{ fontSize: 15, fontWeight: '700', color: '#1E1E1E', marginBottom: 8 }}>
-              Pregnancy First Date
-            </Text>
-            <Pressable
-              onPress={() => {
-                setActiveDatePicker('firstDate');
-                setShowDatePicker(true);
-              }}
-              style={{
-                height: 52,
-                backgroundColor: '#FFFFFF',
-                borderWidth: 1,
-                borderColor: '#E5E7EB',
-                borderRadius: 16,
-                paddingHorizontal: 16,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
-              <Text style={{ fontSize: 15, color: date ? '#1E1E1E' : '#94A3B8', fontWeight: date ? '600' : '400' }}>
-                {date || 'Select date'}
-              </Text>
-              <Calendar size={20} color="#1E1E1E" />
-            </Pressable>
-          </View>
-
           {/* Expected Delivery Date */}
           <View style={{ marginBottom: 20 }}>
             <Text style={{ fontSize: 15, fontWeight: '700', color: '#1E1E1E', marginBottom: 8 }}>
@@ -153,7 +116,6 @@ export default function PregnancyScreen() {
             </Text>
             <Pressable
               onPress={() => {
-                setActiveDatePicker('deliveryDate');
                 setShowDatePicker(true);
               }}
               style={{
@@ -386,7 +348,6 @@ export default function PregnancyScreen() {
         animationType="fade"
         onRequestClose={() => {
           setShowDatePicker(false);
-          setActiveDatePicker(null);
         }}
       >
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 20 }}>
@@ -407,7 +368,6 @@ export default function PregnancyScreen() {
               <Pressable
                 onPress={() => {
                   setShowDatePicker(false);
-                  setActiveDatePicker(null);
                 }}
                 hitSlop={10}
               >
@@ -415,9 +375,9 @@ export default function PregnancyScreen() {
               </Pressable>
             </View>
 
-            {/* Modal Subtitle indicating which date is being selected */}
+            {/* Modal Subtitle */}
             <Text style={{ fontSize: 13, color: '#64748B', marginBottom: 12 }}>
-              {activeDatePicker === 'deliveryDate' ? 'Selecting Expected Delivery Date' : 'Selecting Pregnancy First Date'}
+              Select Expected Delivery Date
             </Text>
 
             {/* Days of Week Header */}

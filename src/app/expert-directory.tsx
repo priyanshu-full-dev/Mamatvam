@@ -28,6 +28,7 @@ import {
   Video,
   Building,
   Check,
+  MapPin,
 } from 'lucide-react-native';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -44,7 +45,8 @@ export interface ExpertItem {
   category: string;
   rating: number;
   reviewsCount: number;
-  nextAvailable: string;
+  location: string;
+  nextAvailable?: string;
   isHighlyRecommended: boolean;
   avatar: any;
   fee: string;
@@ -60,6 +62,7 @@ const EXPERTS_LIST: ExpertItem[] = [
     category: 'Gynecology',
     rating: 4.9,
     reviewsCount: 192,
+    location: 'New Delhi, Delhi',
     nextAvailable: 'Today, 2:30 PM',
     isHighlyRecommended: true,
     avatar: require('@/assets/images/home/categories/gynecology.jpg'),
@@ -74,6 +77,7 @@ const EXPERTS_LIST: ExpertItem[] = [
     category: 'Doctor',
     rating: 4.9,
     reviewsCount: 184,
+    location: 'Gurugram, Haryana',
     nextAvailable: 'Today, 3:15 PM',
     isHighlyRecommended: true,
     avatar: require('@/assets/images/home/categories/doctor.jpg'),
@@ -88,6 +92,7 @@ const EXPERTS_LIST: ExpertItem[] = [
     category: 'Nutritionist',
     rating: 4.8,
     reviewsCount: 156,
+    location: 'Mumbai, Maharashtra',
     nextAvailable: 'Today, 4:00 PM',
     isHighlyRecommended: true,
     avatar: require('@/assets/images/home/categories/nutritionist.jpg'),
@@ -102,6 +107,7 @@ const EXPERTS_LIST: ExpertItem[] = [
     category: 'Sonologist',
     rating: 4.95,
     reviewsCount: 220,
+    location: 'Noida, Uttar Pradesh',
     nextAvailable: 'Tomorrow, 10:00 AM',
     isHighlyRecommended: true,
     avatar: require('@/assets/images/home/categories/sonologist.jpg'),
@@ -116,6 +122,7 @@ const EXPERTS_LIST: ExpertItem[] = [
     category: 'Lactationist',
     rating: 4.9,
     reviewsCount: 142,
+    location: 'Bengaluru, Karnataka',
     nextAvailable: 'Today, 5:30 PM',
     isHighlyRecommended: true,
     avatar: require('@/assets/images/home/categories/lactationist.jpg'),
@@ -130,6 +137,7 @@ const EXPERTS_LIST: ExpertItem[] = [
     category: 'Physiotherapist',
     rating: 4.85,
     reviewsCount: 128,
+    location: 'South Delhi, Delhi',
     nextAvailable: 'Tomorrow, 11:30 AM',
     isHighlyRecommended: true,
     avatar: require('@/assets/images/home/categories/physiotherapist.jpg'),
@@ -144,6 +152,7 @@ const EXPERTS_LIST: ExpertItem[] = [
     category: 'Yoga Instructor',
     rating: 4.9,
     reviewsCount: 175,
+    location: 'Rishikesh, Uttarakhand',
     nextAvailable: 'Today, 6:00 PM',
     isHighlyRecommended: true,
     avatar: require('@/assets/images/home/categories/yoga.jpg'),
@@ -158,6 +167,7 @@ const EXPERTS_LIST: ExpertItem[] = [
     category: 'Astrologers & Pandits',
     rating: 4.88,
     reviewsCount: 210,
+    location: 'Varanasi, Uttar Pradesh',
     nextAvailable: 'Today, 4:30 PM',
     isHighlyRecommended: true,
     avatar: require('@/assets/images/home/categories/astrologer.jpg'),
@@ -172,6 +182,7 @@ const EXPERTS_LIST: ExpertItem[] = [
     category: 'Financial advisor',
     rating: 4.8,
     reviewsCount: 96,
+    location: 'Mumbai, Maharashtra',
     nextAvailable: 'Tomorrow, 2:00 PM',
     isHighlyRecommended: true,
     avatar: require('@/assets/images/home/categories/financial.jpg'),
@@ -186,6 +197,7 @@ const EXPERTS_LIST: ExpertItem[] = [
     category: 'Stem Cell Preservation',
     rating: 4.92,
     reviewsCount: 164,
+    location: 'Ahmedabad, Gujarat',
     nextAvailable: 'Today, 3:45 PM',
     isHighlyRecommended: true,
     avatar: require('@/assets/images/home/categories/stem_cell.jpg'),
@@ -243,7 +255,8 @@ export default function ExpertDirectoryScreen() {
         exp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         exp.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
         exp.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        exp.hospital.toLowerCase().includes(searchQuery.toLowerCase());
+        exp.hospital.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        exp.location.toLowerCase().includes(searchQuery.toLowerCase());
 
       return matchesCategory && matchesSearch;
     });
@@ -251,7 +264,7 @@ export default function ExpertDirectoryScreen() {
 
   const handleOpenBooking = (expert: ExpertItem) => {
     setSelectedExpert(expert);
-    setSelectedSlot(expert.nextAvailable);
+    setSelectedSlot(expert.availableSlots[0] || expert.nextAvailable || 'Today, 2:30 PM');
   };
 
   const handleConfirmAppointment = () => {
@@ -380,6 +393,7 @@ export default function ExpertDirectoryScreen() {
                     specialty: expert.specialty,
                     category: expert.category,
                     hospital: expert.hospital,
+                    location: expert.location,
                     rating: expert.rating.toFixed(1),
                     reviewsCount: expert.reviewsCount.toString(),
                   },
@@ -423,11 +437,16 @@ export default function ExpertDirectoryScreen() {
                 </View>
               </View>
 
-              {/* Bottom Row: Next Available + Book Now Button */}
+              {/* Bottom Row: Location + Book Now Button */}
               <View style={styles.cardBottomRow}>
-                <View style={styles.nextAvailableCol}>
-                  <Text style={styles.nextAvailableLabel}>NEXT AVAILABLE</Text>
-                  <Text style={styles.nextAvailableTime}>{expert.nextAvailable}</Text>
+                <View style={styles.locationCol}>
+                  <Text style={styles.locationLabel}>LOCATION</Text>
+                  <View style={styles.locationValueRow}>
+                    <MapPin size={12} color="#EE4D38" strokeWidth={2.2} style={{ marginRight: 4 }} />
+                    <Text style={styles.locationText} numberOfLines={1}>
+                      {expert.location}
+                    </Text>
+                  </View>
                 </View>
 
                 <TouchableOpacity
@@ -764,20 +783,26 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#F8FAFC',
   },
-  nextAvailableCol: {
+  locationCol: {
     flex: 1,
+    paddingRight: 10,
   },
-  nextAvailableLabel: {
+  locationLabel: {
     fontSize: 9.5,
     fontWeight: '800',
     color: '#94A3B8',
     letterSpacing: 0.5,
   },
-  nextAvailableTime: {
+  locationValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  locationText: {
     fontSize: 13,
     fontWeight: '800',
     color: '#1E293B',
-    marginTop: 2,
+    flexShrink: 1,
   },
   bookNowButton: {
     backgroundColor: '#EE4D38',

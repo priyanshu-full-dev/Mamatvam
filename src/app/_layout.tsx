@@ -48,6 +48,7 @@ export default function RootLayout() {
               <Stack.Screen name="today-tips" />
               <Stack.Screen name="practical-tools" />
               <Stack.Screen name="kick-counter" />
+              <Stack.Screen name="contractions" />
               <Stack.Screen name="hydration-tracker" />
               <Stack.Screen name="hospital-bag" />
               <Stack.Screen name="pregnancy-diet" />
@@ -60,7 +61,9 @@ export default function RootLayout() {
               <Stack.Screen name="sex-sutra" />
               <Stack.Screen name="sex-sutra-detail" />
               <Stack.Screen name="courses" />
+              <Stack.Screen name="playlist" />
               <Stack.Screen name="course-detail" />
+              <Stack.Screen name="course-article" />
               <Stack.Screen name="notifications" />
               <Stack.Screen name="motor-skills" />
               <Stack.Screen name="vaccination-schedule" />
@@ -75,6 +78,14 @@ export default function RootLayout() {
               <Stack.Screen name="fertility-guide" />
               <Stack.Screen name="expert-directory" />
               <Stack.Screen name="expert-profile" />
+              <Stack.Screen name="hospital-profile" />
+              <Stack.Screen name="user-profile" />
+              <Stack.Screen name="privacy" />
+              <Stack.Screen name="help-support" />
+              <Stack.Screen name="community-guidelines" />
+              <Stack.Screen name="account-settings" />
+              <Stack.Screen name="subscribe" />
+              <Stack.Screen name="payment" />
             </Stack>
           </QueryClientProvider>
         </I18nextProvider>

@@ -2,7 +2,7 @@ import React from 'react';
 import { Tabs } from 'expo-router';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Home, Globe, ShoppingBag, Crown } from 'lucide-react-native';
+import { Home, Globe, ShoppingBag, Crown, User } from 'lucide-react-native';
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
@@ -56,6 +56,13 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color, size }) => <User size={size || 22} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="explore"
         options={{
           href: null,
@@ -63,12 +70,6 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="doctors"
-        options={{
-          href: null,
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
         options={{
           href: null,
         }}
