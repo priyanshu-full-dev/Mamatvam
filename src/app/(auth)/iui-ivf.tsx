@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,10 +10,13 @@ import {
   Modal,
   FlatList,
   StyleSheet,
-  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Calendar,
   ChevronDown,
@@ -25,6 +28,7 @@ import {
   Check,
 } from 'lucide-react-native';
 import { Radio } from '@/components/ui/Radio';
+import { Button } from '@/components/ui/Button';
 import { useAppStore } from '@/store/useAppStore';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -36,31 +40,68 @@ const MONTH_NAMES = [
 
 export default function IuiIvfScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { pregnancyData, setPregnancyData, setStage } = useAppStore();
 
   const [lastPeriodDate, setLastPeriodDate] = useState(pregnancyData.lastPeriodDate || '');
-  const [height, setHeight] = useState(pregnancyData.height || '165');
-  const [weight, setWeight] = useState(pregnancyData.weight || '60');
+  const [periodCycle, setPeriodCycle] = useState(pregnancyData.periodCycle || '28');
+  const [height, setHeight] = useState(
+    pregnancyData.height && pregnancyData.height !== '165' ? pregnancyData.height : ''
+  );
+  const [weight, setWeight] = useState(
+    pregnancyData.weight && pregnancyData.weight !== '60' ? pregnancyData.weight : ''
+  );
   const [bloodGroup, setBloodGroup] = useState(pregnancyData.bloodGroup || '');
   const [isDiabetic, setIsDiabetic] = useState(pregnancyData.isDiabetic || false);
   const [bloodPressure, setBloodPressure] = useState<'low' | 'normal' | 'high'>(
     pregnancyData.bloodPressure || 'normal'
   );
 
+  // Errors for mandatory fields
+  const [dateError, setDateError] = useState('');
+  const [periodCycleError, setPeriodCycleError] = useState('');
+
   // Modals
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showBloodGroupPicker, setShowBloodGroupPicker] = useState(false);
+  const [showYearSelector, setShowYearSelector] = useState(false);
 
-  // Calendar modal state
-  const today = new Date();
+  // Calendar modal state & restrictions: valid from today to upcoming 2 years
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+
+  const maxDate = useMemo(() => {
+    const d = new Date(today.getFullYear() + 2, today.getMonth(), today.getDate());
+    d.setHours(23, 59, 59, 999);
+    return d;
+  }, [today]);
+
   const [pickerYear, setPickerYear] = useState(today.getFullYear());
   const [pickerMonth, setPickerMonth] = useState(today.getMonth());
   const [pickerDay, setPickerDay] = useState(today.getDate());
 
+  const availableYears = useMemo(() => {
+    const start = today.getFullYear();
+    const end = maxDate.getFullYear();
+    const list: number[] = [];
+    for (let y = start; y <= end; y++) {
+      list.push(y);
+    }
+    return list;
+  }, [today, maxDate]);
+
   const daysInMonth = new Date(pickerYear, pickerMonth + 1, 0).getDate();
   const firstDayIndex = new Date(pickerYear, pickerMonth, 1).getDay();
+  const trailingEmptyCount = Math.max(0, 42 - (firstDayIndex + daysInMonth));
+
+  const isMinMonth = pickerYear === today.getFullYear() && pickerMonth === today.getMonth();
+  const isMaxMonth = pickerYear === maxDate.getFullYear() && pickerMonth === maxDate.getMonth();
 
   const handlePrevMonth = () => {
+    if (isMinMonth) return;
     if (pickerMonth === 0) {
       setPickerMonth(11);
       setPickerYear((y) => y - 1);
@@ -70,6 +111,7 @@ export default function IuiIvfScreen() {
   };
 
   const handleNextMonth = () => {
+    if (isMaxMonth) return;
     if (pickerMonth === 11) {
       setPickerMonth(0);
       setPickerYear((y) => y + 1);
@@ -78,15 +120,106 @@ export default function IuiIvfScreen() {
     }
   };
 
+  const handleSelectYear = (year: number) => {
+    let newMonth = pickerMonth;
+    if (year === today.getFullYear() && newMonth < today.getMonth()) {
+      newMonth = today.getMonth();
+    } else if (year === maxDate.getFullYear() && newMonth > maxDate.getMonth()) {
+      newMonth = maxDate.getMonth();
+    }
+
+    const maxDays = new Date(year, newMonth + 1, 0).getDate();
+    let newDay = Math.min(pickerDay, maxDays);
+    const newDate = new Date(year, newMonth, newDay);
+    newDate.setHours(0, 0, 0, 0);
+    if (newDate < today) {
+      newDay = today.getDate();
+    } else if (newDate > maxDate) {
+      newDay = maxDate.getDate();
+    }
+
+    setPickerYear(year);
+    setPickerMonth(newMonth);
+    setPickerDay(newDay);
+    setShowYearSelector(false);
+  };
+
+  const handleOpenDatePicker = () => {
+    setShowYearSelector(false);
+    if (lastPeriodDate) {
+      const parts = lastPeriodDate.split('/');
+      if (parts.length === 3) {
+        const d = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10) - 1;
+        const y = parseInt(parts[2], 10);
+        const parsed = new Date(y, m, d);
+        parsed.setHours(0, 0, 0, 0);
+        if (parsed >= today && parsed <= maxDate) {
+          setPickerYear(y);
+          setPickerMonth(m);
+          setPickerDay(d);
+          setShowDatePicker(true);
+          return;
+        }
+      }
+    }
+    setPickerYear(today.getFullYear());
+    setPickerMonth(today.getMonth());
+    setPickerDay(today.getDate());
+    setShowDatePicker(true);
+  };
+
   const handleConfirmDate = () => {
+    const selectedDate = new Date(pickerYear, pickerMonth, pickerDay);
+    selectedDate.setHours(0, 0, 0, 0);
+    if (selectedDate < today || selectedDate > maxDate) {
+      Alert.alert('Invalid Date', 'Date must be between today and the next 2 years.');
+      return;
+    }
     const formatted = `${String(pickerDay).padStart(2, '0')}/${String(pickerMonth + 1).padStart(2, '0')}/${pickerYear}`;
     setLastPeriodDate(formatted);
+    setDateError('');
     setShowDatePicker(false);
   };
 
   const handleContinue = () => {
+    let hasError = false;
+
+    if (!lastPeriodDate.trim()) {
+      setDateError('Please select Last Period Date');
+      hasError = true;
+    } else {
+      const parts = lastPeriodDate.split('/');
+      if (parts.length === 3) {
+        const d = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10) - 1;
+        const y = parseInt(parts[2], 10);
+        const parsed = new Date(y, m, d);
+        parsed.setHours(0, 0, 0, 0);
+        if (parsed < today || parsed > maxDate) {
+          setDateError('Date must be between today and next 2 years');
+          Alert.alert('Invalid Date', 'Last Period Date must be between today and the next 2 years.');
+          return;
+        }
+      }
+      setDateError('');
+    }
+
+    if (!periodCycle.trim()) {
+      setPeriodCycleError('Please enter Period Cycle');
+      hasError = true;
+    } else {
+      setPeriodCycleError('');
+    }
+
+    if (hasError) {
+      Alert.alert('Required Fields', 'Last Period Date and Period Cycle are mandatory. Please fill all required fields.');
+      return;
+    }
+
     setPregnancyData({
       lastPeriodDate,
+      periodCycle,
       height,
       weight,
       bloodGroup,
@@ -98,192 +231,269 @@ export default function IuiIvfScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right', 'bottom']}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      {/* Header bar with Back button */}
-      <View style={styles.headerBar}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-          activeOpacity={0.7}
-        >
-          <ChevronLeft size={24} color="#1E293B" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>IUI, IVF</Text>
-        <View style={{ width: 40 }} />
-      </View>
-
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        {/* Screen Title */}
-        <View style={styles.titleContainer}>
-          <Text style={styles.titleText}>IUI, IVF</Text>
-          <Text style={styles.subtitleText}>
-            Personalized cycle & fertility tracking for your journey
-          </Text>
-        </View>
-
-        {/* 1. Last Period Date */}
-        <View style={styles.fieldGroup}>
-          <Text style={styles.fieldLabel}>Last Period Date</Text>
-          <Pressable
-            onPress={() => setShowDatePicker(true)}
-            style={styles.inputBox}
-          >
-            <Text
-              style={[
-                styles.inputText,
-                { color: lastPeriodDate ? '#1E293B' : '#94A3B8' },
-              ]}
-            >
-              {lastPeriodDate || 'Select date'}
-            </Text>
-            <Calendar size={20} color="#1E293B" strokeWidth={1.8} />
-          </Pressable>
-        </View>
-
-        {/* 2. Your Height and Your Weight Row */}
-        <View style={styles.twoColumnRow}>
-          {/* Your Height */}
-          <View style={styles.halfCol}>
-            <Text style={styles.fieldLabel}>Your Height</Text>
-            <TextInput
-              value={height}
-              onChangeText={setHeight}
-              placeholder="165"
-              placeholderTextColor="#94A3B8"
-              keyboardType="numeric"
-              style={styles.textInputBox}
-            />
+        <ScrollView
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: 24 }]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="always"
+        >
+          {/* Screen Title */}
+          <View style={styles.titleContainer}>
+            <Text style={styles.titleText}>IUI, IVF</Text>
           </View>
 
-          {/* Your Weight */}
-          <View style={styles.halfCol}>
-            <Text style={styles.fieldLabel}>Your Weight</Text>
-            <TextInput
-              value={weight}
-              onChangeText={setWeight}
-              placeholder="60"
-              placeholderTextColor="#94A3B8"
-              keyboardType="numeric"
-              style={styles.textInputBox}
-            />
-          </View>
-        </View>
-
-        {/* 3. Blood Group */}
-        <View style={styles.fieldGroup}>
-          <Text style={styles.fieldLabel}>Blood Group</Text>
-          <Pressable
-            onPress={() => setShowBloodGroupPicker(true)}
-            style={styles.inputBox}
-          >
-            <Text
+          {/* 1. Last Period Date (Mandatory) */}
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>
+              Last Period Date <Text style={styles.requiredStar}>*</Text>
+            </Text>
+            <Pressable
+              onPress={handleOpenDatePicker}
               style={[
-                styles.inputText,
-                { color: bloodGroup ? '#1E293B' : '#94A3B8' },
+                styles.inputBox,
+                !!dateError && styles.inputBoxError,
               ]}
             >
-              {bloodGroup || 'Select blood group'}
-            </Text>
-            <ChevronDown size={20} color="#94A3B8" />
-          </Pressable>
-        </View>
+              <Text
+                style={[
+                  styles.inputText,
+                  { color: lastPeriodDate ? '#1E293B' : '#94A3B8' },
+                ]}
+              >
+                {lastPeriodDate || 'Select date'}
+              </Text>
+              <Calendar size={20} color={dateError ? '#EF4444' : '#1E293B'} strokeWidth={1.8} />
+            </Pressable>
+            {!!dateError && (
+              <Text style={styles.errorText}>{dateError}</Text>
+            )}
+          </View>
 
-        {/* 4. Diabetic Card */}
-        <View style={styles.diabeticCard}>
-          <View style={styles.cardHeaderLeft}>
-            <View style={styles.dropletIconBadge}>
-              <Droplet size={22} color="#0284C7" fill="#0284C7" />
+          {/* 2. Period Cycle (Mandatory) */}
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>
+              Period Cycle <Text style={styles.requiredStar}>*</Text>
+            </Text>
+            <View
+              style={[
+                styles.periodCycleInputContainer,
+                !!periodCycleError && styles.inputBoxError,
+              ]}
+            >
+              <TextInput
+                value={periodCycle}
+                onChangeText={(val) => {
+                  const numeric = val.replace(/[^0-9]/g, '');
+                  setPeriodCycle(numeric);
+                  if (numeric.trim()) setPeriodCycleError('');
+                }}
+                placeholder="28"
+                placeholderTextColor="#94A3B8"
+                keyboardType="numeric"
+                maxLength={3}
+                style={styles.periodCycleTextInput}
+              />
+              <View style={styles.periodCycleBadge}>
+                <Text style={styles.periodCycleBadgeText}>Days</Text>
+              </View>
             </View>
-            <Text style={styles.cardTitleText}>Diabetic</Text>
+            {!!periodCycleError && (
+              <Text style={styles.errorText}>{periodCycleError}</Text>
+            )}
+
+            {/* Quick Select Cycle Pills */}
+            <View style={styles.quickCycleRow}>
+              {['26', '28', '30', '32'].map((days) => {
+                const isSelected = periodCycle === days;
+                return (
+                  <Pressable
+                    key={days}
+                    onPress={() => {
+                      Keyboard.dismiss();
+                      setPeriodCycle(days);
+                      setPeriodCycleError('');
+                    }}
+                    style={[
+                      styles.quickCyclePill,
+                      isSelected && styles.quickCyclePillSelected,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.quickCyclePillText,
+                        isSelected && styles.quickCyclePillTextSelected,
+                      ]}
+                    >
+                      {days} Days
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
 
-          <Switch
-            value={isDiabetic}
-            onValueChange={setIsDiabetic}
-            trackColor={{ false: '#CBD5E1', true: '#8B5CF6' }}
-            thumbColor="#FFFFFF"
-            ios_backgroundColor="#CBD5E1"
+          {/* 3. Your Height and Your Weight Row (Optional) */}
+          <View style={styles.twoColumnRow}>
+            {/* Your Height */}
+            <View style={styles.halfCol}>
+              <Text style={styles.fieldLabel}>
+                Your Height <Text style={styles.optionalLabel}>(Optional)</Text>
+              </Text>
+              <TextInput
+                value={height}
+                onChangeText={setHeight}
+                placeholder="165"
+                placeholderTextColor="#94A3B8"
+                keyboardType="numeric"
+                style={styles.textInputBox}
+              />
+            </View>
+
+            {/* Your Weight */}
+            <View style={styles.halfCol}>
+              <Text style={styles.fieldLabel}>
+                Your Weight <Text style={styles.optionalLabel}>(Optional)</Text>
+              </Text>
+              <TextInput
+                value={weight}
+                onChangeText={setWeight}
+                placeholder="60"
+                placeholderTextColor="#94A3B8"
+                keyboardType="numeric"
+                style={styles.textInputBox}
+              />
+            </View>
+          </View>
+
+          {/* 4. Blood Group (Optional) */}
+          <View style={styles.fieldGroup}>
+            <Text style={styles.fieldLabel}>
+              Blood Group <Text style={styles.optionalLabel}>(Optional)</Text>
+            </Text>
+            <Pressable
+              onPress={() => setShowBloodGroupPicker(true)}
+              style={styles.inputBox}
+            >
+              <Text
+                style={[
+                  styles.inputText,
+                  { color: bloodGroup ? '#1E293B' : '#94A3B8' },
+                ]}
+              >
+                {bloodGroup || 'Select blood group'}
+              </Text>
+              <ChevronDown size={20} color="#94A3B8" />
+            </Pressable>
+          </View>
+
+          {/* 5. Diabetic Card (Mandatory) */}
+          <View style={styles.diabeticCard}>
+            <View style={styles.cardHeaderLeft}>
+              <View style={styles.dropletIconBadge}>
+                <Droplet size={22} color="#0284C7" fill="#0284C7" />
+              </View>
+              <Text style={styles.cardTitleText}>
+                Diabetic <Text style={styles.requiredStar}>*</Text>
+              </Text>
+            </View>
+
+            <Switch
+              value={isDiabetic}
+              onValueChange={setIsDiabetic}
+              trackColor={{ false: '#CBD5E1', true: '#EE4D38' }}
+              thumbColor="#FFFFFF"
+              ios_backgroundColor="#CBD5E1"
+            />
+          </View>
+
+          {/* 6. Blood Pressure Card (Mandatory) */}
+          <View style={styles.bpCard}>
+            <View style={styles.cardHeaderLeft}>
+              <View style={styles.bpIconBadge}>
+                <HeartPulse size={22} color="#EF4444" />
+              </View>
+              <Text style={styles.cardTitleText}>
+                Blood Pressure <Text style={styles.requiredStar}>*</Text>
+              </Text>
+            </View>
+
+            <View style={styles.bpOptionsRow}>
+              {/* Low */}
+              <Pressable
+                onPress={() => setBloodPressure('low')}
+                style={styles.bpOption}
+              >
+                <Radio
+                  selected={bloodPressure === 'low'}
+                  onPress={() => setBloodPressure('low')}
+                  size={19}
+                  color="#EE4D38"
+                />
+                <Text style={[styles.bpOptionLabel, { color: '#EF4444' }]}>Low</Text>
+              </Pressable>
+
+              {/* Normal */}
+              <Pressable
+                onPress={() => setBloodPressure('normal')}
+                style={styles.bpOption}
+              >
+                <Radio
+                  selected={bloodPressure === 'normal'}
+                  onPress={() => setBloodPressure('normal')}
+                  size={19}
+                  color="#EE4D38"
+                />
+                <Text style={[styles.bpOptionLabel, { color: '#10B981' }]}>Normal</Text>
+              </Pressable>
+
+              {/* High */}
+              <Pressable
+                onPress={() => setBloodPressure('high')}
+                style={styles.bpOption}
+              >
+                <Radio
+                  selected={bloodPressure === 'high'}
+                  onPress={() => setBloodPressure('high')}
+                  size={19}
+                  color="#EE4D38"
+                />
+                <Text style={[styles.bpOptionLabel, { color: '#F59E0B' }]}>High</Text>
+              </Pressable>
+            </View>
+          </View>
+        </ScrollView>
+
+        {/* Fixed Continue Button at Bottom */}
+        <View
+          style={{
+            paddingHorizontal: 24,
+            paddingTop: 12,
+            paddingBottom: Math.max(insets.bottom, 20),
+            backgroundColor: '#FFFFFF',
+          }}
+        >
+          <Button
+            title="Continue"
+            onPress={handleContinue}
           />
         </View>
+      </KeyboardAvoidingView>
 
-        {/* 5. Blood Pressure Card */}
-        <View style={styles.bpCard}>
-          <View style={styles.cardHeaderLeft}>
-            <View style={styles.bpIconBadge}>
-              <HeartPulse size={22} color="#EF4444" />
-            </View>
-            <Text style={styles.cardTitleText}>Blood Pressure</Text>
-          </View>
-
-          <View style={styles.bpOptionsRow}>
-            {/* Low */}
-            <Pressable
-              onPress={() => setBloodPressure('low')}
-              style={styles.bpOption}
-            >
-              <Radio
-                selected={bloodPressure === 'low'}
-                onPress={() => setBloodPressure('low')}
-                size={19}
-                color="#8B5CF6"
-              />
-              <Text style={[styles.bpOptionLabel, { color: '#EF4444' }]}>Low</Text>
-            </Pressable>
-
-            {/* Normal */}
-            <Pressable
-              onPress={() => setBloodPressure('normal')}
-              style={styles.bpOption}
-            >
-              <Radio
-                selected={bloodPressure === 'normal'}
-                onPress={() => setBloodPressure('normal')}
-                size={19}
-                color="#8B5CF6"
-              />
-              <Text style={[styles.bpOptionLabel, { color: '#10B981' }]}>Normal</Text>
-            </Pressable>
-
-            {/* High */}
-            <Pressable
-              onPress={() => setBloodPressure('high')}
-              style={styles.bpOption}
-            >
-              <Radio
-                selected={bloodPressure === 'high'}
-                onPress={() => setBloodPressure('high')}
-                size={19}
-                color="#8B5CF6"
-              />
-              <Text style={[styles.bpOptionLabel, { color: '#F59E0B' }]}>High</Text>
-            </Pressable>
-          </View>
-        </View>
-
-        {/* Spacer before button */}
-        <View style={{ flex: 1, minHeight: 32 }} />
-
-        {/* Continue Button */}
-        <Pressable
-          onPress={handleContinue}
-          style={styles.continueButton}
-        >
-          <Text style={styles.continueButtonText}>Continue</Text>
-        </Pressable>
-      </ScrollView>
-
-      {/* Date Picker Modal */}
+      {/* Modern Fixed-Height Calendar Picker Modal */}
       <Modal
         visible={showDatePicker}
         transparent
         animationType="fade"
-        onRequestClose={() => setShowDatePicker(false)}
+        onRequestClose={() => {
+          setShowYearSelector(false);
+          setShowDatePicker(false);
+        }}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.calendarModalContent}>
@@ -291,69 +501,160 @@ export default function IuiIvfScreen() {
             <View style={styles.modalHeaderRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={styles.calendarMonthText}>
-                  {MONTH_NAMES[pickerMonth]} {pickerYear}
+                  {MONTH_NAMES[pickerMonth]}
                 </Text>
-                <Pressable onPress={handlePrevMonth} hitSlop={10} style={{ padding: 4, marginRight: 4 }}>
-                  <ChevronLeft size={20} color="#64748B" />
-                </Pressable>
-                <Pressable onPress={handleNextMonth} hitSlop={10} style={{ padding: 4 }}>
-                  <ChevronRight size={20} color="#64748B" />
+
+                {/* Clickable Year Selector */}
+                <Pressable
+                  onPress={() => setShowYearSelector((prev) => !prev)}
+                  hitSlop={8}
+                  style={[
+                    styles.yearBadgeButton,
+                    showYearSelector && styles.yearBadgeButtonActive,
+                  ]}
+                >
+                  <Text style={[styles.calendarYearText, showYearSelector && styles.calendarYearTextActive]}>
+                    {pickerYear}
+                  </Text>
+                  <ChevronDown
+                    size={16}
+                    color={showYearSelector ? '#EE4D38' : '#64748B'}
+                  />
                 </Pressable>
               </View>
-              <Pressable onPress={() => setShowDatePicker(false)} hitSlop={10}>
-                <X size={20} color="#64748B" />
-              </Pressable>
-            </View>
 
-            <Text style={styles.modalSubheading}>Selecting Last Period Date</Text>
-
-            {/* Days of Week */}
-            <View style={styles.weekDaysRow}>
-              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                <Text key={i} style={styles.weekDayText}>
-                  {d}
-                </Text>
-              ))}
-            </View>
-
-            {/* Calendar Days Grid */}
-            <View style={styles.daysGrid}>
-              {Array.from({ length: firstDayIndex }).map((_, i) => (
-                <View key={`empty-${i}`} style={styles.daySlot} />
-              ))}
-              {Array.from({ length: daysInMonth }).map((_, i) => {
-                const day = i + 1;
-                const isSelected = pickerDay === day;
-                return (
-                  <Pressable
-                    key={day}
-                    onPress={() => setPickerDay(day)}
-                    style={[
-                      styles.daySlot,
-                      isSelected && styles.daySlotSelected,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.dayNumberText,
-                        isSelected && styles.dayNumberTextSelected,
-                      ]}
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {!showYearSelector && (
+                  <>
+                    <Pressable
+                      onPress={handlePrevMonth}
+                      hitSlop={10}
+                      disabled={isMinMonth}
+                      style={{ padding: 6, marginRight: 2, opacity: isMinMonth ? 0.25 : 1 }}
                     >
-                      {day}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+                      <ChevronLeft size={20} color="#64748B" />
+                    </Pressable>
+                    <Pressable
+                      onPress={handleNextMonth}
+                      hitSlop={10}
+                      disabled={isMaxMonth}
+                      style={{ padding: 6, marginRight: 8, opacity: isMaxMonth ? 0.25 : 1 }}
+                    >
+                      <ChevronRight size={20} color="#64748B" />
+                    </Pressable>
+                  </>
+                )}
+
+                <Pressable
+                  onPress={() => {
+                    setShowYearSelector(false);
+                    setShowDatePicker(false);
+                  }}
+                  hitSlop={10}
+                  style={{ padding: 4 }}
+                >
+                  <X size={20} color="#64748B" />
+                </Pressable>
+              </View>
+            </View>
+
+            <Text style={styles.modalSubheading}>
+              {showYearSelector ? 'Tap a year to switch' : 'Valid from today up to 2 years'}
+            </Text>
+
+            {/* Fixed Height Calendar / Year Container */}
+            <View style={styles.calendarBodyContainer}>
+              {showYearSelector ? (
+                <View style={styles.yearPickerView}>
+                  <View style={styles.yearListContainer}>
+                    {availableYears.map((yr) => {
+                      const isSelected = pickerYear === yr;
+                      return (
+                        <Pressable
+                          key={yr}
+                          onPress={() => handleSelectYear(yr)}
+                          style={[
+                            styles.yearOptionCard,
+                            isSelected && styles.yearOptionCardSelected,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.yearOptionText,
+                              isSelected && styles.yearOptionTextSelected,
+                            ]}
+                          >
+                            {yr}
+                          </Text>
+                          {isSelected ? (
+                            <Check size={20} color="#FFFFFF" strokeWidth={2.5} />
+                          ) : (
+                            <View style={{ width: 20 }} />
+                          )}
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </View>
+              ) : (
+                <>
+                  {/* Days of Week */}
+                  <View style={styles.weekDaysRow}>
+                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                      <Text key={i} style={styles.weekDayText}>
+                        {d}
+                      </Text>
+                    ))}
+                  </View>
+
+                  {/* Calendar Days Grid */}
+                  <View style={styles.daysGrid}>
+                    {Array.from({ length: firstDayIndex }).map((_, i) => (
+                      <View key={`empty-start-${i}`} style={styles.daySlot} />
+                    ))}
+                    {Array.from({ length: daysInMonth }).map((_, i) => {
+                      const day = i + 1;
+                      const cellDate = new Date(pickerYear, pickerMonth, day);
+                      cellDate.setHours(0, 0, 0, 0);
+                      const isDisabled = cellDate < today || cellDate > maxDate;
+                      const isSelected = !isDisabled && pickerDay === day;
+                      return (
+                        <Pressable
+                          key={day}
+                          disabled={isDisabled}
+                          onPress={() => !isDisabled && setPickerDay(day)}
+                          style={[
+                            styles.daySlot,
+                            isSelected && styles.daySlotSelected,
+                            isDisabled && styles.daySlotDisabled,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.dayNumberText,
+                              isSelected && styles.dayNumberTextSelected,
+                              isDisabled && styles.dayNumberTextDisabled,
+                            ]}
+                          >
+                            {day}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                    {Array.from({ length: trailingEmptyCount }).map((_, i) => (
+                      <View key={`empty-end-${i}`} style={styles.daySlot} />
+                    ))}
+                  </View>
+                </>
+              )}
             </View>
 
             {/* Actions */}
             <View style={{ marginTop: 20 }}>
-              <Pressable
+              <Button
+                title="Confirm Date"
                 onPress={handleConfirmDate}
-                style={styles.continueButton}
-              >
-                <Text style={styles.continueButtonText}>Confirm Date</Text>
-              </Pressable>
+              />
             </View>
           </View>
         </View>
@@ -399,7 +700,7 @@ export default function IuiIvfScreen() {
                     >
                       {item}
                     </Text>
-                    {isSelected && <Check size={18} color="#8B5CF6" />}
+                    {isSelected && <Check size={18} color="#EE4D38" />}
                   </Pressable>
                 );
               }}
@@ -416,105 +717,163 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
   },
-  headerBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F8FAFC',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#1E1E1E',
-  },
   scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 22,
-    paddingTop: 8,
-    paddingBottom: 24,
+    paddingHorizontal: 24,
+    paddingTop: 12,
   },
   titleContainer: {
     alignItems: 'center',
+    marginBottom: 20,
     marginTop: 4,
-    marginBottom: 24,
   },
   titleText: {
     fontSize: 28,
     fontWeight: '800',
-    color: '#1E1E1E',
-    textAlign: 'center',
-    letterSpacing: -0.4,
-  },
-  subtitleText: {
-    fontSize: 13.5,
-    color: '#64748B',
-    textAlign: 'center',
-    marginTop: 6,
-    lineHeight: 18,
+    color: '#1E293B',
+    letterSpacing: -0.5,
   },
   fieldGroup: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   fieldLabel: {
-    fontSize: 14.5,
+    fontSize: 14,
     fontWeight: '700',
-    color: '#334155',
+    color: '#1E293B',
     marginBottom: 8,
+  },
+  requiredStar: {
+    color: '#EE4D38',
+    fontWeight: '700',
+  },
+  optionalLabel: {
+    fontSize: 12.5,
+    fontWeight: '500',
+    color: '#94A3B8',
+  },
+  inputBoxError: {
+    borderColor: '#EF4444',
+    backgroundColor: '#FEF2F2',
+  },
+  errorText: {
+    fontSize: 12,
+    color: '#EF4444',
+    marginTop: 4,
+    marginLeft: 2,
+    fontWeight: '500',
   },
   inputBox: {
     height: 52,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#E2E8F0',
     borderRadius: 16,
     paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  inputText: {
-    fontSize: 15,
-    fontWeight: '500',
-  },
-  twoColumnRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  halfCol: {
-    width: '48%',
+    backgroundColor: '#FFFFFF',
   },
   textInputBox: {
     height: 52,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#E2E8F0',
     borderRadius: 16,
     paddingHorizontal: 16,
     fontSize: 15,
     color: '#1E293B',
-    fontWeight: '600',
+    backgroundColor: '#FFFFFF',
+    fontWeight: '500',
   },
-  diabeticCard: {
+  inputText: {
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  periodCycleInputContainer: {
+    height: 52,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    borderRadius: 16,
+    paddingLeft: 16,
+    paddingRight: 10,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: '#FFFFFF',
-    borderWidth: 1,
+  },
+  periodCycleTextInput: {
+    flex: 1,
+    height: '100%',
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1E293B',
+    padding: 0,
+  },
+  periodCycleBadge: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  periodCycleBadgeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  quickCycleRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 10,
+  },
+  quickCyclePill: {
+    flex: 1,
+    paddingVertical: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    borderWidth: 1.5,
     borderColor: '#E2E8F0',
-    borderRadius: 18,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    backgroundColor: '#F8FAFC',
+  },
+  quickCyclePillSelected: {
+    borderColor: '#EE4D38',
+    backgroundColor: '#FFF1EE',
+  },
+  quickCyclePillText: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  quickCyclePillTextSelected: {
+    color: '#EE4D38',
+    fontWeight: '700',
+  },
+  twoColumnRow: {
+    flexDirection: 'row',
+    gap: 12,
     marginBottom: 16,
+  },
+  halfCol: {
+    flex: 1,
+  },
+  diabeticCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+  },
+  bpCard: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
   },
   cardHeaderLeft: {
     flexDirection: 'row',
@@ -523,78 +882,52 @@ const styles = StyleSheet.create({
   dropletIconBadge: {
     width: 38,
     height: 38,
-    borderRadius: 12,
+    borderRadius: 19,
     backgroundColor: '#E0F2FE',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
-  cardTitleText: {
-    fontSize: 15.5,
-    fontWeight: '700',
-    color: '#1E293B',
-  },
-  bpCard: {
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    borderRadius: 18,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    marginBottom: 20,
-  },
   bpIconBadge: {
     width: 38,
     height: 38,
-    borderRadius: 12,
+    borderRadius: 19,
     backgroundColor: '#FEE2E2',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
   },
+  cardTitleText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1E293B',
+  },
   bpOptionsRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 16,
+    alignItems: 'center',
+    marginTop: 14,
     paddingHorizontal: 8,
   },
   bpOption: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
   },
   bpOptionLabel: {
-    marginLeft: 8,
     fontSize: 14,
     fontWeight: '700',
   },
-  continueButton: {
-    height: 52,
-    backgroundColor: '#8B5CF6',
-    borderRadius: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#8B5CF6',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  continueButtonText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 24,
   },
   modalOverlayBottom: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
     justifyContent: 'flex-end',
   },
   calendarModalContent: {
@@ -603,97 +936,162 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.1,
-    shadowRadius: 16,
-    elevation: 6,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  calendarBodyContainer: {
+    height: 278,
+    justifyContent: 'flex-start',
   },
   modalHeaderRow: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
   },
   calendarMonthText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '700',
     color: '#1E293B',
-    marginRight: 8,
+    marginRight: 6,
+  },
+  yearBadgeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: '#F1F5F9',
+    gap: 2,
+  },
+  yearBadgeButtonActive: {
+    backgroundColor: '#FFF1EE',
+  },
+  calendarYearText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#475569',
+  },
+  calendarYearTextActive: {
+    color: '#EE4D38',
+  },
+  yearPickerView: {
+    flex: 1,
+    paddingVertical: 8,
+    justifyContent: 'center',
+  },
+  yearListContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    justifyContent: 'center',
+  },
+  yearOptionCard: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minWidth: 120,
+  },
+  yearOptionCardSelected: {
+    borderColor: '#EE4D38',
+    backgroundColor: '#EE4D38',
+  },
+  yearOptionText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#334155',
+  },
+  yearOptionTextSelected: {
+    color: '#FFFFFF',
   },
   modalSubheading: {
-    fontSize: 12,
-    color: '#94A3B8',
-    marginTop: 4,
-    marginBottom: 16,
+    fontSize: 13,
+    color: '#64748B',
+    marginBottom: 12,
   },
   weekDaysRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 10,
-    paddingHorizontal: 4,
   },
   weekDayText: {
     width: 36,
     textAlign: 'center',
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#64748B',
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#94A3B8',
   },
   daysGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'flex-start',
+    height: 240,
   },
   daySlot: {
-    width: `${100 / 7}%`,
-    height: 40,
+    width: 36,
+    height: 36,
+    margin: 2,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 20,
-    marginVertical: 2,
   },
   daySlotSelected: {
-    backgroundColor: '#8B5CF6',
+    backgroundColor: '#EE4D38',
+  },
+  daySlotDisabled: {
+    opacity: 0.35,
   },
   dayNumberText: {
     fontSize: 14,
-    color: '#1E293B',
     fontWeight: '500',
+    color: '#1E1E1E',
   },
   dayNumberTextSelected: {
-    color: '#FFFFFF',
     fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  dayNumberTextDisabled: {
+    color: '#CBD5E1',
   },
   bloodModalContent: {
     backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    padding: 20,
+    padding: 24,
     maxHeight: '60%',
   },
   bloodModalTitle: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: '700',
-    color: '#1E293B',
+    color: '#1E1E1E',
   },
   bloodItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingVertical: 14,
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
   },
   bloodItemSelected: {
-    backgroundColor: '#F5F3FF',
-    borderRadius: 10,
+    backgroundColor: '#FFF1EE',
   },
   bloodItemText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#1E293B',
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#1E1E1E',
   },
   bloodItemTextSelected: {
-    color: '#8B5CF6',
     fontWeight: '700',
+    color: '#EE4D38',
   },
 });

@@ -283,9 +283,9 @@ export default function PracticalToolsScreen() {
 
       {/* Stage Switcher Chips */}
       <View style={styles.stageSwitcherRow}>
-        {(['pregnant', 'mother', 'conceive'] as PregnancyStage[]).map((st) => {
+        {(['conceive', 'pregnant', 'mother'] as PregnancyStage[]).map((st) => {
           const isActive = currentStage === st;
-          const label = st === 'pregnant' ? 'Pregnancy' : st === 'mother' ? 'Post Pregnancy' : 'Try To Conceive';
+          const label = st === 'conceive' ? 'Try To Conceive' : st === 'pregnant' ? 'Pregnancy' : 'Post Pregnancy';
           return (
             <TouchableOpacity
               key={st}

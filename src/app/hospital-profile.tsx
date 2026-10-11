@@ -142,7 +142,7 @@ export default function HospitalProfileScreen() {
           <View style={styles.logoRow}>
             <View style={styles.logoContainer}>
               <Image
-                source={require('@/assets/images/mamatvam-icon.png')}
+                source={require('@/assets/images/mamatvam-circle-logo.png')}
                 style={styles.logoImage}
                 contentFit="contain"
               />

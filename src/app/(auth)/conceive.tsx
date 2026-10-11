@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,9 +10,12 @@ import {
   Modal,
   FlatList,
   StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Calendar,
   ChevronDown,
@@ -24,6 +27,7 @@ import {
   Check,
 } from 'lucide-react-native';
 import { Radio } from '@/components/ui/Radio';
+import { Button } from '@/components/ui/Button';
 import { useAppStore } from '@/store/useAppStore';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -35,31 +39,66 @@ const MONTH_NAMES = [
 
 export default function ConceiveScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { pregnancyData, setPregnancyData, setStage } = useAppStore();
 
   const [lastPeriodDate, setLastPeriodDate] = useState(pregnancyData.lastPeriodDate || '');
-  const [height, setHeight] = useState(pregnancyData.height || '165');
-  const [weight, setWeight] = useState(pregnancyData.weight || '60');
+  const [height, setHeight] = useState(
+    pregnancyData.height && pregnancyData.height !== '165' ? pregnancyData.height : ''
+  );
+  const [weight, setWeight] = useState(
+    pregnancyData.weight && pregnancyData.weight !== '60' ? pregnancyData.weight : ''
+  );
   const [bloodGroup, setBloodGroup] = useState(pregnancyData.bloodGroup || '');
   const [isDiabetic, setIsDiabetic] = useState(pregnancyData.isDiabetic || false);
   const [bloodPressure, setBloodPressure] = useState<'low' | 'normal' | 'high'>(
     pregnancyData.bloodPressure || 'normal'
   );
+  const [dateError, setDateError] = useState('');
+
+  const isFormValid = !!lastPeriodDate.trim();
 
   // Modals
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showBloodGroupPicker, setShowBloodGroupPicker] = useState(false);
 
-  // Calendar modal state
-  const today = new Date();
+  // Calendar modal state & restrictions: valid from today to upcoming 2 years
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+
+  const maxDate = useMemo(() => {
+    const d = new Date(today.getFullYear() + 2, today.getMonth(), today.getDate());
+    d.setHours(23, 59, 59, 999);
+    return d;
+  }, [today]);
+
   const [pickerYear, setPickerYear] = useState(today.getFullYear());
   const [pickerMonth, setPickerMonth] = useState(today.getMonth());
   const [pickerDay, setPickerDay] = useState(today.getDate());
+  const [showYearSelector, setShowYearSelector] = useState(false);
+
+  const availableYears = useMemo(() => {
+    const start = today.getFullYear();
+    const end = maxDate.getFullYear();
+    const list: number[] = [];
+    for (let y = start; y <= end; y++) {
+      list.push(y);
+    }
+    return list;
+  }, [today, maxDate]);
 
   const daysInMonth = new Date(pickerYear, pickerMonth + 1, 0).getDate();
   const firstDayIndex = new Date(pickerYear, pickerMonth, 1).getDay();
+  const trailingEmptyCount = Math.max(0, 42 - (firstDayIndex + daysInMonth));
+
+  const isMinMonth = pickerYear === today.getFullYear() && pickerMonth === today.getMonth();
+  const isMaxMonth = pickerYear === maxDate.getFullYear() && pickerMonth === maxDate.getMonth();
 
   const handlePrevMonth = () => {
+    if (isMinMonth) return;
     if (pickerMonth === 0) {
       setPickerMonth(11);
       setPickerYear((y) => y - 1);
@@ -69,6 +108,7 @@ export default function ConceiveScreen() {
   };
 
   const handleNextMonth = () => {
+    if (isMaxMonth) return;
     if (pickerMonth === 11) {
       setPickerMonth(0);
       setPickerYear((y) => y + 1);
@@ -77,13 +117,89 @@ export default function ConceiveScreen() {
     }
   };
 
+  const handleSelectYear = (year: number) => {
+    let newMonth = pickerMonth;
+    if (year === today.getFullYear() && newMonth < today.getMonth()) {
+      newMonth = today.getMonth();
+    } else if (year === maxDate.getFullYear() && newMonth > maxDate.getMonth()) {
+      newMonth = maxDate.getMonth();
+    }
+
+    const maxDays = new Date(year, newMonth + 1, 0).getDate();
+    let newDay = Math.min(pickerDay, maxDays);
+    const newDate = new Date(year, newMonth, newDay);
+    newDate.setHours(0, 0, 0, 0);
+    if (newDate < today) {
+      newDay = today.getDate();
+    } else if (newDate > maxDate) {
+      newDay = maxDate.getDate();
+    }
+
+    setPickerYear(year);
+    setPickerMonth(newMonth);
+    setPickerDay(newDay);
+    setShowYearSelector(false);
+  };
+
+  const handleOpenDatePicker = () => {
+    setShowYearSelector(false);
+    if (lastPeriodDate) {
+      const parts = lastPeriodDate.split('/');
+      if (parts.length === 3) {
+        const d = parseInt(parts[0], 10);
+        const m = parseInt(parts[1], 10) - 1;
+        const y = parseInt(parts[2], 10);
+        const parsed = new Date(y, m, d);
+        parsed.setHours(0, 0, 0, 0);
+        if (parsed >= today && parsed <= maxDate) {
+          setPickerYear(y);
+          setPickerMonth(m);
+          setPickerDay(d);
+          setShowDatePicker(true);
+          return;
+        }
+      }
+    }
+    setPickerYear(today.getFullYear());
+    setPickerMonth(today.getMonth());
+    setPickerDay(today.getDate());
+    setShowDatePicker(true);
+  };
+
   const handleConfirmDate = () => {
+    const selectedDate = new Date(pickerYear, pickerMonth, pickerDay);
+    selectedDate.setHours(0, 0, 0, 0);
+    if (selectedDate < today || selectedDate > maxDate) {
+      Alert.alert('Invalid Date', 'Date must be between today and the next 2 years.');
+      return;
+    }
     const formatted = `${String(pickerDay).padStart(2, '0')}/${String(pickerMonth + 1).padStart(2, '0')}/${pickerYear}`;
     setLastPeriodDate(formatted);
+    setDateError('');
     setShowDatePicker(false);
   };
 
   const handleContinue = () => {
+    if (!lastPeriodDate.trim()) {
+      setDateError('Please select Last Period Date');
+      Alert.alert('Required Field', 'Last Period Date is mandatory. Please select a date to proceed.');
+      return;
+    }
+
+    const parts = lastPeriodDate.split('/');
+    if (parts.length === 3) {
+      const d = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10) - 1;
+      const y = parseInt(parts[2], 10);
+      const parsed = new Date(y, m, d);
+      parsed.setHours(0, 0, 0, 0);
+      if (parsed < today || parsed > maxDate) {
+        setDateError('Date must be between today and next 2 years');
+        Alert.alert('Invalid Date', 'Last Period Date must be between today and the next 2 years.');
+        return;
+      }
+    }
+
     setPregnancyData({
       lastPeriodDate,
       height,
@@ -97,25 +213,34 @@ export default function ConceiveScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right', 'bottom']}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
+        <ScrollView
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: 24 }]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
         {/* Screen Title */}
         <View style={styles.titleContainer}>
-          <Text style={styles.titleText}>Conceive</Text>
+          <Text style={styles.titleText}>Try To Conceive</Text>
         </View>
 
-        {/* 1. Last Period Date */}
+        {/* 1. Last Period Date (Mandatory) */}
         <View style={styles.fieldGroup}>
-          <Text style={styles.fieldLabel}>Last Period Date</Text>
+          <Text style={styles.fieldLabel}>
+            Last Period Date <Text style={styles.requiredStar}>*</Text>
+          </Text>
           <Pressable
-            onPress={() => setShowDatePicker(true)}
-            style={styles.inputBox}
+            onPress={handleOpenDatePicker}
+            style={[
+              styles.inputBox,
+              !!dateError && { borderColor: '#EF4444', backgroundColor: '#FEF2F2' },
+            ]}
           >
             <Text
               style={[
@@ -125,15 +250,20 @@ export default function ConceiveScreen() {
             >
               {lastPeriodDate || 'Select date'}
             </Text>
-            <Calendar size={20} color="#1E293B" strokeWidth={1.8} />
+            <Calendar size={20} color={dateError ? '#EF4444' : '#1E293B'} strokeWidth={1.8} />
           </Pressable>
+          {!!dateError && (
+            <Text style={styles.errorText}>{dateError}</Text>
+          )}
         </View>
 
-        {/* 2. Your Height and Your Weight Row */}
+        {/* 2. Your Height and Your Weight Row (Optional) */}
         <View style={styles.twoColumnRow}>
           {/* Your Height */}
           <View style={styles.halfCol}>
-            <Text style={styles.fieldLabel}>Your Height</Text>
+            <Text style={styles.fieldLabel}>
+              Your Height <Text style={styles.optionalLabel}>(Optional)</Text>
+            </Text>
             <TextInput
               value={height}
               onChangeText={setHeight}
@@ -146,7 +276,9 @@ export default function ConceiveScreen() {
 
           {/* Your Weight */}
           <View style={styles.halfCol}>
-            <Text style={styles.fieldLabel}>Your Weight</Text>
+            <Text style={styles.fieldLabel}>
+              Your Weight <Text style={styles.optionalLabel}>(Optional)</Text>
+            </Text>
             <TextInput
               value={weight}
               onChangeText={setWeight}
@@ -158,9 +290,11 @@ export default function ConceiveScreen() {
           </View>
         </View>
 
-        {/* 3. Blood Group */}
+        {/* 3. Blood Group (Optional) */}
         <View style={styles.fieldGroup}>
-          <Text style={styles.fieldLabel}>Blood Group</Text>
+          <Text style={styles.fieldLabel}>
+            Blood Group <Text style={styles.optionalLabel}>(Optional)</Text>
+          </Text>
           <Pressable
             onPress={() => setShowBloodGroupPicker(true)}
             style={styles.inputBox}
@@ -177,13 +311,15 @@ export default function ConceiveScreen() {
           </Pressable>
         </View>
 
-        {/* 4. Diabetic Card */}
+        {/* 4. Diabetic Card (Mandatory) */}
         <View style={styles.diabeticCard}>
           <View style={styles.cardHeaderLeft}>
             <View style={styles.dropletIconBadge}>
               <Droplet size={22} color="#0284C7" fill="#0284C7" />
             </View>
-            <Text style={styles.cardTitleText}>Diabetic</Text>
+            <Text style={styles.cardTitleText}>
+              Diabetic <Text style={styles.requiredStar}>*</Text>
+            </Text>
           </View>
 
           <Switch
@@ -195,13 +331,15 @@ export default function ConceiveScreen() {
           />
         </View>
 
-        {/* 5. Blood Pressure Card */}
+        {/* 5. Blood Pressure Card (Mandatory) */}
         <View style={styles.bpCard}>
           <View style={styles.cardHeaderLeft}>
             <View style={styles.bpIconBadge}>
               <HeartPulse size={22} color="#EF4444" />
             </View>
-            <Text style={styles.cardTitleText}>Blood Pressure</Text>
+            <Text style={styles.cardTitleText}>
+              Blood Pressure <Text style={styles.requiredStar}>*</Text>
+            </Text>
           </View>
 
           <View style={styles.bpOptionsRow}>
@@ -249,17 +387,24 @@ export default function ConceiveScreen() {
           </View>
         </View>
 
-        {/* Spacer before button */}
-        <View style={{ flex: 1, minHeight: 32 }} />
-
-        {/* Continue Button */}
-        <Pressable
-          onPress={handleContinue}
-          style={styles.continueButton}
-        >
-          <Text style={styles.continueButtonText}>Continue</Text>
-        </Pressable>
       </ScrollView>
+
+      {/* Fixed Continue Button at Bottom */}
+      <View
+        style={{
+          paddingHorizontal: 24,
+          paddingTop: 12,
+          paddingBottom: Math.max(insets.bottom, 20),
+          backgroundColor: '#FFFFFF',
+        }}
+      >
+        <Button
+          title="Continue"
+          onPress={handleContinue}
+          disabled={!isFormValid}
+        />
+      </View>
+    </KeyboardAvoidingView>
 
       {/* Date Picker Modal */}
       <Modal
@@ -274,69 +419,160 @@ export default function ConceiveScreen() {
             <View style={styles.modalHeaderRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={styles.calendarMonthText}>
-                  {MONTH_NAMES[pickerMonth]} {pickerYear}
+                  {MONTH_NAMES[pickerMonth]}
                 </Text>
-                <Pressable onPress={handlePrevMonth} hitSlop={10} style={{ padding: 4, marginRight: 4 }}>
-                  <ChevronLeft size={20} color="#64748B" />
-                </Pressable>
-                <Pressable onPress={handleNextMonth} hitSlop={10} style={{ padding: 4 }}>
-                  <ChevronRight size={20} color="#64748B" />
+
+                {/* Clickable Year Selector */}
+                <Pressable
+                  onPress={() => setShowYearSelector((prev) => !prev)}
+                  hitSlop={8}
+                  style={[
+                    styles.yearBadgeButton,
+                    showYearSelector && styles.yearBadgeButtonActive,
+                  ]}
+                >
+                  <Text style={[styles.calendarYearText, showYearSelector && styles.calendarYearTextActive]}>
+                    {pickerYear}
+                  </Text>
+                  <ChevronDown
+                    size={16}
+                    color={showYearSelector ? '#EE4D38' : '#64748B'}
+                  />
                 </Pressable>
               </View>
-              <Pressable onPress={() => setShowDatePicker(false)} hitSlop={10}>
-                <X size={20} color="#64748B" />
-              </Pressable>
-            </View>
 
-            <Text style={styles.modalSubheading}>Selecting Last Period Date</Text>
-
-            {/* Days of Week */}
-            <View style={styles.weekDaysRow}>
-              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                <Text key={i} style={styles.weekDayText}>
-                  {d}
-                </Text>
-              ))}
-            </View>
-
-            {/* Calendar Days Grid */}
-            <View style={styles.daysGrid}>
-              {Array.from({ length: firstDayIndex }).map((_, i) => (
-                <View key={`empty-${i}`} style={styles.daySlot} />
-              ))}
-              {Array.from({ length: daysInMonth }).map((_, i) => {
-                const day = i + 1;
-                const isSelected = pickerDay === day;
-                return (
-                  <Pressable
-                    key={day}
-                    onPress={() => setPickerDay(day)}
-                    style={[
-                      styles.daySlot,
-                      isSelected && styles.daySlotSelected,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.dayNumberText,
-                        isSelected && styles.dayNumberTextSelected,
-                      ]}
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                {!showYearSelector && (
+                  <>
+                    <Pressable
+                      onPress={handlePrevMonth}
+                      hitSlop={10}
+                      disabled={isMinMonth}
+                      style={{ padding: 6, marginRight: 2, opacity: isMinMonth ? 0.25 : 1 }}
                     >
-                      {day}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+                      <ChevronLeft size={20} color="#64748B" />
+                    </Pressable>
+                    <Pressable
+                      onPress={handleNextMonth}
+                      hitSlop={10}
+                      disabled={isMaxMonth}
+                      style={{ padding: 6, marginRight: 8, opacity: isMaxMonth ? 0.25 : 1 }}
+                    >
+                      <ChevronRight size={20} color="#64748B" />
+                    </Pressable>
+                  </>
+                )}
+
+                <Pressable
+                  onPress={() => {
+                    setShowYearSelector(false);
+                    setShowDatePicker(false);
+                  }}
+                  hitSlop={10}
+                  style={{ padding: 4 }}
+                >
+                  <X size={20} color="#64748B" />
+                </Pressable>
+              </View>
+            </View>
+
+            <Text style={styles.modalSubheading}>
+              {showYearSelector ? 'Tap a year to switch' : 'Valid from today up to 2 years'}
+            </Text>
+
+            {/* Fixed Height Calendar / Year Container (consistent across every month) */}
+            <View style={styles.calendarBodyContainer}>
+              {showYearSelector ? (
+                <View style={styles.yearPickerView}>
+                  <View style={styles.yearListContainer}>
+                    {availableYears.map((yr) => {
+                      const isSelected = pickerYear === yr;
+                      return (
+                        <Pressable
+                          key={yr}
+                          onPress={() => handleSelectYear(yr)}
+                          style={[
+                            styles.yearOptionCard,
+                            isSelected && styles.yearOptionCardSelected,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.yearOptionText,
+                              isSelected && styles.yearOptionTextSelected,
+                            ]}
+                          >
+                            {yr}
+                          </Text>
+                          {isSelected ? (
+                            <Check size={20} color="#FFFFFF" strokeWidth={2.5} />
+                          ) : (
+                            <View style={{ width: 20 }} />
+                          )}
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </View>
+              ) : (
+                <>
+                  {/* Days of Week */}
+                  <View style={styles.weekDaysRow}>
+                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                      <Text key={i} style={styles.weekDayText}>
+                        {d}
+                      </Text>
+                    ))}
+                  </View>
+
+                  {/* Calendar Days Grid */}
+                  <View style={styles.daysGrid}>
+                    {Array.from({ length: firstDayIndex }).map((_, i) => (
+                      <View key={`empty-start-${i}`} style={styles.daySlot} />
+                    ))}
+                    {Array.from({ length: daysInMonth }).map((_, i) => {
+                      const day = i + 1;
+                      const cellDate = new Date(pickerYear, pickerMonth, day);
+                      cellDate.setHours(0, 0, 0, 0);
+                      const isDisabled = cellDate < today || cellDate > maxDate;
+                      const isSelected = !isDisabled && pickerDay === day;
+                      return (
+                        <Pressable
+                          key={day}
+                          disabled={isDisabled}
+                          onPress={() => !isDisabled && setPickerDay(day)}
+                          style={[
+                            styles.daySlot,
+                            isSelected && styles.daySlotSelected,
+                            isDisabled && styles.daySlotDisabled,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.dayNumberText,
+                              isSelected && styles.dayNumberTextSelected,
+                              isDisabled && styles.dayNumberTextDisabled,
+                            ]}
+                          >
+                            {day}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                    {Array.from({ length: trailingEmptyCount }).map((_, i) => (
+                      <View key={`empty-end-${i}`} style={styles.daySlot} />
+                    ))}
+                  </View>
+                </>
+              )}
             </View>
 
             {/* Actions */}
             <View style={{ marginTop: 20 }}>
-              <Pressable
+              <Button
+                title="Confirm Date"
                 onPress={handleConfirmDate}
-                style={styles.continueButton}
-              >
-                <Text style={styles.continueButtonText}>Confirm Date</Text>
-              </Pressable>
+              />
             </View>
           </View>
         </View>
@@ -425,6 +661,22 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#334155',
     marginBottom: 8,
+  },
+  requiredStar: {
+    color: '#EE4D38',
+    fontWeight: '700',
+  },
+  optionalLabel: {
+    fontSize: 12.5,
+    fontWeight: '500',
+    color: '#94A3B8',
+  },
+  errorText: {
+    fontSize: 12,
+    color: '#EF4444',
+    marginTop: 4,
+    marginLeft: 2,
+    fontWeight: '500',
   },
   inputBox: {
     height: 52,
@@ -560,7 +812,62 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
     color: '#1E1E1E',
-    marginRight: 10,
+    marginRight: 6,
+  },
+  yearBadgeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F1F5F9',
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    marginRight: 6,
+  },
+  yearBadgeButtonActive: {
+    backgroundColor: '#FEE2E2',
+  },
+  calendarYearText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1E293B',
+    marginRight: 4,
+  },
+  calendarYearTextActive: {
+    color: '#EE4D38',
+  },
+  calendarBodyContainer: {
+    height: 278,
+  },
+  yearPickerView: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  yearListContainer: {
+    gap: 12,
+  },
+  yearOptionCard: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  yearOptionCardSelected: {
+    backgroundColor: '#EE4D38',
+    borderColor: '#EE4D38',
+  },
+  yearOptionText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1E293B',
+  },
+  yearOptionTextSelected: {
+    color: '#FFFFFF',
   },
   modalSubheading: {
     fontSize: 13,
@@ -583,6 +890,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'flex-start',
+    height: 240,
   },
   daySlot: {
     width: 36,
@@ -595,6 +903,9 @@ const styles = StyleSheet.create({
   daySlotSelected: {
     backgroundColor: '#EE4D38',
   },
+  daySlotDisabled: {
+    opacity: 0.3,
+  },
   dayNumberText: {
     fontSize: 14,
     fontWeight: '500',
@@ -603,6 +914,9 @@ const styles = StyleSheet.create({
   dayNumberTextSelected: {
     fontWeight: '700',
     color: '#FFFFFF',
+  },
+  dayNumberTextDisabled: {
+    color: '#94A3B8',
   },
   bloodModalContent: {
     backgroundColor: '#FFFFFF',

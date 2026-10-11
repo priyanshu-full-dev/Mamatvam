@@ -31,7 +31,7 @@
     "searchLocation": "Search your city...",
     "invalidPhone": "Please enter a valid 10-digit mobile number",
     "otpTitle": "OTP",
-    "otpSubtitle": "Enter the 4-digit code we sent to your Phone Number.",
+    "otpSubtitle": "Enter the 4-digit code we sent to {{phone}}.",
     "otpLabel": "OTP",
     "autoVerifying": "Auto verifying your OTP",
     "resendTimer": "Didn't get the OTP? Resend OTP in {{seconds}}",

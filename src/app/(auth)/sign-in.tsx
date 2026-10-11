@@ -84,7 +84,9 @@ export default function SignInScreen() {
   const sendOtpMutation = useSendOtpMutation();
 
   const isPhoneValid = inputPhone.trim().length >= 10;
-  const isFormValid = isPhoneValid && !!selectedArea;
+  const isPincodeFilled = pincode.trim().length > 0;
+  const isPincodeValid = !isPincodeFilled || (pincode.length === 6 && !!selectedArea);
+  const isFormValid = isPhoneValid && isPincodeValid;
 
   const handlePincodeChange = async (text: string) => {
     const cleanText = text.replace(/[^0-9]/g, '').slice(0, 6);
@@ -144,18 +146,30 @@ export default function SignInScreen() {
       setPhoneError(t('auth.invalidPhone', 'Please enter a valid 10-digit mobile number'));
       return;
     }
-    if (!selectedArea) {
-      setPincodeError('Please enter a valid PIN code and select your area');
+    const isPincodeFilled = pincode.trim().length > 0;
+    if (isPincodeFilled && pincode.length < 6) {
+      setPincodeError('Please enter a full 6-digit PIN code or leave it blank');
+      return;
+    }
+    if (isPincodeFilled && !selectedArea) {
+      setPincodeError('Please select your area for the entered PIN code');
       return;
     }
 
     try {
       setPhone(inputPhone);
-      setLocation(`${selectedArea.name}, ${selectedArea.district}, ${selectedArea.state}`);
+      if (selectedArea) {
+        setLocation(`${selectedArea.name}, ${selectedArea.district}, ${selectedArea.state}`);
+      } else {
+        setLocation('');
+      }
 
       await sendOtpMutation.mutateAsync({ phone: inputPhone });
 
-      router.push('/(auth)/otp');
+      router.push({
+        pathname: '/(auth)/otp',
+        params: { phone: inputPhone },
+      });
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to send OTP. Please try again.');
     }
@@ -177,8 +191,8 @@ export default function SignInScreen() {
           showsVerticalScrollIndicator={false}
         >
           {/* Top Logo */}
-          <View style={{ alignItems: 'center', paddingTop: 16, paddingBottom: 12 }}>
-            <BrandLogo size="md" showText showTagline />
+          <View style={{ alignItems: 'center', paddingTop: 10, paddingBottom: 8 }}>
+            <BrandLogo size="lg" showText showTagline />
           </View>
 
           {/* Heading & Subtitle */}
@@ -232,8 +246,8 @@ export default function SignInScreen() {
             {/* PIN Code Field */}
             <View style={{ marginTop: 14 }}>
               <Input
-                label="PIN Code"
-                placeholder="Enter 6-digit PIN code"
+                label="PIN Code (Optional)"
+                placeholder="Enter 6-digit PIN code (optional)"
                 value={pincode}
                 onChangeText={handlePincodeChange}
                 keyboardType="number-pad"

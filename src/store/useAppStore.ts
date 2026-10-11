@@ -19,6 +19,7 @@ export interface PregnancyData {
   isDiabetic?: boolean;
   bloodPressure?: 'low' | 'normal' | 'high' | null;
   babyGender?: 'girl' | 'boy' | null;
+  periodCycle?: string;
 }
 
 interface AppState {

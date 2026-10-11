@@ -15,6 +15,7 @@ interface LanguageOption {
   nativeTitle: string;
   subtitle: string;
   bgColor: string;
+  watermark: string;
 }
 
 const LANGUAGES: LanguageOption[] = [
@@ -22,25 +23,29 @@ const LANGUAGES: LanguageOption[] = [
     id: 'en',
     nativeTitle: 'English',
     subtitle: 'English',
-    bgColor: '#FCE2E2', // soft coral pink
+    bgColor: '#FCE2E2', // original soft coral pink
+    watermark: 'Aa',
   },
   {
     id: 'hi',
     nativeTitle: 'हिन्दी',
     subtitle: 'Hindi',
-    bgColor: '#FDE8D7', // soft peach
+    bgColor: '#FDE8D7', // original soft peach
+    watermark: 'अ',
   },
   {
     id: 'bn',
     nativeTitle: 'বাংলা',
     subtitle: 'Bangla',
-    bgColor: '#DFF8D8', // soft mint green
+    bgColor: '#DFF8D8', // original soft mint green
+    watermark: 'অ',
   },
   {
     id: 'te',
     nativeTitle: 'తెలుగు',
     subtitle: 'Telugu',
-    bgColor: '#D5ECFD', // soft sky blue
+    bgColor: '#D5ECFD', // original soft sky blue
+    watermark: 'అ',
   },
 ];
 
@@ -92,8 +97,8 @@ export default function LanguageScreen() {
           </Text>
         </View>
 
-        {/* Language Cards */}
-        <View className="space-y-3.5 flex-1">
+        {/* Language Cards with explicit gap */}
+        <View style={{ gap: 14 }} className="flex-1">
           {LANGUAGES.map((item) => {
             const isSelected = selectedLang === item.id;
 
@@ -101,19 +106,33 @@ export default function LanguageScreen() {
               <Pressable
                 key={item.id}
                 onPress={() => handleSelectLanguage(item.id)}
-                style={{ backgroundColor: item.bgColor }}
+                style={{ backgroundColor: item.bgColor, minHeight: 76 }}
                 className={`relative overflow-hidden rounded-2xl px-5 py-4 flex-row items-center justify-between border-2 ${
                   isSelected ? 'border-[#EE4D38]' : 'border-transparent'
                 }`}
               >
-                {/* Watermark "Aa" on right */}
+                {/* Language script watermark icon on right */}
                 <View
                   pointerEvents="none"
-                  className="absolute right-12 -bottom-4"
-                  style={{ opacity: 0.15 }}
+                  style={{
+                    position: 'absolute',
+                    right: 48,
+                    top: 0,
+                    bottom: 0,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    opacity: 0.16,
+                  }}
                 >
-                  <Text className="text-7xl font-extrabold text-[#000000]">
-                    Aa
+                  <Text
+                    style={{
+                      fontSize: 52,
+                      fontWeight: '800',
+                      color: '#000000',
+                      includeFontPadding: false,
+                    }}
+                  >
+                    {item.watermark}
                   </Text>
                 </View>
 

@@ -1,12 +1,12 @@
 import React from 'react';
 import {
-  TouchableOpacity,
-  Text,
   ActivityIndicator,
-  ViewStyle,
-  StyleProp,
-  TextStyle,
   GestureResponderEvent,
+  StyleProp,
+  Text,
+  TextStyle,
+  TouchableOpacity,
+  ViewStyle,
 } from 'react-native';
 
 export interface ButtonProps {

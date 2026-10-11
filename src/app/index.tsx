@@ -35,10 +35,10 @@ export default function SplashScreen() {
     if (isLoading) return;
 
     const timer = setTimeout(() => {
-      if (isAuthenticated) {
-        router.replace('/(tabs)/home');
-      } else if (!hasSeenOnboarding) {
+      if (!hasSeenOnboarding) {
         router.replace('/onboarding/carousel');
+      } else if (isAuthenticated) {
+        router.replace('/(tabs)/home');
       } else {
         router.replace('/(auth)/sign-in');
       }

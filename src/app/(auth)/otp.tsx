@@ -9,7 +9,7 @@ import {
   Pressable,
   Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { BrandLogo } from '@/components/ui/BrandLogo';
@@ -20,8 +20,23 @@ import { useVerifyOtpMutation, useSendOtpMutation } from '@/api/auth.api';
 
 export default function OTPScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ phone?: string }>();
   const { t } = useTranslation();
   const { phone, location, login } = useAuthStore();
+
+  const userPhone = (params.phone as string) || phone || '';
+  const formattedPhone = userPhone
+    ? userPhone.startsWith('+')
+      ? userPhone
+      : `+91 ${userPhone}`
+    : 'your Phone Number';
+
+  const subtitleText = t('auth.otpSubtitle', {
+    phone: formattedPhone,
+    defaultValue: `Enter the 4-digit code we sent to ${formattedPhone}.`,
+  });
+
+  const subtitleParts = userPhone ? subtitleText.split(formattedPhone) : [subtitleText];
 
   const [otp, setOtp] = useState('');
   const [hasError, setHasError] = useState(false);
@@ -60,7 +75,7 @@ export default function OTPScreen() {
 
     try {
       const res = await verifyOtpMutation.mutateAsync({
-        phone: phone || '9999999999',
+        phone: userPhone || '9999999999',
         otp: otpCode,
         location,
       });
@@ -78,7 +93,7 @@ export default function OTPScreen() {
   const handleResend = async () => {
     if (!canResend) return;
     try {
-      await sendOtpMutation.mutateAsync({ phone: phone || '9999999999' });
+      await sendOtpMutation.mutateAsync({ phone: userPhone || '9999999999' });
       setCountdown(120);
       setCanResend(false);
       setHasError(false);
@@ -102,8 +117,8 @@ export default function OTPScreen() {
           showsVerticalScrollIndicator={false}
         >
           {/* Top Logo */}
-          <View className="items-center pt-8 pb-4">
-            <BrandLogo size="md" showText showTagline />
+          <View className="items-center pt-4 pb-2">
+            <BrandLogo size="lg" showText showTagline />
           </View>
 
           {/* Heading & Subtitle */}
@@ -112,9 +127,16 @@ export default function OTPScreen() {
               {t('auth.otpTitle', 'OTP')}
             </Text>
             <Text style={{ fontSize: 16, lineHeight: 24, color: '#475569', textAlign: 'center', marginTop: 8, paddingHorizontal: 12 }}>
-              {t(
-                'auth.otpSubtitle',
-                'Enter the 4-digit code we sent to your Phone Number.'
+              {subtitleParts.length > 1 ? (
+                <>
+                  {subtitleParts[0]}
+                  <Text style={{ fontWeight: '700', color: '#111827' }}>
+                    {formattedPhone}
+                  </Text>
+                  {subtitleParts.slice(1).join(formattedPhone)}
+                </>
+              ) : (
+                subtitleText
               )}
             </Text>
           </View>

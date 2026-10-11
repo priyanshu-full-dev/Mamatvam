@@ -22,6 +22,7 @@ import {
 import { PregnancyStage } from '@/store/useAppStore';
 
 const { width } = Dimensions.get('window');
+const HERO_CARD_HEIGHT = 370;
 
 const RING_SIZE = 114;
 const STROKE_WIDTH = 6;
@@ -44,15 +45,15 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
       {/* 1. Stage Switcher Chips - Fixed row fitting all 4 stages on screen without scroll */}
       <View style={styles.stageSwitcherContainer}>
         <View style={styles.stageSwitcherRow}>
-          {(['pregnant', 'mother', 'conceive', 'explore'] as PregnancyStage[]).map((st) => {
+          {(['conceive', 'pregnant', 'mother', 'explore'] as PregnancyStage[]).map((st) => {
             const isActive = currentStage === st;
             const label =
-              st === 'pregnant'
+              st === 'conceive'
+                ? 'Try To Conceive'
+                : st === 'pregnant'
                 ? 'Pregnancy'
                 : st === 'mother'
                 ? 'Post Pregnancy'
-                : st === 'conceive'
-                ? 'Try To Conceive'
                 : 'IUI, IVF';
             return (
               <TouchableOpacity
@@ -144,7 +145,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
             {/* Baby Says This Week */}
             <View style={styles.babySaysContainer}>
               <Text style={styles.babySaysHeader}>Baby says this week</Text>
-              <Text style={styles.babySaysQuote}>
+              <Text numberOfLines={3} style={styles.babySaysQuote}>
                 It's only been a week... but I knew I can rely on you. I can recognize your voice, and the familiarity helps me adjust to the strange new world outside the womb i....
               </Text>
             </View>
@@ -227,17 +228,15 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
               </View>
             </View>
 
-            {/* Daily Utility CTA - Hidden for IUI, IVF stage */}
-            {currentStage !== 'explore' && (
-              <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => router.push('/practical-tools')}
-                style={styles.dailyUtilityBtn}
-              >
-                <Text style={styles.dailyUtilityText}>Check out my daily utility</Text>
-                <ArrowRight size={14} color="#EE4D38" />
-              </TouchableOpacity>
-            )}
+            {/* Daily Utility CTA */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => router.push('/practical-tools')}
+              style={styles.dailyUtilityBtn}
+            >
+              <Text style={styles.dailyUtilityText}>Check out my daily utility</Text>
+              <ArrowRight size={14} color="#EE4D38" />
+            </TouchableOpacity>
 
             {/* Action Buttons Row (Calendar & End Period) */}
             <View style={styles.conceiveActionsRow}>
@@ -436,28 +435,32 @@ const styles = StyleSheet.create({
   },
   motherSectionWrapper: {
     width: '100%',
+    height: HERO_CARD_HEIGHT,
     position: 'relative',
-    paddingTop: 16,
-    paddingBottom: 22,
+    paddingTop: 14,
+    paddingBottom: 16,
   },
   pregnantSectionWrapper: {
     width: '100%',
+    height: HERO_CARD_HEIGHT,
     position: 'relative',
-    paddingTop: 16,
-    paddingBottom: 22,
+    paddingTop: 14,
+    paddingBottom: 16,
   },
   sectionInnerContent: {
+    flex: 1,
     paddingHorizontal: 20,
+    justifyContent: 'space-between',
   },
   avatarCenterRow: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   babyAvatarContainer: {
-    width: 104,
-    height: 104,
-    borderRadius: 52,
+    width: 96,
+    height: 96,
+    borderRadius: 48,
     borderWidth: 3.5,
     borderColor: '#EE4D38',
     position: 'relative',
@@ -471,9 +474,9 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   babyAvatarImage: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 88,
+    height: 88,
+    borderRadius: 44,
   },
   editPencilBadge: {
     position: 'absolute',
@@ -511,22 +514,22 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#64748B',
     textAlign: 'center',
-    marginTop: 3,
-    marginBottom: 14,
+    marginTop: 2,
+    marginBottom: 8,
   },
   pillsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
-    marginBottom: 16,
+    marginBottom: 8,
   },
   measurementPill: {
     flex: 1,
     backgroundColor: '#FFFFFF',
     borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
+    paddingVertical: 9,
+    paddingHorizontal: 10,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -544,30 +547,30 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
   },
   pillValue: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#1E293B',
-    marginTop: 3,
-  },
-  babySaysContainer: {
-    marginTop: 2,
-  },
-  babySaysHeader: {
     fontSize: 15,
     fontWeight: '800',
     color: '#1E293B',
-    marginBottom: 4,
+    marginTop: 2,
+  },
+  babySaysContainer: {
+    marginTop: 0,
+  },
+  babySaysHeader: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#1E293B',
+    marginBottom: 2,
   },
   babySaysQuote: {
-    fontSize: 12.5,
+    fontSize: 12,
     color: '#64748B',
-    lineHeight: 18,
+    lineHeight: 16,
   },
   dailyUtilityBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 18,
+    marginTop: 8,
   },
   dailyUtilityText: {
     fontSize: 13.5,
@@ -626,8 +629,8 @@ const styles = StyleSheet.create({
     color: '#EE4D38',
   },
   lookMummaRow: {
-    marginTop: 16,
-    minHeight: 140,
+    marginTop: 10,
+    minHeight: 125,
     justifyContent: 'center',
   },
   lookMummaTitle: {
@@ -658,14 +661,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'stretch',
     gap: 12,
-    marginTop: 4,
+    marginTop: 2,
+    flex: 1,
+    maxHeight: 220,
   },
   conceiveLeftCircleCard: {
     flex: 1,
     backgroundColor: '#FFFFFF',
     borderRadius: 22,
-    paddingVertical: 18,
-    paddingHorizontal: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 10,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -728,8 +733,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     borderRadius: 20,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#F1F5F9',
@@ -764,7 +769,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
-    marginTop: 14,
+    marginTop: 8,
   },
   calendarBtn: {
     flex: 1,

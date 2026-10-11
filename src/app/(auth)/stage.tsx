@@ -27,6 +27,13 @@ interface StageOption {
 
 const STAGES: StageOption[] = [
   {
+    id: 'conceive',
+    titleKey: 'stage.conceive',
+    defaultTitle: 'Try To Conceive',
+    bgColor: '#DEF2FB',
+    image: require('@/assets/images/stages/conceive.png'),
+  },
+  {
     id: 'pregnant',
     titleKey: 'stage.pregnant',
     defaultTitle: 'Pregnancy',
@@ -39,13 +46,6 @@ const STAGES: StageOption[] = [
     defaultTitle: 'Post Pregnancy',
     bgColor: '#E5F9EA',
     image: require('@/assets/images/stages/mother.png'),
-  },
-  {
-    id: 'conceive',
-    titleKey: 'stage.conceive',
-    defaultTitle: 'Try To Conceive',
-    bgColor: '#DEF2FB',
-    image: require('@/assets/images/stages/conceive.png'),
   },
   {
     id: 'explore',
@@ -61,7 +61,7 @@ export default function StageScreen() {
   const { t } = useTranslation();
   const { stage, setStage } = useAppStore();
 
-  const [selectedStage, setSelectedStage] = useState<PregnancyStage>(stage || 'pregnant');
+  const [selectedStage, setSelectedStage] = useState<PregnancyStage>(stage || 'conceive');
 
   const handleStagePress = (stageId: PregnancyStage) => {
     setSelectedStage(stageId);

@@ -163,8 +163,8 @@ export default function HomeScreen() {
             }}
           >
             <Image
-              source={require('@/assets/images/mamatvam-icon.png')}
-              style={{ width: 26, height: 26 }}
+              source={require('@/assets/images/mamatvam-circle-logo.png')}
+              style={{ width: 28, height: 28 }}
               contentFit="contain"
             />
           </View>
