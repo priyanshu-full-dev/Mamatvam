@@ -384,7 +384,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 3.5,
   },
   dotActive: {
-    backgroundColor: '#EE4D38',
+    backgroundColor: '#e62a09',
     width: 10,
     height: 10,
     borderRadius: 5,
@@ -427,13 +427,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   primaryPillButton: {
-    backgroundColor: '#EE4D38',
+    backgroundColor: '#e62a09',
     borderRadius: 26,
     height: 50,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#EE4D38',
+    shadowColor: '#e62a09',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -453,7 +453,7 @@ const styles = StyleSheet.create({
   skipButtonText: {
     fontSize: 13.5,
     fontWeight: '700',
-    color: '#EE4D38',
+    color: '#e62a09',
     textDecorationLine: 'underline',
   },
 

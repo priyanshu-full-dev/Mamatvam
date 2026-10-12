@@ -799,7 +799,7 @@ export default function PracticalToolsScreen() {
           <Text style={{ fontSize: 13, color: '#475569', marginTop: 4, lineHeight: 18 }}>
             Quick access to your midwife and care team
           </Text>
-          <Text style={{ fontSize: 13.5, fontWeight: '600', color: '#EE4D38', marginTop: 10 }}>
+          <Text style={{ fontSize: 13.5, fontWeight: '600', color: '#e62a09', marginTop: 10 }}>
             Manage Directory -
           </Text>
         </TouchableOpacity>
@@ -809,13 +809,13 @@ export default function PracticalToolsScreen() {
           activeOpacity={0.85}
           onPress={() => setActiveModal('emergency')}
           style={{
-            backgroundColor: '#EE4D38',
+            backgroundColor: '#e62a09',
             borderRadius: 16,
             paddingVertical: 16,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
-            shadowColor: '#EE4D38',
+            shadowColor: '#e62a09',
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.25,
             shadowRadius: 10,
@@ -1055,7 +1055,7 @@ export default function PracticalToolsScreen() {
                 { role: 'Hospital Desk', name: 'City Maternity Wing', phone: '011-23456789' },
               ].map((contact, idx) => (
                 <View key={idx} style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' }}>
-                  <Text style={{ fontSize: 11, fontWeight: '700', color: '#EE4D38', textTransform: 'uppercase' }}>{contact.role}</Text>
+                  <Text style={{ fontSize: 11, fontWeight: '700', color: '#e62a09', textTransform: 'uppercase' }}>{contact.role}</Text>
                   <Text style={{ fontSize: 15, fontWeight: '700', color: '#1E1E1E', marginTop: 2 }}>{contact.name}</Text>
                   <TouchableOpacity onPress={() => handleCallEmergency(contact.phone)} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
                     <Phone size={14} color="#0284C7" />
@@ -1108,7 +1108,7 @@ export default function PracticalToolsScreen() {
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => handleCallEmergency('108')}
-              style={[styles.emergencyRow, { backgroundColor: '#EE4D38', marginTop: 10 }]}
+              style={[styles.emergencyRow, { backgroundColor: '#e62a09', marginTop: 10 }]}
             >
               <Phone size={18} color="#FFFFFF" />
               <Text style={{ fontSize: 15, fontWeight: '700', color: '#FFFFFF', marginLeft: 10 }}>National Emergency (108)</Text>
@@ -1519,7 +1519,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stageChipActive: {
-    backgroundColor: '#EE4D38',
+    backgroundColor: '#e62a09',
     borderColor: 'transparent',
   },
   stageChipText: {

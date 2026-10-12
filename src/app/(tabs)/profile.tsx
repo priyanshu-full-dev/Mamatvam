@@ -34,7 +34,7 @@ const FULL_CARD_WIDTH = SCREEN_WIDTH - HORIZONTAL_PADDING * 2;
 const HALF_CARD_WIDTH = (FULL_CARD_WIDTH - GAP) / 2;
 
 // Custom concentric ripple icon matching "Symptoms Tracker" in design
-function SymptomsTrackerIcon({ size = 20, color = '#EE4D38' }: { size?: number; color?: string }) {
+function SymptomsTrackerIcon({ size = 20, color = '#e62a09' }: { size?: number; color?: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <Circle cx="12" cy="12" r="2.5" fill={color} />
@@ -153,7 +153,7 @@ export default function ProfileScreen() {
           style={styles.fullCard}
         >
           <View style={styles.rowLeft}>
-            <TicketPercent size={22} color="#EE4D38" />
+            <TicketPercent size={22} color="#e62a09" />
             <Text style={styles.cardTitle}>My Coupons</Text>
           </View>
           <ChevronRight size={18} color="#1E1E1E" strokeWidth={2} />
@@ -167,7 +167,7 @@ export default function ProfileScreen() {
             style={styles.halfCard}
           >
             <View style={styles.halfCardLeft}>
-              <Crown size={20} color="#EE4D38" />
+              <Crown size={20} color="#e62a09" />
               <Text style={styles.halfCardTitle} numberOfLines={1}>
                 My Subscription
               </Text>
@@ -181,7 +181,7 @@ export default function ProfileScreen() {
             style={styles.halfCard}
           >
             <View style={styles.halfCardLeft}>
-              <Banknote size={20} color="#EE4D38" />
+              <Banknote size={20} color="#e62a09" />
               <Text style={styles.halfCardTitle} numberOfLines={1}>
                 Cash: 0
               </Text>
@@ -201,7 +201,7 @@ export default function ProfileScreen() {
             style={styles.halfCard}
           >
             <View style={styles.halfCardLeft}>
-              <SymptomsTrackerIcon size={20} color="#EE4D38" />
+              <SymptomsTrackerIcon size={20} color="#e62a09" />
               <Text style={styles.halfCardTitle} numberOfLines={1}>
                 Symptoms Tracker
               </Text>
@@ -215,7 +215,7 @@ export default function ProfileScreen() {
             style={styles.halfCard}
           >
             <View style={styles.halfCardLeft}>
-              <Bookmark size={20} color="#EE4D38" />
+              <Bookmark size={20} color="#e62a09" />
               <Text style={styles.halfCardTitle} numberOfLines={1}>
                 My Saved Items
               </Text>
@@ -232,7 +232,7 @@ export default function ProfileScreen() {
             style={styles.halfCard}
           >
             <View style={styles.halfCardLeft}>
-              <Users size={20} color="#EE4D38" />
+              <Users size={20} color="#e62a09" />
               <Text style={styles.halfCardMultiLineTitle} numberOfLines={2}>
                 Community{'\n'}Guidelines
               </Text>
@@ -246,7 +246,7 @@ export default function ProfileScreen() {
             style={styles.halfCard}
           >
             <View style={styles.halfCardLeft}>
-              <MessageCircleQuestionMark size={20} color="#EE4D38" />
+              <MessageCircleQuestionMark size={20} color="#e62a09" />
               <Text style={styles.halfCardMultiLineTitle} numberOfLines={2}>
                 Unanswered{'\n'}Questions
               </Text>
@@ -265,7 +265,7 @@ export default function ProfileScreen() {
           style={styles.moreCard}
         >
           <View style={styles.moreCardLeft}>
-            <User size={22} color="#EE4D38" />
+            <User size={22} color="#e62a09" />
             <View style={styles.moreTextCol}>
               <Text style={styles.moreTitle}>Account Settings</Text>
               <Text style={styles.moreSubtitle}>Manage your account details</Text>
@@ -281,7 +281,7 @@ export default function ProfileScreen() {
           style={styles.moreCard}
         >
           <View style={styles.moreCardLeft}>
-            <Shield size={22} color="#EE4D38" />
+            <Shield size={22} color="#e62a09" />
             <View style={styles.moreTextCol}>
               <Text style={styles.moreTitle}>Privacy</Text>
               <Text style={styles.moreSubtitle}>Review privacy settings</Text>
@@ -297,7 +297,7 @@ export default function ProfileScreen() {
           style={styles.moreCard}
         >
           <View style={styles.moreCardLeft}>
-            <CircleQuestionMark size={22} color="#EE4D38" />
+            <CircleQuestionMark size={22} color="#e62a09" />
             <View style={styles.moreTextCol}>
               <Text style={styles.moreTitle}>Help & Support</Text>
               <Text style={styles.moreSubtitle}>Get assistance</Text>
@@ -313,7 +313,7 @@ export default function ProfileScreen() {
           style={styles.moreCard}
         >
           <View style={styles.moreCardLeft}>
-            <LogOut size={22} color="#EE4D38" />
+            <LogOut size={22} color="#e62a09" />
             <View style={styles.moreTextCol}>
               <Text style={styles.moreTitle}>Log out</Text>
               <Text style={styles.moreSubtitle}>Your session will be ended</Text>

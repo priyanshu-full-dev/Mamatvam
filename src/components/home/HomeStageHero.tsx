@@ -22,14 +22,21 @@ import {
 import { PregnancyStage } from '@/store/useAppStore';
 
 const { width } = Dimensions.get('window');
-const HERO_CARD_HEIGHT = 370;
+const HERO_CARD_HEIGHT = 270;
 
-const RING_SIZE = 114;
-const STROKE_WIDTH = 6;
+const RING_SIZE = 92;
+const STROKE_WIDTH = 5;
 const RADIUS = (RING_SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 const PROGRESS = 0.84;
 const STROKE_DASH_OFFSET = CIRCUMFERENCE * (1 - PROGRESS);
+
+const STAGE_FLEX: Record<PregnancyStage, number> = {
+  conceive: 1.25,
+  pregnant: 0.95,
+  mother: 1.2,
+  explore: 0.8,
+};
 
 export interface HomeStageHeroProps {
   stage?: PregnancyStage | null;
@@ -42,7 +49,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
 
   return (
     <View style={styles.heroOuterContainer}>
-      {/* 1. Stage Switcher Chips - Fixed row fitting all 4 stages on screen without scroll */}
+      {/* 1. Stage Switcher Chips - Proportional flex row with proper padding */}
       <View style={styles.stageSwitcherContainer}>
         <View style={styles.stageSwitcherRow}>
           {(['conceive', 'pregnant', 'mother', 'explore'] as PregnancyStage[]).map((st) => {
@@ -62,6 +69,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
                 onPress={() => onStageChange?.(st)}
                 style={[
                   styles.stageChip,
+                  { flex: STAGE_FLEX[st] },
                   isActive && styles.stageChipActive,
                   isActive && st === 'mother' && { backgroundColor: '#10B981' },
                   isActive && st === 'conceive' && { backgroundColor: '#0284C7' },
@@ -71,7 +79,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
                 <Text
                   numberOfLines={1}
                   adjustsFontSizeToFit
-                  minimumFontScale={0.8}
+                  minimumFontScale={0.85}
                   style={[
                     styles.stageChipText,
                     isActive && styles.stageChipTextActive,
@@ -145,7 +153,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
             {/* Baby Says This Week */}
             <View style={styles.babySaysContainer}>
               <Text style={styles.babySaysHeader}>Baby says this week</Text>
-              <Text numberOfLines={3} style={styles.babySaysQuote}>
+              <Text numberOfLines={2} style={styles.babySaysQuote}>
                 It's only been a week... but I knew I can rely on you. I can recognize your voice, and the familiarity helps me adjust to the strange new world outside the womb i....
               </Text>
             </View>
@@ -157,7 +165,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
               style={styles.dailyUtilityBtn}
             >
               <Text style={styles.dailyUtilityText}>Check out my daily utility</Text>
-              <ArrowRight size={14} color="#EE4D38" />
+              <ArrowRight size={14} color="#e62a09" />
             </TouchableOpacity>
           </View>
         </View>
@@ -209,7 +217,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
                 {/* Top Card: Next Period */}
                 <View style={styles.conceiveMetricCard}>
                   <View style={styles.conceiveCardHeader}>
-                    <Calendar size={18} color="#EE4D38" />
+                    <Calendar size={18} color="#e62a09" />
                   </View>
                   <Text style={styles.conceiveCardLabel}>Next Period</Text>
                   <Text style={styles.conceiveCardValue}>13 Feb</Text>
@@ -235,7 +243,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
               style={styles.dailyUtilityBtn}
             >
               <Text style={styles.dailyUtilityText}>Check out my daily utility</Text>
-              <ArrowRight size={14} color="#EE4D38" />
+              <ArrowRight size={14} color="#e62a09" />
             </TouchableOpacity>
 
             {/* Action Buttons Row (Calendar & End Period) */}
@@ -254,7 +262,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
                 onPress={() => router.push('/record-symptoms')}
                 style={styles.endPeriodBtn}
               >
-                <Check size={16} color="#EE4D38" strokeWidth={2.8} />
+                <Check size={16} color="#e62a09" strokeWidth={2.8} />
                 <Text style={styles.endPeriodBtnText}>End Period</Text>
               </TouchableOpacity>
             </View>
@@ -294,7 +302,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
                     cx={RING_SIZE / 2}
                     cy={RING_SIZE / 2}
                     r={RADIUS}
-                    stroke="#EE4D38"
+                    stroke="#e62a09"
                     strokeWidth={STROKE_WIDTH}
                     strokeDasharray={`${CIRCUMFERENCE}`}
                     strokeDashoffset={STROKE_DASH_OFFSET}
@@ -345,7 +353,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
               style={styles.dailyUtilityBtn}
             >
               <Text style={styles.dailyUtilityText}>Check out my daily utility</Text>
-              <ArrowRight size={14} color="#EE4D38" />
+              <ArrowRight size={14} color="#e62a09" />
             </TouchableOpacity>
           </View>
         </View>
@@ -399,7 +407,7 @@ const styles = StyleSheet.create({
   stageSwitcherContainer: {
     backgroundColor: '#FAF9F6',
     paddingHorizontal: 12,
-    paddingTop: 4,
+    paddingTop: 6,
     paddingBottom: 10,
   },
   stageSwitcherRow: {
@@ -409,10 +417,9 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   stageChip: {
-    flex: 1,
-    paddingVertical: 6.5,
-    paddingHorizontal: 2,
-    borderRadius: 16,
+    paddingVertical: 7,
+    paddingHorizontal: 6,
+    borderRadius: 18,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E2E8F0',
@@ -420,7 +427,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stageChipActive: {
-    backgroundColor: '#EE4D38',
+    backgroundColor: '#e62a09',
     borderColor: 'transparent',
   },
   stageChipText: {
@@ -437,145 +444,145 @@ const styles = StyleSheet.create({
     width: '100%',
     height: HERO_CARD_HEIGHT,
     position: 'relative',
-    paddingTop: 14,
-    paddingBottom: 16,
+    paddingTop: 8,
+    paddingBottom: 10,
   },
   pregnantSectionWrapper: {
     width: '100%',
     height: HERO_CARD_HEIGHT,
     position: 'relative',
-    paddingTop: 14,
-    paddingBottom: 16,
+    paddingTop: 8,
+    paddingBottom: 10,
   },
   sectionInnerContent: {
     flex: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     justifyContent: 'space-between',
   },
   avatarCenterRow: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   babyAvatarContainer: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    borderWidth: 3.5,
-    borderColor: '#EE4D38',
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    borderWidth: 2.5,
+    borderColor: '#e62a09',
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
-    shadowColor: '#EE4D38',
-    shadowOffset: { width: 0, height: 4 },
+    shadowColor: '#e62a09',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    shadowRadius: 5,
+    elevation: 3,
   },
   babyAvatarImage: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
+    width: 62,
+    height: 62,
+    borderRadius: 31,
   },
   editPencilBadge: {
     position: 'absolute',
     bottom: -2,
     right: -2,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E2E8F0',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.12,
-    shadowRadius: 3,
-    elevation: 3,
+    shadowRadius: 2,
+    elevation: 2,
   },
   motherBabyTitle: {
-    fontSize: 20,
+    fontSize: 17,
     fontWeight: '800',
     color: '#1E293B',
     textAlign: 'center',
   },
   motherAgeTitle: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '700',
     color: '#1E293B',
     textAlign: 'center',
-    marginTop: 2,
+    marginTop: 1,
   },
   motherDateRange: {
-    fontSize: 12.5,
+    fontSize: 11,
     fontWeight: '500',
     color: '#64748B',
     textAlign: 'center',
-    marginTop: 2,
-    marginBottom: 8,
+    marginTop: 1,
+    marginBottom: 3,
   },
   pillsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
-    marginBottom: 8,
+    gap: 10,
+    marginBottom: 3,
   },
   measurementPill: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 14,
-    paddingVertical: 9,
-    paddingHorizontal: 10,
+    borderRadius: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 8,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#F1F5F9',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowRadius: 3,
+    elevation: 1,
   },
   pillLabel: {
-    fontSize: 10,
+    fontSize: 9.5,
     fontWeight: '700',
     color: '#94A3B8',
-    letterSpacing: 0.6,
+    letterSpacing: 0.5,
   },
   pillValue: {
-    fontSize: 15,
+    fontSize: 13.5,
     fontWeight: '800',
     color: '#1E293B',
-    marginTop: 2,
+    marginTop: 1,
   },
   babySaysContainer: {
     marginTop: 0,
   },
   babySaysHeader: {
-    fontSize: 14,
+    fontSize: 12.5,
     fontWeight: '800',
     color: '#1E293B',
-    marginBottom: 2,
+    marginBottom: 1,
   },
   babySaysQuote: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#64748B',
-    lineHeight: 16,
+    lineHeight: 14.5,
   },
   dailyUtilityBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 8,
+    marginTop: 4,
   },
   dailyUtilityText: {
-    fontSize: 13.5,
+    fontSize: 12.5,
     fontWeight: '700',
-    color: '#EE4D38',
+    color: '#e62a09',
     marginRight: 4,
   },
   pregnantTopRow: {
@@ -594,83 +601,82 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '-120deg' }],
   },
   embryoCircle: {
-    width: 98,
-    height: 98,
-    borderRadius: 49,
+    width: 78,
+    height: 78,
+    borderRadius: 39,
     backgroundColor: '#351713',
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
   embryoImage: {
-    width: 98,
-    height: 98,
-    borderRadius: 49,
+    width: 78,
+    height: 78,
+    borderRadius: 39,
   },
   weekTextCol: {
     flex: 1,
-    marginLeft: 16,
+    marginLeft: 14,
   },
   weekLabel: {
-    fontSize: 17,
+    fontSize: 14,
     fontWeight: '700',
     color: '#1E1E1E',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   weekCount: {
-    fontSize: 25,
+    fontSize: 21,
     fontWeight: '800',
-    color: '#EE4D38',
+    color: '#e62a09',
     letterSpacing: -0.3,
   },
   dayCount: {
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: '700',
-    color: '#EE4D38',
+    color: '#e62a09',
   },
   lookMummaRow: {
-    marginTop: 10,
-    minHeight: 125,
+    marginTop: 6,
+    minHeight: 90,
     justifyContent: 'center',
   },
   lookMummaTitle: {
-    fontSize: 19,
+    fontSize: 16.5,
     fontWeight: '800',
     color: '#1E1E1E',
   },
   lookMummaSubtitle: {
-    fontSize: 15.5,
+    fontSize: 13.5,
     fontWeight: '700',
     color: '#1E1E1E',
-    marginTop: 3,
+    marginTop: 1,
   },
   lookMummaDesc: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#64748B',
-    lineHeight: 18,
-    marginTop: 6,
+    lineHeight: 15,
+    marginTop: 3,
   },
   cornSticker: {
     position: 'absolute',
     right: 4,
-    top: -6,
-    width: 80,
-    height: 100,
+    top: -4,
+    width: 68,
+    height: 84,
   },
   conceiveHeroHorizontalRow: {
     flexDirection: 'row',
     alignItems: 'stretch',
-    gap: 12,
+    gap: 10,
     marginTop: 2,
-    flex: 1,
-    maxHeight: 220,
+    height: 172,
   },
   conceiveLeftCircleCard: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 22,
-    paddingVertical: 14,
-    paddingHorizontal: 10,
+    borderRadius: 18,
+    paddingVertical: 8,
+    paddingHorizontal: 8,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -678,115 +684,115 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
-    shadowRadius: 6,
+    shadowRadius: 5,
     elevation: 2,
   },
   conceiveRingContainer: {
-    width: 108,
-    height: 108,
-    borderRadius: 54,
-    borderWidth: 3.5,
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    borderWidth: 3,
     borderColor: '#FF7060',
     backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 6,
-    shadowColor: '#EE4D38',
-    shadowOffset: { width: 0, height: 3 },
+    paddingVertical: 4,
+    paddingHorizontal: 4,
+    shadowColor: '#e62a09',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowRadius: 4,
+    elevation: 2,
   },
   conceiveFlowerImage: {
-    width: 44,
-    height: 22,
-    marginBottom: 2,
+    width: 36,
+    height: 18,
+    marginBottom: 1,
   },
   pregnancyChanceLabel: {
-    fontSize: 10.5,
+    fontSize: 9.5,
     fontWeight: '600',
     color: '#475569',
     textAlign: 'center',
   },
   pregnancyChanceValue: {
-    fontSize: 20,
+    fontSize: 16.5,
     fontWeight: '800',
-    color: '#EE4D38',
+    color: '#e62a09',
     textAlign: 'center',
     marginTop: 1,
   },
   conceiveBabyTitle: {
-    fontSize: 24,
+    fontSize: 19,
     fontWeight: '800',
     color: '#1E293B',
     textAlign: 'center',
-    marginTop: 14,
+    marginTop: 6,
   },
   conceiveRightCardsCol: {
     flex: 1,
     flexDirection: 'column',
     justifyContent: 'space-between',
-    gap: 10,
+    gap: 8,
   },
   conceiveMetricCard: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    borderRadius: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#F1F5F9',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
-    shadowRadius: 6,
+    shadowRadius: 5,
     elevation: 2,
   },
   conceiveCardHeader: {
-    marginBottom: 6,
+    marginBottom: 2,
   },
   conceiveCardLabel: {
-    fontSize: 12.5,
+    fontSize: 11,
     fontWeight: '600',
     color: '#64748B',
   },
   conceiveCardValue: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '800',
     color: '#1E1E1E',
-    marginTop: 2,
+    marginTop: 1,
   },
   conceiveCardSub: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '500',
     color: '#94A3B8',
-    marginTop: 2,
+    marginTop: 1,
   },
   conceiveActionsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
-    marginTop: 8,
+    gap: 10,
+    marginTop: 6,
   },
   calendarBtn: {
     flex: 1,
-    backgroundColor: '#EE4D38',
-    borderRadius: 14,
-    paddingVertical: 12,
+    backgroundColor: '#e62a09',
+    borderRadius: 12,
+    paddingVertical: 9,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#EE4D38',
-    shadowOffset: { width: 0, height: 3 },
+    shadowColor: '#e62a09',
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
-    shadowRadius: 5,
-    elevation: 3,
+    shadowRadius: 4,
+    elevation: 2,
   },
   calendarBtnText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
     color: '#FFFFFF',
     marginLeft: 6,
@@ -795,68 +801,69 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: '#EE4D38',
-    borderRadius: 14,
-    paddingVertical: 12,
+    borderColor: '#e62a09',
+    borderRadius: 12,
+    paddingVertical: 9,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
   },
   endPeriodBtnText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '800',
-    color: '#EE4D38',
+    color: '#e62a09',
     marginLeft: 6,
   },
   tipsCardContainer: {
     marginHorizontal: 16,
-    marginTop: 14,
-    borderRadius: 20,
+    marginTop: 8,
+    borderRadius: 18,
     backgroundColor: '#FFFFFF',
-    padding: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     borderWidth: 1,
     borderColor: '#EDEFF2',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 4,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 3,
     position: 'relative',
-    minHeight: 145,
+    minHeight: 105,
   },
   tipsHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   tipsTitle: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
-    color: '#EE4D38',
-    marginLeft: 6,
+    color: '#e62a09',
+    marginLeft: 5,
   },
   tipsDescription: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#334155',
-    lineHeight: 17,
-    marginBottom: 14,
+    lineHeight: 15,
+    marginBottom: 8,
   },
   moreTipsLink: {
-    fontSize: 12.5,
+    fontSize: 11.5,
     fontWeight: '700',
-    color: '#EE4D38',
+    color: '#e62a09',
     textDecorationLine: 'underline',
   },
   shareLink: {
-    fontSize: 12.5,
+    fontSize: 11.5,
     fontWeight: '600',
     color: '#64748B',
   },
   babyCloudSticker: {
     position: 'absolute',
-    right: 6,
-    bottom: -25,
-    width: 95,
-    height: 100,
+    right: 4,
+    bottom: -16,
+    width: 78,
+    height: 82,
   },
 });

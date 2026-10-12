@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,8 @@ import {
   StatusBar,
   Pressable,
   Alert,
+  Keyboard,
+  LayoutAnimation,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -46,12 +48,34 @@ export default function OTPScreen() {
 
   const verifyOtpMutation = useVerifyOtpMutation();
   const sendOtpMutation = useSendOtpMutation();
+  const isVerifyingRef = useRef(false);
 
   const formatCountdown = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
+
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, () => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setIsKeyboardOpen(true);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setIsKeyboardOpen(false);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   // Timer countdown
   useEffect(() => {
@@ -64,29 +88,36 @@ export default function OTPScreen() {
   }, [countdown]);
 
   const handleVerify = async (otpCode: string) => {
-    setHasError(false);
-    setErrorMessage('');
+    if (isVerifyingRef.current || verifyOtpMutation.isPending) return;
 
-    if (otpCode.length < 4) {
+    const codeToVerify = otpCode || otp;
+    if (codeToVerify.length < 4) {
       setHasError(true);
       setErrorMessage(t('auth.otpError', 'Please enter a valid 4-digit OTP.'));
       return;
     }
 
+    setHasError(false);
+    setErrorMessage('');
+    isVerifyingRef.current = true;
+    Keyboard.dismiss();
+
     try {
       const res = await verifyOtpMutation.mutateAsync({
         phone: userPhone || '9999999999',
-        otp: otpCode,
+        otp: codeToVerify,
         location,
       });
 
       await login(res.token, res.user);
 
-      // Navigate to Language Selection Screen (Figma Screen 5)
-      router.push('/(auth)/language');
+      // Navigate to Language Selection Screen
+      router.replace('/(auth)/language');
     } catch (err: any) {
       setHasError(true);
       setErrorMessage(err?.message || 'Invalid OTP code');
+    } finally {
+      isVerifyingRef.current = false;
     }
   };
 
@@ -108,25 +139,60 @@ export default function OTPScreen() {
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1 }}
       >
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingBottom: 40 }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingHorizontal: 24,
+            paddingTop: isKeyboardOpen ? 4 : 14,
+            paddingBottom: isKeyboardOpen ? 16 : 30,
+          }}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           showsVerticalScrollIndicator={false}
         >
           {/* Top Logo */}
-          <View className="items-center pt-4 pb-2">
-            <BrandLogo size="lg" showText showTagline />
+          <View
+            style={{
+              alignItems: 'center',
+              paddingTop: isKeyboardOpen ? 4 : 14,
+              paddingBottom: isKeyboardOpen ? 2 : 6,
+            }}
+          >
+            <BrandLogo size="lg" showText imageSize={160} />
           </View>
 
           {/* Heading & Subtitle */}
-          <View className="items-center mt-4 mb-8">
-            <Text style={{ fontSize: 32, fontWeight: '800', color: '#111827', textAlign: 'center', letterSpacing: -0.5 }}>
+          <View
+            style={{
+              alignItems: 'center',
+              marginTop: isKeyboardOpen ? 2 : 6,
+              marginBottom: isKeyboardOpen ? 6 : 16,
+            }}
+          >
+            <Text
+              style={{
+                fontSize: isKeyboardOpen ? 26 : 30,
+                fontWeight: '800',
+                color: '#111827',
+                textAlign: 'center',
+                letterSpacing: -0.5,
+              }}
+            >
               {t('auth.otpTitle', 'OTP')}
             </Text>
-            <Text style={{ fontSize: 16, lineHeight: 24, color: '#475569', textAlign: 'center', marginTop: 8, paddingHorizontal: 12 }}>
+            <Text
+              style={{
+                fontSize: 14,
+                lineHeight: 20,
+                color: '#475569',
+                textAlign: 'center',
+                marginTop: isKeyboardOpen ? 2 : 4,
+                paddingHorizontal: 12,
+              }}
+            >
               {subtitleParts.length > 1 ? (
                 <>
                   {subtitleParts[0]}
@@ -142,8 +208,8 @@ export default function OTPScreen() {
           </View>
 
           {/* OTP Section */}
-          <View className="w-full mt-2">
-            <Text style={{ fontSize: 16, fontWeight: '700', color: '#1E1E1E', marginBottom: 12, marginLeft: 4 }}>
+          <View style={{ width: '100%', marginTop: 2 }}>
+            <Text style={{ fontSize: 15, fontWeight: '700', color: '#1E1E1E', marginBottom: 10, marginLeft: 4 }}>
               {t('auth.otpLabel', 'OTP')}
             </Text>
 
@@ -154,31 +220,25 @@ export default function OTPScreen() {
                 setOtp(code);
                 if (hasError) setHasError(false);
               }}
-              onComplete={(code) => handleVerify(code)}
               hasError={hasError}
             />
 
             {errorMessage ? (
-              <Text className="text-sm text-red-500 text-center mt-2.5">
+              <Text style={{ fontSize: 13, color: '#EF4444', textAlign: 'center', marginTop: 8 }}>
                 {errorMessage}
               </Text>
             ) : null}
 
-            {/* Auto verifying indicator */}
-            <Text style={{ fontSize: 13, color: '#94A3B8', textAlign: 'center', marginTop: 18 }}>
-              {t('auth.autoVerifying', 'Auto verifying your OTP')}
-            </Text>
-
             {/* Resend timer */}
-            <View className="items-center justify-center mt-3">
+            <View style={{ alignItems: 'center', justifyContent: 'center', marginTop: 14 }}>
               {canResend ? (
                 <Pressable onPress={handleResend} hitSlop={10}>
-                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#EE4D38' }}>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#e62a09' }}>
                     {t('auth.resendNow', 'Resend OTP')}
                   </Text>
                 </Pressable>
               ) : (
-                <Text style={{ fontSize: 14, color: '#64748B' }}>
+                <Text style={{ fontSize: 13, color: '#64748B' }}>
                   {t('auth.resendTimer', `Didn't get the OTP? Resend OTP in ${formatCountdown(countdown)}`, {
                     seconds: formatCountdown(countdown),
                     time: formatCountdown(countdown),
@@ -189,7 +249,7 @@ export default function OTPScreen() {
           </View>
 
           {/* Log in Button */}
-          <View style={{ marginTop: 28, width: '100%' }}>
+          <View style={{ marginTop: isKeyboardOpen ? 14 : 24, width: '100%' }}>
             <Button
               title={t('common.login', 'Log in')}
               onPress={() => handleVerify(otp)}

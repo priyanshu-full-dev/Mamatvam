@@ -98,7 +98,7 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     category: 'Tips',
     iconType: 'tip',
     iconBg: '#FFF1F2',
-    iconColor: '#EE4D38',
+    iconColor: '#e62a09',
     unread: false,
     route: '/today-tips',
   },
@@ -376,7 +376,7 @@ export default function NotificationsScreen() {
               style={styles.actionIconBtn}
               accessibilityLabel="Reload dummy notifications"
             >
-              <RotateCcw size={19} color="#EE4D38" strokeWidth={2.2} />
+              <RotateCcw size={19} color="#e62a09" strokeWidth={2.2} />
             </TouchableOpacity>
           )}
         </View>
@@ -429,8 +429,8 @@ export default function NotificationsScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#EE4D38"
-              colors={['#EE4D38']}
+              tintColor="#e62a09"
+              colors={['#e62a09']}
             />
           }
         >
@@ -492,8 +492,8 @@ export default function NotificationsScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor="#EE4D38"
-              colors={['#EE4D38']}
+              tintColor="#e62a09"
+              colors={['#e62a09']}
             />
           }
         >
@@ -517,7 +517,7 @@ export default function NotificationsScreen() {
               onPress={restoreDummy}
               style={styles.restoreButton}
             >
-              <RotateCcw size={15} color="#EE4D38" style={{ marginRight: 6 }} />
+              <RotateCcw size={15} color="#e62a09" style={{ marginRight: 6 }} />
               <Text style={styles.restoreButtonText}>Load Sample Notifications</Text>
             </TouchableOpacity>
           </View>
@@ -621,7 +621,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderColor: '#FED7D2',
     borderLeftWidth: 3.5,
-    borderLeftColor: '#EE4D38',
+    borderLeftColor: '#e62a09',
   },
   iconWrapper: {
     width: 42,
@@ -657,7 +657,7 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: '#EE4D38',
+    backgroundColor: '#e62a09',
   },
   cardMessage: {
     fontSize: 13,
@@ -739,6 +739,6 @@ const styles = StyleSheet.create({
   restoreButtonText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#EE4D38',
+    color: '#e62a09',
   },
 });

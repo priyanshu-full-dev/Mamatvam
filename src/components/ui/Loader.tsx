@@ -10,7 +10,7 @@ export function Loader({
 }) {
   return (
     <View className="flex-1 items-center justify-center p-6 bg-white">
-      <ActivityIndicator size={size} color="#EE4D38" />
+      <ActivityIndicator size={size} color="#e62a09" />
       {message && (
         <Text className="text-sm font-medium text-[#6B7280] mt-3">
           {message}

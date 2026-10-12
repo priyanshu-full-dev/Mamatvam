@@ -311,7 +311,7 @@ export default function PregnancyScreen() {
             <Switch
               value={isDiabetic}
               onValueChange={setIsDiabetic}
-              trackColor={{ false: '#CBD5E1', true: '#EE4D38' }}
+              trackColor={{ false: '#CBD5E1', true: '#e62a09' }}
               thumbColor="#FFFFFF"
               ios_backgroundColor="#CBD5E1"
             />
@@ -338,7 +338,7 @@ export default function PregnancyScreen() {
                   selected={bloodPressure === 'low'}
                   onPress={() => setBloodPressure('low')}
                   size={19}
-                  color="#EE4D38"
+                  color="#e62a09"
                 />
                 <Text style={[styles.bpOptionLabel, { color: '#EF4444' }]}>Low</Text>
               </Pressable>
@@ -352,7 +352,7 @@ export default function PregnancyScreen() {
                   selected={bloodPressure === 'normal'}
                   onPress={() => setBloodPressure('normal')}
                   size={19}
-                  color="#EE4D38"
+                  color="#e62a09"
                 />
                 <Text style={[styles.bpOptionLabel, { color: '#10B981' }]}>Normal</Text>
               </Pressable>
@@ -366,7 +366,7 @@ export default function PregnancyScreen() {
                   selected={bloodPressure === 'high'}
                   onPress={() => setBloodPressure('high')}
                   size={19}
-                  color="#EE4D38"
+                  color="#e62a09"
                 />
                 <Text style={[styles.bpOptionLabel, { color: '#F59E0B' }]}>High</Text>
               </Pressable>
@@ -424,7 +424,7 @@ export default function PregnancyScreen() {
                   </Text>
                   <ChevronDown
                     size={16}
-                    color={showYearSelector ? '#EE4D38' : '#64748B'}
+                    color={showYearSelector ? '#e62a09' : '#64748B'}
                   />
                 </Pressable>
               </View>
@@ -606,7 +606,7 @@ export default function PregnancyScreen() {
                     >
                       {item}
                     </Text>
-                    {isSelected && <Check size={18} color="#EE4D38" />}
+                    {isSelected && <Check size={18} color="#e62a09" />}
                   </Pressable>
                 );
               }}
@@ -802,7 +802,7 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   calendarYearTextActive: {
-    color: '#EE4D38',
+    color: '#e62a09',
   },
   calendarBodyContainer: {
     height: 278,
@@ -827,8 +827,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   yearOptionCardSelected: {
-    backgroundColor: '#EE4D38',
-    borderColor: '#EE4D38',
+    backgroundColor: '#e62a09',
+    borderColor: '#e62a09',
   },
   yearOptionText: {
     fontSize: 16,
@@ -870,7 +870,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   daySlotSelected: {
-    backgroundColor: '#EE4D38',
+    backgroundColor: '#e62a09',
   },
   daySlotDisabled: {
     opacity: 0.35,
@@ -918,6 +918,6 @@ const styles = StyleSheet.create({
   },
   bloodItemTextSelected: {
     fontWeight: '700',
-    color: '#EE4D38',
+    color: '#e62a09',
   },
 });

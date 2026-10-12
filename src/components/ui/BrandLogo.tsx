@@ -1,37 +1,43 @@
 import React from 'react';
-import { View } from 'react-native';
-import { Image } from 'expo-image';
+import { View, StyleSheet } from 'react-native';
+import { Image, ImageSource } from 'expo-image';
 
 interface BrandLogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showText?: boolean;
   showTagline?: boolean;
   imageSize?: number;
+  animatedOnKeyboard?: boolean;
+  compactSize?: number;
+  source?: ImageSource | number;
 }
 
 export function BrandLogo({
-  size = 'md',
+  size = 'lg',
   showText = true,
   showTagline = true,
   imageSize,
+  source,
 }: BrandLogoProps) {
   const dimensions = {
-    sm: { img: showText ? 90 : 48 },
-    md: { img: showText ? 150 : 75 },
-    lg: { img: showText ? 190 : 100 },
-    xl: { img: showText ? 230 : 120 },
-  }[size] || { img: 190 };
+    sm: { img: showText ? 100 : 54 },
+    md: { img: showText ? 140 : 75 },
+    lg: { img: showText ? 160 : 100 },
+    xl: { img: showText ? 190 : 120 },
+  }[size] || { img: 160 };
 
   const finalImgSize = imageSize || dimensions.img;
 
+  const logoSource =
+    source ||
+    (showText
+      ? require('@/assets/images/logo/mamatvam-logo2.png')
+      : require('@/assets/images/mamatvam-circle-logo.png'));
+
   return (
-    <View className="items-center justify-center">
+    <View style={styles.container}>
       <Image
-        source={
-          showText
-            ? require('@/assets/images/mamatvam-logo.png')
-            : require('@/assets/images/mamatvam-circle-logo.png')
-        }
+        source={logoSource}
         style={{ width: finalImgSize, height: finalImgSize }}
         contentFit="contain"
         cachePolicy="memory-disk"
@@ -39,3 +45,11 @@ export function BrandLogo({
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'visible',
+  },
+});

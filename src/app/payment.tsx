@@ -103,7 +103,7 @@ export default function PaymentScreen() {
           {/* Logo Row */}
           <View style={styles.logoRow}>
             <View style={styles.logoIconBadge}>
-              <Heart size={16} color="#EE4D38" fill="#EE4D38" />
+              <Heart size={16} color="#e62a09" fill="#e62a09" />
             </View>
             <View>
               <Text style={styles.logoTitle}>MAMATVAM</Text>
@@ -332,7 +332,7 @@ export default function PaymentScreen() {
         {/* 4. Billing Details Form */}
         <View style={styles.formSection}>
           <View style={styles.billingHeaderRow}>
-            <Receipt size={17} color="#EE4D38" strokeWidth={2.4} style={{ marginRight: 6 }} />
+            <Receipt size={17} color="#e62a09" strokeWidth={2.4} style={{ marginRight: 6 }} />
             <Text style={styles.formSectionTitle}>Billing Details</Text>
           </View>
 
@@ -509,7 +509,7 @@ const styles = StyleSheet.create({
   logoTitle: {
     fontSize: 13.5,
     fontWeight: '900',
-    color: '#EE4D38',
+    color: '#e62a09',
     letterSpacing: 0.6,
   },
   logoSubtitle: {
@@ -585,7 +585,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   methodItemSelected: {
-    borderColor: '#EE4D38',
+    borderColor: '#e62a09',
     backgroundColor: '#FFFBFB',
   },
   radioCircle: {
@@ -599,13 +599,13 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   radioCircleActive: {
-    borderColor: '#EE4D38',
+    borderColor: '#e62a09',
   },
   radioInnerDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#EE4D38',
+    backgroundColor: '#e62a09',
   },
   methodIconBadge: {
     width: 34,
@@ -697,12 +697,12 @@ const styles = StyleSheet.create({
     color: '#1E293B',
   },
   payNowButton: {
-    backgroundColor: '#EE4D38',
+    backgroundColor: '#e62a09',
     borderRadius: 16,
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#EE4D38',
+    shadowColor: '#e62a09',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -731,7 +731,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   termsLink: {
-    color: '#EE4D38',
+    color: '#e62a09',
     fontWeight: '700',
   },
   modalOverlay: {
@@ -776,7 +776,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   modalButton: {
-    backgroundColor: '#EE4D38',
+    backgroundColor: '#e62a09',
     borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 28,

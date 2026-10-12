@@ -442,7 +442,7 @@ export default function ExpertDirectoryScreen() {
                 <View style={styles.locationCol}>
                   <Text style={styles.locationLabel}>LOCATION</Text>
                   <View style={styles.locationValueRow}>
-                    <MapPin size={12} color="#EE4D38" strokeWidth={2.2} style={{ marginRight: 4 }} />
+                    <MapPin size={12} color="#e62a09" strokeWidth={2.2} style={{ marginRight: 4 }} />
                     <Text style={styles.locationText} numberOfLines={1}>
                       {expert.location}
                     </Text>
@@ -509,7 +509,7 @@ export default function ExpertDirectoryScreen() {
                     consultationType === 'clinic' && styles.formatOptionActive,
                   ]}
                 >
-                  <Building size={16} color={consultationType === 'clinic' ? '#EE4D38' : '#64748B'} />
+                  <Building size={16} color={consultationType === 'clinic' ? '#e62a09' : '#64748B'} />
                   <Text
                     style={[
                       styles.formatOptionText,
@@ -527,7 +527,7 @@ export default function ExpertDirectoryScreen() {
                     consultationType === 'video' && styles.formatOptionActive,
                   ]}
                 >
-                  <Video size={16} color={consultationType === 'video' ? '#EE4D38' : '#64748B'} />
+                  <Video size={16} color={consultationType === 'video' ? '#e62a09' : '#64748B'} />
                   <Text
                     style={[
                       styles.formatOptionText,
@@ -618,7 +618,7 @@ export default function ExpertDirectoryScreen() {
                 {selectedExpert?.name}
               </Text>{' '}
               has been scheduled for{' '}
-              <Text style={{ fontWeight: '700', color: '#EE4D38' }}>{selectedSlot}</Text>.
+              <Text style={{ fontWeight: '700', color: '#e62a09' }}>{selectedSlot}</Text>.
             </Text>
 
             <TouchableOpacity
@@ -693,8 +693,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   categoryPillActive: {
-    backgroundColor: '#EE4D38',
-    borderColor: '#EE4D38',
+    backgroundColor: '#e62a09',
+    borderColor: '#e62a09',
   },
   categoryPillText: {
     fontSize: 12,
@@ -805,13 +805,13 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   bookNowButton: {
-    backgroundColor: '#EE4D38',
+    backgroundColor: '#e62a09',
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 9,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#EE4D38',
+    shadowColor: '#e62a09',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -946,7 +946,7 @@ const styles = StyleSheet.create({
   },
   formatOptionActive: {
     backgroundColor: '#FFF1EE',
-    borderColor: '#EE4D38',
+    borderColor: '#e62a09',
   },
   formatOptionText: {
     fontSize: 12.5,
@@ -955,7 +955,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   formatOptionTextActive: {
-    color: '#EE4D38',
+    color: '#e62a09',
     fontWeight: '700',
   },
   slotPill: {
@@ -968,7 +968,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   slotPillActive: {
-    backgroundColor: '#EE4D38',
+    backgroundColor: '#e62a09',
   },
   slotPillText: {
     fontSize: 12,
@@ -980,7 +980,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   confirmBookingBtn: {
-    backgroundColor: '#EE4D38',
+    backgroundColor: '#e62a09',
     borderRadius: 16,
     paddingVertical: 14,
     alignItems: 'center',

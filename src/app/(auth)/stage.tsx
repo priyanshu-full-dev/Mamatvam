@@ -65,19 +65,6 @@ export default function StageScreen() {
 
   const handleStagePress = (stageId: PregnancyStage) => {
     setSelectedStage(stageId);
-    if (stageId === 'pregnant') {
-      setStage('pregnant');
-      router.push('/(auth)/pregnancy');
-    } else if (stageId === 'mother') {
-      setStage('mother');
-      router.push('/(auth)/baby-gender');
-    } else if (stageId === 'conceive') {
-      setStage('conceive');
-      router.push('/(auth)/conceive');
-    } else if (stageId === 'explore') {
-      setStage('explore');
-      router.push('/(auth)/iui-ivf');
-    }
   };
 
   const handleContinue = () => {
@@ -150,7 +137,7 @@ export default function StageScreen() {
                       padding: 12,
                     },
                     isSelected
-                      ? { borderColor: '#EE4D38', borderWidth: 2 }
+                      ? { borderColor: '#e62a09', borderWidth: 2 }
                       : { borderColor: 'transparent', borderWidth: 2 },
                     {
                       shadowColor: '#000000',

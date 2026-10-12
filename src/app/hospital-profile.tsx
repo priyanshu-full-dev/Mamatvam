@@ -128,7 +128,7 @@ export default function HospitalProfileScreen() {
           onPress={() => handleCall(HOSPITAL_DATA.emergencyPhone, 'Emergency Desk')}
           style={styles.headerEmergencyBtn}
         >
-          <PhoneCall size={16} color="#EE4D38" strokeWidth={2.4} />
+          <PhoneCall size={16} color="#e62a09" strokeWidth={2.4} />
           <Text style={styles.headerEmergencyText}>SOS</Text>
         </TouchableOpacity>
       </View>
@@ -227,7 +227,7 @@ export default function HospitalProfileScreen() {
           <Text style={styles.sectionTitle}>Location & Timings</Text>
 
           <View style={styles.infoRow}>
-            <MapPin size={18} color="#EE4D38" style={styles.infoIcon} />
+            <MapPin size={18} color="#e62a09" style={styles.infoIcon} />
             <View style={{ flex: 1 }}>
               <Text style={styles.infoHeading}>Hospital Address</Text>
               <Text style={styles.infoText}>{HOSPITAL_DATA.address}</Text>
@@ -277,7 +277,7 @@ export default function HospitalProfileScreen() {
           <View style={styles.facilitiesGrid}>
             {HOSPITAL_DATA.facilities.map((fac, idx) => (
               <View key={idx} style={styles.facilityItem}>
-                <Building2 size={16} color="#EE4D38" style={{ marginTop: 2 }} />
+                <Building2 size={16} color="#e62a09" style={{ marginTop: 2 }} />
                 <Text style={styles.facilityText}>{fac}</Text>
               </View>
             ))}
@@ -298,7 +298,7 @@ export default function HospitalProfileScreen() {
               <Text style={styles.contactValue}>{HOSPITAL_DATA.phone}</Text>
             </View>
             <View style={styles.dialBadge}>
-              <Phone size={14} color="#EE4D38" />
+              <Phone size={14} color="#e62a09" />
               <Text style={styles.dialText}>Call</Text>
             </View>
           </TouchableOpacity>
@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
   headerEmergencyText: {
     fontSize: 12,
     fontWeight: '800',
-    color: '#EE4D38',
+    color: '#e62a09',
     marginLeft: 4,
   },
   scrollContent: {
@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
     borderColor: '#FBDCD5',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#EE4D38',
+    shadowColor: '#e62a09',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 6,
@@ -476,13 +476,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   primaryCallBtn: {
-    backgroundColor: '#EE4D38',
+    backgroundColor: '#e62a09',
     borderRadius: 16,
     paddingVertical: 14,
     paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: '#EE4D38',
+    shadowColor: '#e62a09',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -601,7 +601,7 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#EE4D38',
+    backgroundColor: '#e62a09',
     marginTop: 6,
     marginRight: 10,
   },
@@ -659,7 +659,7 @@ const styles = StyleSheet.create({
   dialText: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#EE4D38',
+    color: '#e62a09',
   },
   floatingBottomBar: {
     position: 'absolute',
@@ -678,14 +678,14 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   floatingCallBtn: {
-    backgroundColor: '#EE4D38',
+    backgroundColor: '#e62a09',
     borderRadius: 14,
     paddingVertical: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    shadowColor: '#EE4D38',
+    shadowColor: '#e62a09',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
     shadowRadius: 6,

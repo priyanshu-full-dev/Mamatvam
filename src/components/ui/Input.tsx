@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, forwardRef } from 'react';
 import {
   View,
   Text,
@@ -16,17 +16,20 @@ export interface InputProps extends TextInputProps {
   containerClassName?: string;
 }
 
-export function Input({
-  label,
-  error,
-  helperText,
-  leftIcon,
-  rightIcon,
-  containerClassName = '',
-  onFocus,
-  onBlur,
-  ...props
-}: InputProps) {
+export const Input = forwardRef<TextInput, InputProps>(function Input(
+  {
+    label,
+    error,
+    helperText,
+    leftIcon,
+    rightIcon,
+    containerClassName = '',
+    onFocus,
+    onBlur,
+    ...props
+  },
+  ref
+) {
   const [isFocused, setIsFocused] = useState(false);
 
   return (
@@ -40,13 +43,14 @@ export function Input({
           error
             ? 'border-red-500 bg-red-50'
             : isFocused
-            ? 'border-[#EE4D38]'
+            ? 'border-[#e62a09]'
             : 'border-[#E5E7EB]'
         }`}
       >
         {leftIcon && <View className="mr-3">{leftIcon}</View>}
 
         <TextInput
+          ref={ref}
           className="flex-1 text-base text-[#1E1E1E] py-0 font-normal"
           placeholderTextColor="#9CA3AF"
           onFocus={(e) => {
@@ -70,4 +74,4 @@ export function Input({
       ) : null}
     </View>
   );
-}
+});

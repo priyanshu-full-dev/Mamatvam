@@ -6,15 +6,15 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#EE4D38",
-          dark: "#D43B27",
+          DEFAULT: "#e62a09",
+          dark: "#c72306",
           light: "#FFF1EE",
         },
         coral: {
           50: "#FFF5F4",
           100: "#FCE2E2",
           200: "#F9C6C1",
-          500: "#EE4D38",
+          500: "#e62a09",
           600: "#E53935",
         },
         surface: {

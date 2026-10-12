@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
+  TextInput,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -11,7 +12,13 @@ import {
   ActivityIndicator,
   StyleSheet,
   Keyboard,
+  LayoutAnimation,
+  UIManager,
 } from 'react-native';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 import { useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -82,11 +89,33 @@ export default function SignInScreen() {
   const [phoneError, setPhoneError] = useState('');
 
   const sendOtpMutation = useSendOtpMutation();
+  const pincodeInputRef = useRef<TextInput>(null);
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, () => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setIsKeyboardOpen(true);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      setIsKeyboardOpen(false);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   const isPhoneValid = inputPhone.trim().length >= 10;
   const isPincodeFilled = pincode.trim().length > 0;
   const isPincodeValid = !isPincodeFilled || (pincode.length === 6 && !!selectedArea);
   const isFormValid = isPhoneValid && isPincodeValid;
+  const hasLocations = locations.length > 0;
 
   const handlePincodeChange = async (text: string) => {
     const cleanText = text.replace(/[^0-9]/g, '').slice(0, 6);
@@ -95,6 +124,7 @@ export default function SignInScreen() {
 
     if (cleanText.length === 6) {
       Keyboard.dismiss();
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       if (FALLBACK_PINCODES[cleanText]) {
         setLocations(FALLBACK_PINCODES[cleanText]);
         setSelectedArea(FALLBACK_PINCODES[cleanText][0]);
@@ -115,12 +145,14 @@ export default function SignInScreen() {
             state: po.State,
             pincode: po.Pincode,
           }));
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
           setLocations(parsed);
           setSelectedArea((prev) => {
             if (prev && parsed.some((p) => p.name === prev.name)) return prev;
             return parsed[0];
           });
         } else if (!FALLBACK_PINCODES[cleanText]) {
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
           setLocations([]);
           setSelectedArea(null);
           setPincodeError('No locations found for this PIN code');
@@ -133,16 +165,21 @@ export default function SignInScreen() {
         setIsLoadingPincode(false);
       }
     } else {
+      if (locations.length > 0) {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      }
       setLocations([]);
       setSelectedArea(null);
     }
   };
 
-  const handleContinue = async () => {
-    setPhoneError('');
-    setPincodeError('');
+  const isSubmittingRef = useRef(false);
 
-    if (!isPhoneValid) {
+  const submitWithPhone = async (phoneToSubmit: string) => {
+    if (isSubmittingRef.current || sendOtpMutation.isPending) return;
+
+    const clean = phoneToSubmit.replace(/[^0-9]/g, '');
+    if (clean.length < 10) {
       setPhoneError(t('auth.invalidPhone', 'Please enter a valid 10-digit mobile number'));
       return;
     }
@@ -156,23 +193,46 @@ export default function SignInScreen() {
       return;
     }
 
+    setPhoneError('');
+    setPincodeError('');
+    isSubmittingRef.current = true;
+    Keyboard.dismiss();
+
     try {
-      setPhone(inputPhone);
+      setPhone(clean);
       if (selectedArea) {
         setLocation(`${selectedArea.name}, ${selectedArea.district}, ${selectedArea.state}`);
       } else {
         setLocation('');
       }
 
-      await sendOtpMutation.mutateAsync({ phone: inputPhone });
+      await sendOtpMutation.mutateAsync({ phone: clean });
 
       router.push({
         pathname: '/(auth)/otp',
-        params: { phone: inputPhone },
+        params: { phone: clean },
       });
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to send OTP. Please try again.');
+    } finally {
+      isSubmittingRef.current = false;
     }
+  };
+
+  const handlePhoneChange = (text: string) => {
+    const cleanNumber = text.replace(/[^0-9]/g, '').slice(0, 10);
+    setInputPhone(cleanNumber);
+    if (phoneError) setPhoneError('');
+
+    if (cleanNumber.length === 10) {
+      setTimeout(() => {
+        pincodeInputRef.current?.focus();
+      }, 50);
+    }
+  };
+
+  const handleContinue = () => {
+    submitWithPhone(inputPhone);
   };
 
   return (
@@ -186,20 +246,44 @@ export default function SignInScreen() {
         {/* Main Scrollable Content */}
         <ScrollView
           style={{ flex: 1 }}
-          contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 24, paddingTop: 16, paddingBottom: 16 }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            paddingHorizontal: 24,
+            paddingTop: isKeyboardOpen ? 4 : (hasLocations ? 6 : 14),
+            paddingBottom: isKeyboardOpen ? 12 : 24,
+          }}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           showsVerticalScrollIndicator={false}
         >
           {/* Top Logo */}
-          <View style={{ alignItems: 'center', paddingTop: 10, paddingBottom: 8 }}>
-            <BrandLogo size="lg" showText showTagline />
+          <View
+            style={{
+              alignItems: 'center',
+              paddingTop: isKeyboardOpen ? 4 : (hasLocations ? 6 : 14),
+              paddingBottom: isKeyboardOpen ? 2 : (hasLocations ? 2 : 6),
+            }}
+          >
+            <BrandLogo
+              size="lg"
+              showText
+              showTagline={!hasLocations && !isKeyboardOpen}
+              imageSize={160}
+              source={require('@/assets/images/logo/mamatvam-logo2.png')}
+            />
           </View>
 
           {/* Heading & Subtitle */}
-          <View style={{ alignItems: 'center', marginTop: 8, marginBottom: 20 }}>
+          <View
+            style={{
+              alignItems: 'center',
+              marginTop: isKeyboardOpen ? 2 : (hasLocations ? 2 : 6),
+              marginBottom: isKeyboardOpen ? 6 : (hasLocations ? 6 : 18),
+            }}
+          >
             <Text
               style={{
-                fontSize: 30,
+                fontSize: isKeyboardOpen || hasLocations ? 24 : 30,
                 fontWeight: '800',
                 color: '#111827',
                 textAlign: 'center',
@@ -208,21 +292,23 @@ export default function SignInScreen() {
             >
               {t('auth.signIn', 'Sign in')}
             </Text>
-            <Text
-              style={{
-                fontSize: 15,
-                lineHeight: 22,
-                color: '#475569',
-                textAlign: 'center',
-                marginTop: 6,
-                paddingHorizontal: 12,
-              }}
-            >
-              {t(
-                'auth.signInSubtitle',
-                'Sign in or create an account with your mobile number.'
-              )}
-            </Text>
+            {!hasLocations && !isKeyboardOpen && (
+              <Text
+                style={{
+                  fontSize: 15,
+                  lineHeight: 22,
+                  color: '#475569',
+                  textAlign: 'center',
+                  marginTop: 6,
+                  paddingHorizontal: 12,
+                }}
+              >
+                {t(
+                  'auth.signInSubtitle',
+                  'Sign in or create an account with your mobile number.'
+                )}
+              </Text>
+            )}
           </View>
 
           {/* Form Fields */}
@@ -233,10 +319,7 @@ export default function SignInScreen() {
                 label={t('auth.phoneNumber', 'Mobile Number')}
                 placeholder={t('auth.phonePlaceholder', 'Enter mobile number')}
                 value={inputPhone}
-                onChangeText={(text) => {
-                  setInputPhone(text);
-                  if (phoneError) setPhoneError('');
-                }}
+                onChangeText={handlePhoneChange}
                 keyboardType="phone-pad"
                 maxLength={10}
                 error={phoneError}
@@ -244,8 +327,9 @@ export default function SignInScreen() {
             </View>
 
             {/* PIN Code Field */}
-            <View style={{ marginTop: 14 }}>
+            <View style={{ marginTop: isKeyboardOpen ? 8 : (hasLocations ? 10 : 14) }}>
               <Input
+                ref={pincodeInputRef}
                 label="PIN Code (Optional)"
                 placeholder="Enter 6-digit PIN code (optional)"
                 value={pincode}
@@ -261,7 +345,7 @@ export default function SignInScreen() {
             {/* Loading Indicator */}
             {isLoadingPincode && (
               <View style={styles.loadingRow}>
-                <ActivityIndicator size="small" color="#EE4D38" />
+                <ActivityIndicator size="small" color="#e62a09" />
                 <Text style={styles.loadingText}>Fetching areas for PIN code...</Text>
               </View>
             )}
@@ -281,7 +365,7 @@ export default function SignInScreen() {
                 <View style={styles.locationScrollContainer}>
                   <ScrollView
                     style={styles.locationScrollView}
-                    contentContainerStyle={{ paddingBottom: 6 }}
+                    contentContainerStyle={{ paddingBottom: 10 }}
                     nestedScrollEnabled={true}
                     showsVerticalScrollIndicator={true}
                     keyboardShouldPersistTaps="handled"
@@ -337,7 +421,15 @@ export default function SignInScreen() {
         </ScrollView>
 
         {/* ================= FIXED BOTTOM CONTINUE BUTTON ================= */}
-        <View style={[styles.fixedBottomBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
+        <View
+          style={[
+            styles.fixedBottomBar,
+            {
+              paddingTop: isKeyboardOpen ? 8 : 12,
+              paddingBottom: isKeyboardOpen ? 8 : Math.max(insets.bottom, 16),
+            },
+          ]}
+        >
           <Button
             title={t('common.continue', 'Continue')}
             onPress={handleContinue}
@@ -363,7 +455,8 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
   locationSection: {
-    marginTop: 14,
+    marginTop: 12,
+    marginBottom: 8,
   },
   locationHeaderRow: {
     flexDirection: 'row',
@@ -383,12 +476,12 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   locationScrollContainer: {
-    maxHeight: 220,
+    maxHeight: 330,
     borderRadius: 14,
     overflow: 'hidden',
   },
   locationScrollView: {
-    maxHeight: 220,
+    maxHeight: 330,
   },
   locationCard: {
     flexDirection: 'row',
@@ -396,12 +489,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    borderRadius: 14,
-    padding: 12,
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
     marginBottom: 8,
   },
   locationCardSelected: {
-    borderColor: '#EE4D38',
+    borderColor: '#e62a09',
     backgroundColor: '#FFF7F6',
   },
   radioCircle: {
@@ -415,13 +509,13 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   radioCircleSelected: {
-    borderColor: '#EE4D38',
+    borderColor: '#e62a09',
   },
   radioInnerDot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#EE4D38',
+    backgroundColor: '#e62a09',
   },
   locationDetails: {
     flex: 1,
@@ -433,7 +527,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.1,
   },
   locationNameSelected: {
-    color: '#EE4D38',
+    color: '#e62a09',
   },
   locationSub: {
     fontSize: 12,

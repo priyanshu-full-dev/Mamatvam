@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
   cardDiscount: {
     fontSize: 11,
     fontWeight: '800',
-    color: '#EE4D38',
+    color: '#e62a09',
     marginTop: 4,
   },
   emptyContainer: {

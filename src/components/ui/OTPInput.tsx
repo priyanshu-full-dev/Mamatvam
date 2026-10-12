@@ -5,6 +5,7 @@ import {
   TextInput,
   Pressable,
   StyleSheet,
+  Keyboard,
 } from 'react-native';
 
 export interface OTPInputProps {
@@ -33,6 +34,7 @@ export function OTPInput({
     const cleaned = text.replace(/[^0-9]/g, '').slice(0, length);
     onChange(cleaned);
     if (cleaned.length === length) {
+      Keyboard.dismiss();
       onComplete?.(cleaned);
     }
   };
@@ -83,7 +85,7 @@ export function OTPInput({
                 borderColor: hasError
                   ? '#EF4444'
                   : isCurrentActive
-                  ? '#EE4D38'
+                  ? '#e62a09'
                   : hasValue
                   ? '#9CA3AF'
                   : '#E5E7EB',

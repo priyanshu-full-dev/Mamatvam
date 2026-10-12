@@ -263,7 +263,7 @@ export default function CommunityScreen() {
           style={styles.notificationBtn}
           accessibilityLabel="Notifications"
         >
-          <Bell size={22} color="#EE4D38" />
+          <Bell size={22} color="#e62a09" />
         </TouchableOpacity>
       </View>
 
@@ -294,7 +294,7 @@ export default function CommunityScreen() {
                   >
                     <IconComp
                       size={24}
-                      color={isSelected ? '#EE4D38' : '#6B7280'}
+                      color={isSelected ? '#e62a09' : '#6B7280'}
                     />
                   </View>
                   <Text
@@ -373,12 +373,12 @@ export default function CommunityScreen() {
                 >
                   <ThumbsUp
                     size={15}
-                    color={post.isLiked ? '#EE4D38' : '#374151'}
+                    color={post.isLiked ? '#e62a09' : '#374151'}
                   />
                   <Text
                     style={[
                       styles.actionLabel,
-                      post.isLiked && { color: '#EE4D38', fontWeight: '700' },
+                      post.isLiked && { color: '#e62a09', fontWeight: '700' },
                     ]}
                   >
                     {post.likes} like
@@ -629,7 +629,7 @@ const styles = StyleSheet.create({
   },
   circleBadgeSelected: {
     borderWidth: 2,
-    borderColor: '#EE4D38',
+    borderColor: '#e62a09',
     backgroundColor: '#FFF1EE',
   },
   categoryLabelText: {
@@ -640,7 +640,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   categoryLabelTextSelected: {
-    color: '#EE4D38',
+    color: '#e62a09',
     fontWeight: '800',
   },
 
@@ -806,7 +806,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   tagChoicePillActive: {
-    backgroundColor: '#EE4D38',
+    backgroundColor: '#e62a09',
   },
   tagChoiceText: {
     fontSize: 11.5,
@@ -830,7 +830,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   publishBtn: {
-    backgroundColor: '#EE4D38',
+    backgroundColor: '#e62a09',
     borderRadius: 14,
     paddingVertical: 12,
     alignItems: 'center',
@@ -874,7 +874,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#EE4D38',
+    backgroundColor: '#e62a09',
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -12,7 +12,7 @@ export function Radio({
   selected,
   onPress,
   size = 24,
-  color = '#EE4D38',
+  color = '#e62a09',
 }: RadioProps) {
   return (
     <Pressable

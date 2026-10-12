@@ -140,7 +140,7 @@ export default function HomeScreen() {
           alignItems: 'center',
           justifyContent: 'space-between',
           paddingHorizontal: 20,
-          paddingVertical: 12,
+          paddingVertical: 8,
           backgroundColor: '#FAF9F6',
         }}
       >
@@ -151,9 +151,9 @@ export default function HomeScreen() {
         >
           <View
             style={{
-              width: 42,
-              height: 42,
-              borderRadius: 21,
+              width: 40,
+              height: 40,
+              borderRadius: 20,
               backgroundColor: '#FFF0EE',
               alignItems: 'center',
               justifyContent: 'center',
@@ -164,15 +164,15 @@ export default function HomeScreen() {
           >
             <Image
               source={require('@/assets/images/mamatvam-circle-logo.png')}
-              style={{ width: 28, height: 28 }}
+              style={{ width: 26, height: 26 }}
               contentFit="contain"
             />
           </View>
           <View style={{ marginLeft: 12 }}>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: currentStage === 'mother' ? '#8E8E93' : currentStage === 'explore' ? '#8B5CF6' : currentStage === 'conceive' ? '#0284C7' : '#EE4D38', letterSpacing: 0.2 }}>
+            <Text style={{ fontSize: 11.5, fontWeight: '600', color: currentStage === 'mother' ? '#8E8E93' : currentStage === 'explore' ? '#8B5CF6' : currentStage === 'conceive' ? '#0284C7' : '#e62a09', letterSpacing: 0.2 }}>
               {currentStage === 'mother' ? 'Strawberry' : (currentStage === 'conceive' || currentStage === 'explore') ? 'Fertility Care' : 'Healthcare pvt limited'}
             </Text>
-            <Text style={{ fontSize: 17, fontWeight: '800', color: '#1E1E1E' }}>
+            <Text style={{ fontSize: 16.5, fontWeight: '800', color: '#1E1E1E' }}>
               {user?.name || 'Mamatvam Hospital'}
             </Text>
           </View>
@@ -183,9 +183,9 @@ export default function HomeScreen() {
           accessibilityRole="button"
           accessibilityLabel="Notifications"
           style={{
-            width: 40,
-            height: 40,
-            borderRadius: 20,
+            width: 38,
+            height: 38,
+            borderRadius: 19,
             backgroundColor: '#FFFFFF',
             alignItems: 'center',
             justifyContent: 'center',
@@ -198,16 +198,16 @@ export default function HomeScreen() {
             elevation: 1,
           }}
         >
-          <Bell size={20} color="#EE4D38" />
+          <Bell size={19} color="#e62a09" />
           <View
             style={{
               position: 'absolute',
-              top: 9,
-              right: 10,
+              top: 8,
+              right: 9,
               width: 7,
               height: 7,
               borderRadius: 3.5,
-              backgroundColor: '#EE4D38',
+              backgroundColor: '#e62a09',
             }}
           />
         </Pressable>
@@ -221,8 +221,8 @@ export default function HomeScreen() {
         <HomeStageHero stage={currentStage} onStageChange={setStage} />
 
         {/* Holistic Courses Section */}
-        <View style={{ marginTop: 22, paddingHorizontal: 16 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <View style={{ marginTop: 12, paddingHorizontal: 16 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
             <Text style={{ fontSize: 17, fontWeight: '800', color: '#1E1E1E' }}>
               Holistic Courses
             </Text>
@@ -257,7 +257,7 @@ export default function HomeScreen() {
                 <View style={{ position: 'relative' }}>
                   <Image
                     source={require('@/assets/images/home/course_baby.jpg')}
-                    style={{ width: '100%', height: 105 }}
+                    style={{ width: '100%', height: 100 }}
                     contentFit="cover"
                   />
                   <View
@@ -284,7 +284,7 @@ export default function HomeScreen() {
                   <Text style={{ fontSize: 10.5, color: '#64748B', marginTop: 2 }}>
                     Essential guides for every stage
                   </Text>
-                  <Text style={{ fontSize: 11, fontWeight: '800', color: '#EE4D38', marginTop: 4 }}>
+                  <Text style={{ fontSize: 11, fontWeight: '800', color: '#e62a09', marginTop: 4 }}>
                     20% off
                   </Text>
                 </View>

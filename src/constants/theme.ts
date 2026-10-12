@@ -21,8 +21,8 @@ export const ThemeColor = {
 
 export const Colors = {
   ...ThemeColor,
-  primary: '#EE4D38', // Mamatvam signature coral-red
-  primaryDark: '#D43B27',
+  primary: '#e62a09', // Mamatvam signature coral-red
+  primaryDark: '#c72306',
   primaryLight: '#FFF1EE',
   primaryDisabled: '#C5CCD6',
 

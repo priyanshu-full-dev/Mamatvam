@@ -110,7 +110,7 @@ export default function UserProfileScreen() {
         {profileDetails.map((item) => (
           <View key={item.id} style={styles.detailCard}>
             <View style={styles.iconContainer}>
-              <Globe size={19} color="#EE4D38" strokeWidth={1.8} />
+              <Globe size={19} color="#e62a09" strokeWidth={1.8} />
             </View>
 
             <View style={styles.detailTextCol}>
