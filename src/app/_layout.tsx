@@ -4,9 +4,12 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { I18nextProvider } from 'react-i18next';
+import { LogBox } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '../global.css';
+
+LogBox.ignoreLogs(['setLayoutAnimationEnabledExperimental is currently a no-op']);
 
 // Prevent splash screen from auto-hiding until ready
 SplashScreen.preventAutoHideAsync().catch(() => { });
