@@ -6,6 +6,7 @@ import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import Svg, { Path } from 'react-native-svg';
 import { Button } from '@/components/ui/Button';
+import { BottomActionBar } from '@/components/ui/BottomActionBar';
 import { useAppStore, PregnancyStage } from '@/store/useAppStore';
 
 const { width, height } = Dimensions.get('window');
@@ -114,9 +115,9 @@ export default function StageScreen() {
       </View>
 
       {/* Main Content Area: Boxes and Continue Button pushed down matching Image 2 */}
-      <View style={{ flex: 1, justifyContent: 'space-between', paddingHorizontal: horizontalPadding }}>
+      <View style={{ flex: 1, justifyContent: 'space-between' }}>
         {/* 2x2 Grid of Stages with comfortable top margin */}
-        <View style={{ marginTop: topGapBelowWave }}>
+        <View style={{ marginTop: topGapBelowWave, paddingHorizontal: horizontalPadding }}>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
             {STAGES.map((item) => {
               const isSelected = selectedStage === item.id;
@@ -174,12 +175,10 @@ export default function StageScreen() {
         </View>
 
         {/* Continue Button */}
-        <SafeAreaView edges={['bottom']} style={{ paddingBottom: 24 }}>
-          <Button
-            title={t('stage.continue', 'Continue')}
-            onPress={handleContinue}
-          />
-        </SafeAreaView>
+        <BottomActionBar
+          title={t('stage.continue', 'Continue')}
+          onPress={handleContinue}
+        />
       </View>
     </View>
   );

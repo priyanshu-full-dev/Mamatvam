@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { BrandLogo } from '@/components/ui/BrandLogo';
 import { OTPInput } from '@/components/ui/OTPInput';
 import { Button } from '@/components/ui/Button';
+import { BottomActionBar } from '@/components/ui/BottomActionBar';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useVerifyOtpMutation, useSendOtpMutation } from '@/api/auth.api';
 
@@ -247,17 +248,17 @@ export default function OTPScreen() {
               )}
             </View>
           </View>
-
-          {/* Log in Button */}
-          <View style={{ marginTop: isKeyboardOpen ? 14 : 24, width: '100%' }}>
-            <Button
-              title={t('common.login', 'Log in')}
-              onPress={() => handleVerify(otp)}
-              disabled={otp.length < 4}
-              loading={verifyOtpMutation.isPending}
-            />
-          </View>
         </ScrollView>
+
+        {/* Fixed Log in Button at Bottom */}
+        <BottomActionBar
+          title={t('common.login', 'Log in')}
+          onPress={() => handleVerify(otp)}
+          disabled={otp.length < 4}
+          loading={verifyOtpMutation.isPending}
+          containerStyle={isKeyboardOpen ? { paddingBottom: 8 } : undefined}
+          style={isKeyboardOpen ? { paddingTop: 4 } : undefined}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

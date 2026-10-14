@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
 import Svg, { Path } from 'react-native-svg';
 import { Button } from '@/components/ui/Button';
+import { BottomActionBar } from '@/components/ui/BottomActionBar';
 import { useAppStore } from '@/store/useAppStore';
 
 const { width, height } = Dimensions.get('window');
@@ -57,9 +58,9 @@ export default function BabyGenderScreen() {
       </View>
 
       {/* Main Content Area */}
-      <View style={{ flex: 1, justifyContent: 'space-between', paddingHorizontal: horizontalPadding }}>
+      <View style={{ flex: 1, justifyContent: 'space-between' }}>
         {/* Cards: Girl & Boy Side-by-Side */}
-        <View style={{ marginTop: topGapBelowWave }}>
+        <View style={{ marginTop: topGapBelowWave, paddingHorizontal: horizontalPadding }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             {/* Girl Card */}
             <Pressable
@@ -130,12 +131,10 @@ export default function BabyGenderScreen() {
         </View>
 
         {/* Continue Button */}
-        <SafeAreaView edges={['bottom']} style={{ paddingBottom: 24 }}>
-          <Button
-            title="Continue"
-            onPress={handleContinue}
-          />
-        </SafeAreaView>
+        <BottomActionBar
+          title="Continue"
+          onPress={handleContinue}
+        />
       </View>
     </View>
   );

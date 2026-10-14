@@ -6,6 +6,7 @@ import { Image } from 'expo-image';
 import { useTranslation } from 'react-i18next';
 import { Radio } from '@/components/ui/Radio';
 import { Button } from '@/components/ui/Button';
+import { BottomActionBar } from '@/components/ui/BottomActionBar';
 import { useAppStore, SupportedLanguage } from '@/store/useAppStore';
 
 interface LanguageOption {
@@ -74,16 +75,9 @@ export default function LanguageScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      <View
-        style={{
-          flex: 1,
-          paddingHorizontal: 24,
-          justifyContent: 'space-between',
-          paddingBottom: Math.max(insets.bottom, 16),
-          paddingTop: 8,
-        }}
-      >
-        {/* Top Header: Globe + Title + Subtitle tightly grouped */}
+      <View style={{ flex: 1, justifyContent: 'space-between' }}>
+        <View style={{ paddingHorizontal: 24, paddingTop: 8 }}>
+          {/* Top Header: Globe + Title + Subtitle tightly grouped */}
         <View style={{ alignItems: 'center' }}>
           <View style={{ alignItems: 'center', justifyContent: 'center' }}>
             <Image
@@ -208,15 +202,14 @@ export default function LanguageScreen() {
             );
           })}
         </View>
-
-        {/* Bottom: Fully visible Next Button */}
-        <View style={{ width: '100%', paddingTop: 8 }}>
-          <Button
-            title={t('common.next', 'Next')}
-            onPress={handleNext}
-          />
-        </View>
       </View>
-    </SafeAreaView>
+
+      {/* Bottom: Fixed Next Button */}
+      <BottomActionBar
+        title={t('common.next', 'Next')}
+        onPress={handleNext}
+      />
+    </View>
+  </SafeAreaView>
   );
 }

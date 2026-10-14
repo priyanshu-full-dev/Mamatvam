@@ -27,6 +27,7 @@ import {
   Check,
 } from 'lucide-react-native';
 import { Button } from '@/components/ui/Button';
+import { BottomActionBar } from '@/components/ui/BottomActionBar';
 import { Radio } from '@/components/ui/Radio';
 import { useAppStore } from '@/store/useAppStore';
 
@@ -420,20 +421,11 @@ export default function MotherScreen() {
         </ScrollView>
 
         {/* Fixed Continue Button at Bottom */}
-        <View
-          style={{
-            paddingHorizontal: 24,
-            paddingTop: 12,
-            paddingBottom: Math.max(insets.bottom, 20),
-            backgroundColor: '#FFFFFF',
-          }}
-        >
-          <Button
-            title="Continue"
-            onPress={handleContinue}
-            disabled={!isFormValid}
-          />
-        </View>
+        <BottomActionBar
+          title="Continue"
+          onPress={handleContinue}
+          disabled={!isFormValid}
+        />
       </KeyboardAvoidingView>
 
       {/* Modern Fixed-Height Calendar Picker Modal */}

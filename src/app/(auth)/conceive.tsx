@@ -28,6 +28,7 @@ import {
 } from 'lucide-react-native';
 import { Radio } from '@/components/ui/Radio';
 import { Button } from '@/components/ui/Button';
+import { BottomActionBar } from '@/components/ui/BottomActionBar';
 import { useAppStore } from '@/store/useAppStore';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
@@ -390,20 +391,11 @@ export default function ConceiveScreen() {
       </ScrollView>
 
       {/* Fixed Continue Button at Bottom */}
-      <View
-        style={{
-          paddingHorizontal: 24,
-          paddingTop: 12,
-          paddingBottom: Math.max(insets.bottom, 20),
-          backgroundColor: '#FFFFFF',
-        }}
-      >
-        <Button
-          title="Continue"
-          onPress={handleContinue}
-          disabled={!isFormValid}
-        />
-      </View>
+      <BottomActionBar
+        title="Continue"
+        onPress={handleContinue}
+        disabled={!isFormValid}
+      />
     </KeyboardAvoidingView>
 
       {/* Date Picker Modal */}

@@ -25,6 +25,7 @@ import { useTranslation } from 'react-i18next';
 import { BrandLogo } from '@/components/ui/BrandLogo';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { BottomActionBar } from '@/components/ui/BottomActionBar';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useSendOtpMutation } from '@/api/auth.api';
 
@@ -421,22 +422,14 @@ export default function SignInScreen() {
         </ScrollView>
 
         {/* ================= FIXED BOTTOM CONTINUE BUTTON ================= */}
-        <View
-          style={[
-            styles.fixedBottomBar,
-            {
-              paddingTop: isKeyboardOpen ? 8 : 12,
-              paddingBottom: isKeyboardOpen ? 8 : Math.max(insets.bottom, 16),
-            },
-          ]}
-        >
-          <Button
-            title={t('common.continue', 'Continue')}
-            onPress={handleContinue}
-            disabled={!isFormValid}
-            loading={sendOtpMutation.isPending}
-          />
-        </View>
+        <BottomActionBar
+          title={t('common.continue', 'Continue')}
+          onPress={handleContinue}
+          disabled={!isFormValid}
+          loading={sendOtpMutation.isPending}
+          containerStyle={isKeyboardOpen ? { paddingBottom: 8 } : undefined}
+          style={isKeyboardOpen ? { paddingTop: 4 } : undefined}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
