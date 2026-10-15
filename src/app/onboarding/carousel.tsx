@@ -1,24 +1,24 @@
-import React, { useState, useRef } from 'react';
+import { useAppStore } from '@/store/useAppStore';
+import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
 import {
-  View,
-  Text,
+  ArrowRight,
+  Star,
+} from 'lucide-react-native';
+import { useRef, useState } from 'react';
+import {
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Platform,
+  ScrollView,
+  StatusBar,
   StyleSheet,
+  Text,
   TouchableOpacity,
   useWindowDimensions,
-  StatusBar,
-  Platform,
-  PanResponder,
-  Animated,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Image } from 'expo-image';
-import {
-  Star,
-  ArrowRight,
-} from 'lucide-react-native';
-import { useAppStore } from '@/store/useAppStore';
-import { useAuthStore } from '@/store/useAuthStore';
 
 export default function CarouselScreen() {
   const router = useRouter();
@@ -26,11 +26,8 @@ export default function CarouselScreen() {
   const { width, height } = useWindowDimensions();
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Fade animation for smooth slide transitions
-  const fadeAnim = useRef(new Animated.Value(1)).current;
-
-  const currentIndexRef = useRef(currentIndex);
-  currentIndexRef.current = currentIndex;
+  const scrollViewRef = useRef<ScrollView>(null);
+  const currentIndexRef = useRef(0);
 
   const handleSkip = () => {
     setHasSeenOnboarding(true);
@@ -43,45 +40,29 @@ export default function CarouselScreen() {
   };
 
   const goToSlide = (targetIndex: number) => {
-    if (targetIndex < 0 || targetIndex > 2 || targetIndex === currentIndex) return;
-
-    Animated.sequence([
-      Animated.timing(fadeAnim, {
-        toValue: 0.2,
-        duration: 120,
-        useNativeDriver: true,
-      }),
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 180,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
+    if (targetIndex < 0 || targetIndex > 2) return;
+    scrollViewRef.current?.scrollTo({ x: targetIndex * width, animated: true });
     setCurrentIndex(targetIndex);
+    currentIndexRef.current = targetIndex;
   };
 
-  // PanResponder to support intuitive left/right swiping on touch
-  const panResponder = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gestureState) => {
-        return Math.abs(gestureState.dx) > 20 && Math.abs(gestureState.dy) < 30;
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        if (gestureState.dx < -50) {
-          // Swipe Left -> Next Slide
-          if (currentIndexRef.current < 2) {
-            goToSlide(currentIndexRef.current + 1);
-          }
-        } else if (gestureState.dx > 50) {
-          // Swipe Right -> Prev Slide
-          if (currentIndexRef.current > 0) {
-            goToSlide(currentIndexRef.current - 1);
-          }
-        }
-      },
-    })
-  ).current;
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offsetX = event.nativeEvent.contentOffset.x;
+    const page = Math.round(offsetX / width);
+    if (page >= 0 && page <= 2 && page !== currentIndexRef.current) {
+      currentIndexRef.current = page;
+      setCurrentIndex(page);
+    }
+  };
+
+  const handleMomentumScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offsetX = event.nativeEvent.contentOffset.x;
+    const page = Math.round(offsetX / width);
+    if (page >= 0 && page <= 2) {
+      currentIndexRef.current = page;
+      setCurrentIndex(page);
+    }
+  };
 
   // Responsive sizes based on screen height
   const isSmallScreen = height < 750;
@@ -97,13 +78,20 @@ export default function CarouselScreen() {
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom', 'left', 'right']}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFDF8" />
 
-      <Animated.View
-        style={[styles.container, { opacity: fadeAnim }]}
-        {...panResponder.panHandlers}
+      <ScrollView
+        ref={scrollViewRef}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        bounces={false}
+        scrollEventThrottle={16}
+        onScroll={handleScroll}
+        onMomentumScrollEnd={handleMomentumScrollEnd}
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContentContainer}
       >
         {/* ==================== SLIDE 1 (NEW): YOUR COMPLETE PREGNANCY JOURNEY TOGETHER ==================== */}
-        {currentIndex === 0 && (
-          <View style={styles.slide3Container}>
+        <View style={[styles.slide3Container, { width }]}>
             {/* Top Original MAMATVAM Logo with safe margin from status bar */}
             <View style={styles.slide3HeaderRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -220,11 +208,9 @@ export default function CarouselScreen() {
               </TouchableOpacity>
             </View>
           </View>
-        )}
 
         {/* ==================== SLIDE 2 (NEW): DEDICATED TO ALL UPCOMING MOMMIES ==================== */}
-        {currentIndex === 1 && (
-          <View style={styles.slideContent}>
+        <View style={[styles.slideContent, { width }]}>
             {/* Top Header: Skip */}
             <View style={styles.slideTopHeaderRow}>
               <View style={{ flex: 1 }} />
@@ -272,11 +258,9 @@ export default function CarouselScreen() {
               </TouchableOpacity>
             </View>
           </View>
-        )}
 
         {/* ==================== SLIDE 3 (NEW): TRUSTED BY 10,000+ MOTHERS ==================== */}
-        {currentIndex === 2 && (
-          <View style={styles.slideContent}>
+        <View style={[styles.slideContent, { width }]}>
             {/* Top Header: Mamatvam & 5 Stars */}
             <View style={styles.slide2Header}>
               <Text style={styles.slide2Logo}>M A M A T V A M</Text>
@@ -340,8 +324,7 @@ export default function CarouselScreen() {
               </TouchableOpacity>
             </View>
           </View>
-        )}
-      </Animated.View>
+      </ScrollView>
 
       {/* Unified Bottom Pagination Dots - Exact same position on all 3 slides */}
       <View style={styles.bottomDotsRow}>
@@ -369,6 +352,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FDFBF7',
+  },
+  scrollView: {
+    flex: 1,
+    backgroundColor: '#FDFBF7',
+  },
+  scrollContentContainer: {
+    flexGrow: 1,
   },
   slideContent: {
     flex: 1,
@@ -403,12 +393,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F8C8B5',
   },
-  slide2BodyWrapper: {
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 16,
-  },
   slide1ImageWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -417,8 +401,7 @@ const styles = StyleSheet.create({
   slide1TextContainer: {
     alignItems: 'center',
     paddingHorizontal: 12,
-    marginTop: 18,
-    marginBottom: 8,
+    marginVertical: 4,
   },
   slide1Title: {
     fontSize: 22,
@@ -474,15 +457,21 @@ const styles = StyleSheet.create({
   },
 
   /* ------------------- SLIDE 2 STYLES ------------------- */
-  slide2Header: {
+  slide2BodyWrapper: {
+    width: '100%',
     alignItems: 'center',
-    paddingTop: 6,
+    justifyContent: 'center',
+    paddingTop: 16,
   },
   slide3TrustedBodyWrapper: {
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 16,
+  },
+  slide2Header: {
+    alignItems: 'center',
+    paddingTop: 6,
   },
   slide2Logo: {
     fontSize: 12.5,
@@ -580,8 +569,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#451A03',
     textAlign: 'center',
-    marginTop: 6,
-    marginBottom: 4,
+    marginVertical: 2,
   },
   bottomButtonWrapper: {
     width: '100%',
