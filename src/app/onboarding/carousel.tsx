@@ -127,80 +127,83 @@ export default function CarouselScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Seamless Illustrated Couple Banner */}
-            <View style={styles.slide3HeroWrapper}>
-              <Image
-                source={require('@/assets/images/onboarding/slide3_couple_cropped.png')}
-                style={{ width: width, height: coupleBannerHeight }}
-                contentFit="contain"
-                priority="high"
-              />
-            </View>
-
-            {/* 2x2 Feature Cards Grid matching the mockup */}
-            <View style={styles.slide3CardsSection}>
-              <View style={styles.slide3CardsGrid}>
-                {/* Card 1: Pregnancy Together */}
-                <TouchableOpacity
-                  activeOpacity={0.9}
-                  onPress={() => goToSlide(1)}
-                  style={[styles.featureCardTouchable, { width: cardWidth, height: cardHeight }]}
-                >
-                  <Image
-                    source={require('@/assets/images/onboarding/slide3_card1_full.png')}
-                    style={styles.featureCardImg}
-                    contentFit="contain"
-                  />
-                </TouchableOpacity>
-
-                {/* Card 2: Pregnancy Tracker */}
-                <TouchableOpacity
-                  activeOpacity={0.9}
-                  onPress={() => goToSlide(1)}
-                  style={[styles.featureCardTouchable, { width: cardWidth, height: cardHeight }]}
-                >
-                  <Image
-                    source={require('@/assets/images/onboarding/slide3_card2_full.png')}
-                    style={styles.featureCardImg}
-                    contentFit="contain"
-                  />
-                </TouchableOpacity>
-
-                {/* Card 3: Helping Tools */}
-                <TouchableOpacity
-                  activeOpacity={0.9}
-                  onPress={() => goToSlide(1)}
-                  style={[styles.featureCardTouchable, { width: cardWidth, height: cardHeight }]}
-                >
-                  <Image
-                    source={require('@/assets/images/onboarding/slide3_card3_full.png')}
-                    style={styles.featureCardImg}
-                    contentFit="contain"
-                  />
-                </TouchableOpacity>
-
-                {/* Card 4: Daily Activities */}
-                <TouchableOpacity
-                  activeOpacity={0.9}
-                  onPress={() => goToSlide(1)}
-                  style={[styles.featureCardTouchable, { width: cardWidth, height: cardHeight }]}
-                >
-                  <Image
-                    source={require('@/assets/images/onboarding/slide3_card4_full.png')}
-                    style={styles.featureCardImg}
-                    contentFit="contain"
-                  />
-                </TouchableOpacity>
+            {/* Whole Body Content (Banner + Cards + Tagline) */}
+            <View style={styles.slide3BodyWrapper}>
+              {/* Seamless Illustrated Couple Banner */}
+              <View style={styles.slide3HeroWrapper}>
+                <Image
+                  source={require('@/assets/images/onboarding/slide3_couple_cropped.png')}
+                  style={{ width: width, height: coupleBannerHeight }}
+                  contentFit="contain"
+                  priority="high"
+                />
               </View>
-            </View>
 
-            {/* Tagline */}
-            <View style={styles.slide3TaglineWrapper}>
-              <Text style={styles.slide3TaglineText}>
-                <Text style={styles.taglineHeart}>♥  </Text>
-                Because every moment matters
-                <Text style={styles.taglineHeart}>  ♥</Text>
-              </Text>
+              {/* 2x2 Feature Cards Grid matching the mockup */}
+              <View style={styles.slide3CardsSection}>
+                <View style={styles.slide3CardsGrid}>
+                  {/* Card 1: Pregnancy Together */}
+                  <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={() => goToSlide(1)}
+                    style={[styles.featureCardTouchable, { width: cardWidth, height: cardHeight }]}
+                  >
+                    <Image
+                      source={require('@/assets/images/onboarding/slide3_card1_full.png')}
+                      style={styles.featureCardImg}
+                      contentFit="contain"
+                    />
+                  </TouchableOpacity>
+
+                  {/* Card 2: Pregnancy Tracker */}
+                  <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={() => goToSlide(1)}
+                    style={[styles.featureCardTouchable, { width: cardWidth, height: cardHeight }]}
+                  >
+                    <Image
+                      source={require('@/assets/images/onboarding/slide3_card2_full.png')}
+                      style={styles.featureCardImg}
+                      contentFit="contain"
+                    />
+                  </TouchableOpacity>
+
+                  {/* Card 3: Helping Tools */}
+                  <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={() => goToSlide(1)}
+                    style={[styles.featureCardTouchable, { width: cardWidth, height: cardHeight }]}
+                  >
+                    <Image
+                      source={require('@/assets/images/onboarding/slide3_card3_full.png')}
+                      style={styles.featureCardImg}
+                      contentFit="contain"
+                    />
+                  </TouchableOpacity>
+
+                  {/* Card 4: Daily Activities */}
+                  <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={() => goToSlide(1)}
+                    style={[styles.featureCardTouchable, { width: cardWidth, height: cardHeight }]}
+                  >
+                    <Image
+                      source={require('@/assets/images/onboarding/slide3_card4_full.png')}
+                      style={styles.featureCardImg}
+                      contentFit="contain"
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {/* Tagline */}
+              <View style={styles.slide3TaglineWrapper}>
+                <Text style={styles.slide3TaglineText}>
+                  <Text style={styles.taglineHeart}>♥  </Text>
+                  Because every moment matters
+                  <Text style={styles.taglineHeart}>  ♥</Text>
+                </Text>
+              </View>
             </View>
 
             {/* Next Button */}
@@ -628,6 +631,11 @@ const styles = StyleSheet.create({
     marginTop: 1,
     letterSpacing: 0.3,
   },
+  slide3BodyWrapper: {
+    width: '100%',
+    alignItems: 'center',
+    paddingTop: 14,
+  },
   slide3HeroWrapper: {
     width: '100%',
     alignItems: 'center',
@@ -636,6 +644,7 @@ const styles = StyleSheet.create({
   slide3CardsSection: {
     paddingHorizontal: 16,
     width: '100%',
+    marginTop: 8,
   },
   slide3CardsGrid: {
     flexDirection: 'row',
@@ -660,6 +669,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 10,
     paddingVertical: 2,
   },
   slide3TaglineText: {
