@@ -385,10 +385,8 @@ export default function HomeScreen() {
             </Text>
           </View>
 
-          {/* Appointment Card */}
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() => router.push('/new-appointment')}
+          {/* Appointment Reminder Card */}
+          <View
             style={{
               backgroundColor: '#FDECE7',
               borderRadius: 16,
@@ -459,7 +457,7 @@ export default function HomeScreen() {
                 10:30 AM • City Maternity Center
               </Text>
             </View>
-          </TouchableOpacity>
+          </View>
         </View>
 
         {/* Dynamic Helpful Tools Section for 3 Stages */}
