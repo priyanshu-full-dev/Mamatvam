@@ -10,6 +10,7 @@ import {
   ArrowRight,
   Bell,
   BookOpen,
+  Calendar,
   ChevronRight,
   Lightbulb,
   Play,
@@ -346,6 +347,119 @@ export default function HomeScreen() {
               </Pressable>
             ))}
           </View>
+        </View>
+
+        {/* Next Appointment Bar Section */}
+        <View style={{ marginTop: 6, marginBottom: 16, paddingHorizontal: 16 }}>
+          {/* Header Row */}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: 10,
+            }}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Calendar size={18} color="#0F172A" strokeWidth={2.2} />
+              <Text
+                style={{
+                  fontSize: 13.5,
+                  fontWeight: '800',
+                  color: '#0F172A',
+                  letterSpacing: 0.6,
+                }}
+              >
+                NEXT APPOINTMENT
+              </Text>
+            </View>
+            <Text
+              style={{
+                fontSize: 13.5,
+                fontWeight: '700',
+                color: '#0F172A',
+                letterSpacing: 0.4,
+              }}
+            >
+              JUNE 15
+            </Text>
+          </View>
+
+          {/* Appointment Card */}
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={() => router.push('/new-appointment')}
+            style={{
+              backgroundColor: '#FDECE7',
+              borderRadius: 16,
+              padding: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+          >
+            {/* White Date Box */}
+            <View
+              style={{
+                width: 58,
+                height: 58,
+                backgroundColor: '#FFFFFF',
+                borderRadius: 12,
+                alignItems: 'center',
+                justifyContent: 'center',
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.04,
+                shadowRadius: 3,
+                elevation: 1,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 20,
+                  fontWeight: '800',
+                  color: '#0F172A',
+                  lineHeight: 23,
+                }}
+              >
+                15
+              </Text>
+              <Text
+                style={{
+                  fontSize: 11,
+                  fontWeight: '800',
+                  color: '#0F172A',
+                  letterSpacing: 0.5,
+                }}
+              >
+                JUNE
+              </Text>
+            </View>
+
+            {/* Doctor & Clinic Info */}
+            <View style={{ marginLeft: 14, flex: 1 }}>
+              <Text
+                style={{
+                  fontSize: 15,
+                  fontWeight: '700',
+                  color: '#0F172A',
+                }}
+                numberOfLines={1}
+              >
+                Dr. Aris • Morphology Scan
+              </Text>
+              <Text
+                style={{
+                  fontSize: 13,
+                  fontWeight: '500',
+                  color: '#64748B',
+                  marginTop: 4,
+                }}
+                numberOfLines={1}
+              >
+                10:30 AM • City Maternity Center
+              </Text>
+            </View>
+          </TouchableOpacity>
         </View>
 
         {/* Dynamic Helpful Tools Section for 3 Stages */}
