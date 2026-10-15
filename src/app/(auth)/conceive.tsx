@@ -38,6 +38,11 @@ const MONTH_NAMES = [
   'July', 'August', 'September', 'October', 'November', 'December',
 ];
 
+const SHORT_MONTH_NAMES = [
+  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+];
+
 export default function ConceiveScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -80,6 +85,7 @@ export default function ConceiveScreen() {
   const [pickerMonth, setPickerMonth] = useState(today.getMonth());
   const [pickerDay, setPickerDay] = useState(today.getDate());
   const [showYearSelector, setShowYearSelector] = useState(false);
+  const [showMonthSelector, setShowMonthSelector] = useState(false);
 
   const availableYears = useMemo(() => {
     const start = today.getFullYear();
@@ -140,10 +146,36 @@ export default function ConceiveScreen() {
     setPickerMonth(newMonth);
     setPickerDay(newDay);
     setShowYearSelector(false);
+    setShowMonthSelector(false);
+  };
+
+  const isMonthDisabled = (m: number) => {
+    const monthStart = new Date(pickerYear, m, 1);
+    const monthEnd = new Date(pickerYear, m + 1, 0, 23, 59, 59, 999);
+    return monthEnd < today || monthStart > maxDate;
+  };
+
+  const handleSelectMonth = (m: number) => {
+    if (isMonthDisabled(m)) return;
+
+    const maxDays = new Date(pickerYear, m + 1, 0).getDate();
+    let newDay = Math.min(pickerDay, maxDays);
+    const newDate = new Date(pickerYear, m, newDay);
+    newDate.setHours(0, 0, 0, 0);
+    if (newDate < today) {
+      newDay = today.getDate();
+    } else if (newDate > maxDate) {
+      newDay = maxDate.getDate();
+    }
+
+    setPickerMonth(m);
+    setPickerDay(newDay);
+    setShowMonthSelector(false);
   };
 
   const handleOpenDatePicker = () => {
     setShowYearSelector(false);
+    setShowMonthSelector(false);
     if (lastPeriodDate) {
       const parts = lastPeriodDate.split('/');
       if (parts.length === 3) {
@@ -409,14 +441,34 @@ export default function ConceiveScreen() {
           <View style={styles.calendarModalContent}>
             {/* Header */}
             <View style={styles.modalHeaderRow}>
-              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text style={styles.calendarMonthText}>
-                  {MONTH_NAMES[pickerMonth]}
-                </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                {/* Clickable Month Selector */}
+                <Pressable
+                  onPress={() => {
+                    setShowYearSelector(false);
+                    setShowMonthSelector((prev) => !prev);
+                  }}
+                  hitSlop={8}
+                  style={[
+                    styles.yearBadgeButton,
+                    showMonthSelector && styles.yearBadgeButtonActive,
+                  ]}
+                >
+                  <Text style={[styles.calendarYearText, showMonthSelector && styles.calendarYearTextActive]}>
+                    {MONTH_NAMES[pickerMonth]}
+                  </Text>
+                  <ChevronDown
+                    size={16}
+                    color={showMonthSelector ? '#e62a09' : '#64748B'}
+                  />
+                </Pressable>
 
                 {/* Clickable Year Selector */}
                 <Pressable
-                  onPress={() => setShowYearSelector((prev) => !prev)}
+                  onPress={() => {
+                    setShowMonthSelector(false);
+                    setShowYearSelector((prev) => !prev);
+                  }}
                   hitSlop={8}
                   style={[
                     styles.yearBadgeButton,
@@ -434,7 +486,7 @@ export default function ConceiveScreen() {
               </View>
 
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                {!showYearSelector && (
+                {!showYearSelector && !showMonthSelector && (
                   <>
                     <Pressable
                       onPress={handlePrevMonth}
@@ -458,6 +510,7 @@ export default function ConceiveScreen() {
                 <Pressable
                   onPress={() => {
                     setShowYearSelector(false);
+                    setShowMonthSelector(false);
                     setShowDatePicker(false);
                   }}
                   hitSlop={10}
@@ -469,10 +522,14 @@ export default function ConceiveScreen() {
             </View>
 
             <Text style={styles.modalSubheading}>
-              {showYearSelector ? 'Tap a year to switch' : 'Valid from today up to 2 years'}
+              {showYearSelector
+                ? 'Tap a year to switch'
+                : showMonthSelector
+                ? 'Tap a month to switch'
+                : 'Valid from today up to 2 years'}
             </Text>
 
-            {/* Fixed Height Calendar / Year Container (consistent across every month) */}
+            {/* Fixed Height Calendar / Year / Month Container (consistent across every month) */}
             <View style={styles.calendarBodyContainer}>
               {showYearSelector ? (
                 <View style={styles.yearPickerView}>
@@ -500,6 +557,40 @@ export default function ConceiveScreen() {
                             <Check size={20} color="#FFFFFF" strokeWidth={2.5} />
                           ) : (
                             <View style={{ width: 20 }} />
+                          )}
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </View>
+              ) : showMonthSelector ? (
+                <View style={styles.monthPickerView}>
+                  <View style={styles.monthGridContainer}>
+                    {MONTH_NAMES.map((name, index) => {
+                      const isSelected = pickerMonth === index;
+                      const disabled = isMonthDisabled(index);
+                      return (
+                        <Pressable
+                          key={name}
+                          disabled={disabled}
+                          onPress={() => handleSelectMonth(index)}
+                          style={[
+                            styles.monthOptionCard,
+                            isSelected && styles.monthOptionCardSelected,
+                            disabled && styles.monthOptionCardDisabled,
+                          ]}
+                        >
+                          <Text
+                            style={[
+                              styles.monthOptionText,
+                              isSelected && styles.monthOptionTextSelected,
+                              disabled && styles.monthOptionTextDisabled,
+                            ]}
+                          >
+                            {SHORT_MONTH_NAMES[index]}
+                          </Text>
+                          {isSelected && (
+                            <Check size={14} color="#FFFFFF" strokeWidth={2.6} style={{ marginLeft: 4 }} />
                           )}
                         </Pressable>
                       );
@@ -810,22 +901,63 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#F1F5F9',
-    paddingVertical: 4,
-    paddingHorizontal: 8,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
     borderRadius: 8,
-    marginRight: 6,
+    gap: 4,
   },
   yearBadgeButtonActive: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: '#FFF1EE',
   },
   calendarYearText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     color: '#1E293B',
-    marginRight: 4,
   },
   calendarYearTextActive: {
     color: '#e62a09',
+  },
+  monthPickerView: {
+    flex: 1,
+    paddingVertical: 4,
+    justifyContent: 'center',
+  },
+  monthGridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: 10,
+  },
+  monthOptionCard: {
+    width: '31%',
+    height: 52,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  monthOptionCardSelected: {
+    borderColor: '#e62a09',
+    backgroundColor: '#e62a09',
+  },
+  monthOptionCardDisabled: {
+    backgroundColor: '#F8FAFC',
+    borderColor: '#F1F5F9',
+    opacity: 0.35,
+  },
+  monthOptionText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#334155',
+  },
+  monthOptionTextSelected: {
+    color: '#FFFFFF',
+  },
+  monthOptionTextDisabled: {
+    color: '#94A3B8',
   },
   calendarBodyContainer: {
     height: 278,
