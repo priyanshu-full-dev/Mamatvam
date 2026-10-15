@@ -226,7 +226,10 @@ export default function SignInScreen() {
         setLocation('');
       }
 
-      await sendOtpMutation.mutateAsync({ phone: clean });
+      await sendOtpMutation.mutateAsync({
+        mobile: clean,
+        pincodeId: cleanPincode || '1',
+      });
 
       router.push({
         pathname: '/(auth)/otp',

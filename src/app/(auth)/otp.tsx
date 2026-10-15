@@ -125,7 +125,10 @@ export default function OTPScreen() {
   const handleResend = async () => {
     if (!canResend) return;
     try {
-      await sendOtpMutation.mutateAsync({ phone: userPhone || '9999999999' });
+      await sendOtpMutation.mutateAsync({
+        mobile: userPhone || '9999999999',
+        pincodeId: '1',
+      });
       setCountdown(120);
       setCanResend(false);
       setHasError(false);

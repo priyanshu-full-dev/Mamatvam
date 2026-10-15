@@ -20,7 +20,7 @@ export class ApiError extends Error {
   }
 }
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.mamatvam.com/v1';
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://130.210.30.199/api/v1';
 
 export async function apiClient<T>(
   endpoint: string,
@@ -47,10 +47,10 @@ export async function apiClient<T>(
 
   const json = await response.json().catch(() => null);
 
-  if (!response.ok) {
+  if (!response.ok || (json && json.success === false)) {
     throw new ApiError(
       json?.message || `Request failed with status ${response.status}`,
-      response.status,
+      response.status || 400,
       json
     );
   }
