@@ -404,7 +404,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
         <View style={{ maxWidth: '64%' }}>
           <View style={styles.tipsHeaderRow}>
             <Lightbulb size={18} color="#F59E0B" fill="#FDE68A" />
-            <Text style={styles.tipsTitle}>Today tips</Text>
+            <Text style={styles.tipsTitle}>Todays Plan</Text>
           </View>
 
           <Text style={styles.tipsDescription}>
@@ -421,7 +421,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
               onPress={() => router.push('/today-tips')}
               style={{ marginRight: 20 }}
             >
-              <Text style={styles.moreTipsLink}>More Tips</Text>
+              <Text style={styles.moreTipsLink}>Open</Text>
             </TouchableOpacity>
             <Pressable>
               <Text style={styles.shareLink}>Share</Text>

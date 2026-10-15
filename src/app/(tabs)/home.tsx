@@ -804,7 +804,7 @@ export default function HomeScreen() {
             onPress={() => router.push('/today-tips')}
           >
             <Text style={{ fontSize: 12, fontWeight: '700', color: '#1E1E1E', textAlign: 'center' }}>
-              More Tips
+              Open
             </Text>
           </TouchableOpacity>
         </View>

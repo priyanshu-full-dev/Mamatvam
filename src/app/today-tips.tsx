@@ -17,7 +17,7 @@ import { ArrowLeft, ArrowRight, Lightbulb } from 'lucide-react-native';
 const TIPS_DATA = [
   {
     id: 1,
-    tag: 'Today tips',
+    tag: 'Todays Plan',
     title: 'Make Toning a Daily Ritual',
     description:
       'Try some gentle pelvic tilts today to relieve lower back pressure and improve circulation.',
@@ -136,7 +136,7 @@ export default function TodayTipsScreen() {
           <ArrowLeft size={22} color="#1E1E1E" strokeWidth={2.2} />
         </TouchableOpacity>
 
-        <Text style={styles.headerTitle}>Today Tips</Text>
+        <Text style={styles.headerTitle}>Todays Plan</Text>
 
         <Text style={styles.headerRightText}>{currentTip.nextTip}</Text>
       </View>
