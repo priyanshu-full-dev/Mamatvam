@@ -575,7 +575,7 @@ export default function HomeScreen() {
           {/* Header Row */}
           <TouchableOpacity
             activeOpacity={0.7}
-            onPress={() => router.push('/community')}
+            onPress={() => router.push('/story-detail')}
             style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
           >
             <View>
@@ -603,8 +603,8 @@ export default function HomeScreen() {
                 activeOpacity={0.88}
                 onPress={() => {
                   router.push({
-                    pathname: '/community',
-                    params: { storyId: item.id, storyName: item.name },
+                    pathname: '/story-detail',
+                    params: { id: item.id },
                   });
                 }}
                 style={{
@@ -766,7 +766,7 @@ export default function HomeScreen() {
             {/* View all stories link */}
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => router.push('/community')}
+              onPress={() => router.push('/story-detail')}
               style={{ flexDirection: 'row', alignItems: 'center' }}
             >
               <Text style={{ fontSize: 12.5, fontWeight: '800', color: '#e62a09', marginRight: 4 }}>
