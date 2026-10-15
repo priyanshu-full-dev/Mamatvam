@@ -237,25 +237,28 @@ export default function CarouselScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Center Circular Watercolor Artwork */}
-            <View style={styles.slide1ImageWrapper}>
-              <Image
-                source={require('@/assets/images/onboarding/slide_upcoming_mommies.jpg')}
-                style={{ width: slide1ImgSize, height: slide1ImgSize, borderRadius: 20 }}
-                contentFit="contain"
-                priority="high"
-              />
-            </View>
+            {/* Body Content (Artwork + Text) */}
+            <View style={styles.slide2BodyWrapper}>
+              {/* Center Circular Watercolor Artwork */}
+              <View style={styles.slide1ImageWrapper}>
+                <Image
+                  source={require('@/assets/images/onboarding/slide_upcoming_mommies.jpg')}
+                  style={{ width: slide1ImgSize, height: slide1ImgSize, borderRadius: 20 }}
+                  contentFit="contain"
+                  priority="high"
+                />
+              </View>
 
-            {/* Heading & Subtitle */}
-            <View style={styles.slide1TextContainer}>
-              <Text style={styles.slide1Title}>
-                Dedicated to All Upcoming{'\n'}Mommies ♡
-              </Text>
-              <Text style={styles.slide1Subtitle}>
-                Your beautiful journey to motherhood starts here.{'\n'}
-                We're with you every step of the way.
-              </Text>
+              {/* Heading & Subtitle */}
+              <View style={styles.slide1TextContainer}>
+                <Text style={styles.slide1Title}>
+                  Dedicated to All Upcoming{'\n'}Mommies ♡
+                </Text>
+                <Text style={styles.slide1Subtitle}>
+                  Your beautiful journey to motherhood starts here.{'\n'}
+                  We're with you every step of the way.
+                </Text>
+              </View>
             </View>
 
             {/* Bottom Actions: Continue */}
@@ -397,6 +400,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#F8C8B5',
   },
+  slide2BodyWrapper: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 16,
+  },
   slide1ImageWrapper: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -405,7 +414,8 @@ const styles = StyleSheet.create({
   slide1TextContainer: {
     alignItems: 'center',
     paddingHorizontal: 12,
-    marginVertical: 4,
+    marginTop: 18,
+    marginBottom: 8,
   },
   slide1Title: {
     fontSize: 22,
