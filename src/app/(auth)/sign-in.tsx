@@ -180,19 +180,35 @@ export default function SignInScreen() {
     if (isSubmittingRef.current || sendOtpMutation.isPending) return;
 
     const clean = phoneToSubmit.replace(/[^0-9]/g, '');
-    if (clean.length < 10) {
+    let hasError = false;
+
+    if (!clean) {
+      setPhoneError(t('auth.phoneRequired', 'Please enter your mobile number'));
+      hasError = true;
+    } else if (clean.length < 10) {
       setPhoneError(t('auth.invalidPhone', 'Please enter a valid 10-digit mobile number'));
-      return;
+      hasError = true;
+    } else {
+      setPhoneError('');
     }
-    const isPincodeFilled = pincode.trim().length > 0;
-    if (isPincodeFilled && pincode.length < 6) {
-      setPincodeError('Please enter a full 6-digit PIN code or leave it blank');
-      return;
+
+    const cleanPincode = pincode.trim().replace(/[^0-9]/g, '');
+    if (!cleanPincode) {
+      setPincodeError(t('auth.pincodeRequired', 'Please enter your 6-digit PIN code'));
+      hasError = true;
+    } else if (cleanPincode.length < 6) {
+      setPincodeError(t('auth.invalidPincode', 'Please enter a valid 6-digit PIN code'));
+      hasError = true;
+    } else if (locations.length > 0 && !selectedArea) {
+      setPincodeError(t('auth.selectArea', 'Please select your area for the entered PIN code'));
+      hasError = true;
+    } else if (pincodeError && pincodeError !== 'Please enter your 6-digit PIN code' && pincodeError !== 'Please enter a valid 6-digit PIN code') {
+      hasError = true;
+    } else {
+      setPincodeError('');
     }
-    if (isPincodeFilled && !selectedArea) {
-      setPincodeError('Please select your area for the entered PIN code');
-      return;
-    }
+
+    if (hasError) return;
 
     setPhoneError('');
     setPincodeError('');
@@ -204,7 +220,7 @@ export default function SignInScreen() {
       if (selectedArea) {
         setLocation(`${selectedArea.name}, ${selectedArea.district}, ${selectedArea.state}`);
       } else {
-        setLocation('');
+        setLocation(`PIN ${cleanPincode}`);
       }
 
       await sendOtpMutation.mutateAsync({ phone: clean });
@@ -317,7 +333,7 @@ export default function SignInScreen() {
             {/* Phone Number Field */}
             <View>
               <Input
-                label={t('auth.phoneNumber', 'Mobile Number')}
+                label={t('auth.phoneNumber', 'Mobile Number *')}
                 placeholder={t('auth.phonePlaceholder', 'Enter mobile number')}
                 value={inputPhone}
                 onChangeText={handlePhoneChange}
@@ -331,8 +347,8 @@ export default function SignInScreen() {
             <View style={{ marginTop: isKeyboardOpen ? 8 : (hasLocations ? 10 : 14) }}>
               <Input
                 ref={pincodeInputRef}
-                label="PIN Code (Optional)"
-                placeholder="Enter 6-digit PIN code (optional)"
+                label={t('auth.pincode', 'PIN Code *')}
+                placeholder={t('auth.pincodePlaceholder', 'Enter 6-digit PIN code')}
                 value={pincode}
                 onChangeText={handlePincodeChange}
                 keyboardType="number-pad"
@@ -425,7 +441,7 @@ export default function SignInScreen() {
         <BottomActionBar
           title={t('common.continue', 'Continue')}
           onPress={handleContinue}
-          disabled={!isFormValid}
+          disabled={false}
           loading={sendOtpMutation.isPending}
           containerStyle={isKeyboardOpen ? { paddingBottom: 8 } : undefined}
           style={isKeyboardOpen ? { paddingTop: 4 } : undefined}
