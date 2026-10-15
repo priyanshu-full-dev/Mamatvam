@@ -283,7 +283,7 @@ export default function StoryDetailScreen() {
           {/* 5 Red Stars */}
           <View style={styles.starsRow}>
             {[1, 2, 3, 4, 5].map((star) => (
-              <Star key={star} size={16} color="#e62a09" fill="#e62a09" />
+              <Star key={star} size={16} color="#F06292" fill="#F06292" />
             ))}
           </View>
 
@@ -302,8 +302,8 @@ export default function StoryDetailScreen() {
             >
               <Heart
                 size={18}
-                color="#e62a09"
-                fill={isHelpful ? '#e62a09' : 'none'}
+                color="#F06292"
+                fill={isHelpful ? '#F06292' : 'none'}
                 strokeWidth={2.2}
               />
               <Text style={styles.actionButtonText}>
@@ -316,7 +316,7 @@ export default function StoryDetailScreen() {
               onPress={handleShare}
               style={styles.actionButton}
             >
-              <Share2 size={18} color="#e62a09" strokeWidth={2.2} />
+              <Share2 size={18} color="#F06292" strokeWidth={2.2} />
               <Text style={styles.actionButtonText}>Share</Text>
             </TouchableOpacity>
           </View>
@@ -353,13 +353,13 @@ export default function StoryDetailScreen() {
                 </View>
                 <View style={styles.moreStarsRow}>
                   {[1, 2, 3, 4, 5].map((star) => (
-                    <Star key={star} size={12} color="#e62a09" fill="#e62a09" />
+                    <Star key={star} size={12} color="#F06292" fill="#F06292" />
                   ))}
                 </View>
               </View>
 
               {/* Red Chevron */}
-              <ChevronRight size={20} color="#e62a09" strokeWidth={2.4} />
+              <ChevronRight size={20} color="#F06292" strokeWidth={2.4} />
             </TouchableOpacity>
           ))}
         </View>
@@ -672,7 +672,7 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontSize: 13.5,
     fontWeight: '700',
-    color: '#e62a09',
+    color: '#F06292',
     marginLeft: 8,
   },
   moreSection: {
@@ -758,13 +758,13 @@ const styles = StyleSheet.create({
     marginTop: 18,
   },
   shareStoryButton: {
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
     borderRadius: 30,
     height: 50,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#e62a09',
+    shadowColor: '#F06292',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -870,7 +870,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   submitModalButton: {
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
     borderRadius: 24,
     height: 48,
     alignItems: 'center',

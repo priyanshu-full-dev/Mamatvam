@@ -92,7 +92,7 @@ export default function AccountSettingsScreen() {
               value={keepActivityPrivate}
               onValueChange={setKeepActivityPrivate}
               trackColor={{ false: '#E2E8F0', true: '#FCA5A5' }}
-              thumbColor={keepActivityPrivate ? '#e62a09' : '#F8FAFC'}
+              thumbColor={keepActivityPrivate ? '#F06292' : '#F8FAFC'}
             />
           </View>
         </View>
@@ -113,7 +113,7 @@ export default function AccountSettingsScreen() {
               value={makePurchasesPublic}
               onValueChange={setMakePurchasesPublic}
               trackColor={{ false: '#E2E8F0', true: '#FCA5A5' }}
-              thumbColor={makePurchasesPublic ? '#e62a09' : '#F8FAFC'}
+              thumbColor={makePurchasesPublic ? '#F06292' : '#F8FAFC'}
             />
           </View>
         </View>

@@ -53,7 +53,7 @@ export default function SplashScreen() {
 
       <Animated.View style={animatedStyle} className="items-center justify-center">
         <Image
-          source={require('@/assets/images/logo/mamatvam-logo2.png')}
+          source={require('@/assets/images/logo/logo.png')}
           style={{ width: 250, height: 250 }}
           contentFit="contain"
           cachePolicy="memory-disk"

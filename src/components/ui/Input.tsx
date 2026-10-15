@@ -43,7 +43,7 @@ export const Input = forwardRef<TextInput, InputProps>(function Input(
           error
             ? 'border-red-500 bg-red-50'
             : isFocused
-            ? 'border-[#e62a09]'
+            ? 'border-[#F06292]'
             : 'border-[#E5E7EB]'
         }`}
       >

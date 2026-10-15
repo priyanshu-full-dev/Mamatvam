@@ -439,7 +439,7 @@ export default function IuiIvfScreen() {
             <Switch
               value={isDiabetic}
               onValueChange={setIsDiabetic}
-              trackColor={{ false: '#CBD5E1', true: '#e62a09' }}
+              trackColor={{ false: '#CBD5E1', true: '#F06292' }}
               thumbColor="#FFFFFF"
               ios_backgroundColor="#CBD5E1"
             />
@@ -466,7 +466,7 @@ export default function IuiIvfScreen() {
                   selected={bloodPressure === 'low'}
                   onPress={() => setBloodPressure('low')}
                   size={19}
-                  color="#e62a09"
+                  color="#F06292"
                 />
                 <Text style={[styles.bpOptionLabel, { color: '#EF4444' }]}>Low</Text>
               </Pressable>
@@ -480,7 +480,7 @@ export default function IuiIvfScreen() {
                   selected={bloodPressure === 'normal'}
                   onPress={() => setBloodPressure('normal')}
                   size={19}
-                  color="#e62a09"
+                  color="#F06292"
                 />
                 <Text style={[styles.bpOptionLabel, { color: '#10B981' }]}>Normal</Text>
               </Pressable>
@@ -494,7 +494,7 @@ export default function IuiIvfScreen() {
                   selected={bloodPressure === 'high'}
                   onPress={() => setBloodPressure('high')}
                   size={19}
-                  color="#e62a09"
+                  color="#F06292"
                 />
                 <Text style={[styles.bpOptionLabel, { color: '#F59E0B' }]}>High</Text>
               </Pressable>
@@ -542,7 +542,7 @@ export default function IuiIvfScreen() {
                   </Text>
                   <ChevronDown
                     size={16}
-                    color={showMonthSelector ? '#e62a09' : '#64748B'}
+                    color={showMonthSelector ? '#F06292' : '#64748B'}
                   />
                 </Pressable>
 
@@ -563,7 +563,7 @@ export default function IuiIvfScreen() {
                   </Text>
                   <ChevronDown
                     size={16}
-                    color={showYearSelector ? '#e62a09' : '#64748B'}
+                    color={showYearSelector ? '#F06292' : '#64748B'}
                   />
                 </Pressable>
               </View>
@@ -784,7 +784,7 @@ export default function IuiIvfScreen() {
                     >
                       {item}
                     </Text>
-                    {isSelected && <Check size={18} color="#e62a09" />}
+                    {isSelected && <Check size={18} color="#F06292" />}
                   </Pressable>
                 );
               }}
@@ -826,7 +826,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   requiredStar: {
-    color: '#e62a09',
+    color: '#F06292',
     fontWeight: '700',
   },
   optionalLabel: {
@@ -918,8 +918,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC',
   },
   quickCyclePillSelected: {
-    borderColor: '#e62a09',
-    backgroundColor: '#FFF1EE',
+    borderColor: '#F06292',
+    backgroundColor: '#FCE4EC',
   },
   quickCyclePillText: {
     fontSize: 12.5,
@@ -927,7 +927,7 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
   quickCyclePillTextSelected: {
-    color: '#e62a09',
+    color: '#F06292',
     fontWeight: '700',
   },
   twoColumnRow: {
@@ -1051,7 +1051,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   yearBadgeButtonActive: {
-    backgroundColor: '#FFF1EE',
+    backgroundColor: '#FCE4EC',
   },
   calendarYearText: {
     fontSize: 15,
@@ -1059,7 +1059,7 @@ const styles = StyleSheet.create({
     color: '#1E293B',
   },
   calendarYearTextActive: {
-    color: '#e62a09',
+    color: '#F06292',
   },
   monthPickerView: {
     flex: 1,
@@ -1084,8 +1084,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   monthOptionCardSelected: {
-    borderColor: '#e62a09',
-    backgroundColor: '#e62a09',
+    borderColor: '#F06292',
+    backgroundColor: '#F06292',
   },
   monthOptionCardDisabled: {
     backgroundColor: '#F8FAFC',
@@ -1127,8 +1127,8 @@ const styles = StyleSheet.create({
     minWidth: 120,
   },
   yearOptionCardSelected: {
-    borderColor: '#e62a09',
-    backgroundColor: '#e62a09',
+    borderColor: '#F06292',
+    backgroundColor: '#F06292',
   },
   yearOptionText: {
     fontSize: 16,
@@ -1170,7 +1170,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   daySlotSelected: {
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
   },
   daySlotDisabled: {
     opacity: 0.35,
@@ -1209,7 +1209,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   bloodItemSelected: {
-    backgroundColor: '#FFF1EE',
+    backgroundColor: '#FCE4EC',
   },
   bloodItemText: {
     fontSize: 16,
@@ -1218,6 +1218,6 @@ const styles = StyleSheet.create({
   },
   bloodItemTextSelected: {
     fontWeight: '700',
-    color: '#e62a09',
+    color: '#F06292',
   },
 });

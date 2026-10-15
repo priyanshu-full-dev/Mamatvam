@@ -237,7 +237,7 @@ export function DatePickerModal({
                 </Text>
                 <ChevronDown
                   size={16}
-                  color={showMonthDropdown ? '#e62a09' : '#64748B'}
+                  color={showMonthDropdown ? '#F06292' : '#64748B'}
                 />
               </Pressable>
 
@@ -258,7 +258,7 @@ export function DatePickerModal({
                 </Text>
                 <ChevronDown
                   size={16}
-                  color={showYearDropdown ? '#e62a09' : '#64748B'}
+                  color={showYearDropdown ? '#F06292' : '#64748B'}
                 />
               </Pressable>
             </View>
@@ -387,7 +387,7 @@ export function DatePickerModal({
                             {name}
                           </Text>
                           {isSelected && (
-                            <Check size={16} color="#e62a09" strokeWidth={2.6} />
+                            <Check size={16} color="#F06292" strokeWidth={2.6} />
                           )}
                         </Pressable>
                       );
@@ -432,7 +432,7 @@ export function DatePickerModal({
                             {yr}
                           </Text>
                           {isSelected && (
-                            <Check size={16} color="#e62a09" strokeWidth={2.6} />
+                            <Check size={16} color="#F06292" strokeWidth={2.6} />
                           )}
                         </Pressable>
                       );
@@ -490,7 +490,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   badgeButtonActive: {
-    backgroundColor: '#FFF1EE',
+    backgroundColor: '#FCE4EC',
   },
   badgeText: {
     fontSize: 15,
@@ -498,7 +498,7 @@ const styles = StyleSheet.create({
     color: '#1E293B',
   },
   badgeTextActive: {
-    color: '#e62a09',
+    color: '#F06292',
   },
   modalSubheading: {
     fontSize: 13,
@@ -534,7 +534,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
   daySlotSelected: {
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
   },
   daySlotDisabled: {
     opacity: 0.3,
@@ -603,7 +603,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#F1F5F9',
   },
   dropdownMenuItemSelected: {
-    backgroundColor: '#FFF1EE',
+    backgroundColor: '#FCE4EC',
   },
   dropdownMenuItemDisabled: {
     opacity: 0.35,
@@ -615,7 +615,7 @@ const styles = StyleSheet.create({
     color: '#1E293B',
   },
   dropdownItemTextSelected: {
-    color: '#e62a09',
+    color: '#F06292',
     fontWeight: '700',
   },
   dropdownItemTextDisabled: {

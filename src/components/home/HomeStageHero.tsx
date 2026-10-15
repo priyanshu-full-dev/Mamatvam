@@ -205,7 +205,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
               style={styles.dailyUtilityBtn}
             >
               <Text style={styles.dailyUtilityText}>Check out my daily utility</Text>
-              <ArrowRight size={14} color="#e62a09" />
+              <ArrowRight size={14} color="#F06292" />
             </TouchableOpacity>
           </View>
         </View>
@@ -257,7 +257,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
                 {/* Top Card: Next Period */}
                 <View style={styles.conceiveMetricCard}>
                   <View style={styles.conceiveCardHeader}>
-                    <Calendar size={18} color="#e62a09" />
+                    <Calendar size={18} color="#F06292" />
                   </View>
                   <Text style={styles.conceiveCardLabel}>Next Period</Text>
                   <Text style={styles.conceiveCardValue}>{nextPeriodInfo.nextDateStr}</Text>
@@ -283,7 +283,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
               style={styles.dailyUtilityBtn}
             >
               <Text style={styles.dailyUtilityText}>Check out my daily utility</Text>
-              <ArrowRight size={14} color="#e62a09" />
+              <ArrowRight size={14} color="#F06292" />
             </TouchableOpacity>
 
             {/* Action Buttons Row (Calendar & End Period) */}
@@ -302,7 +302,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
                 onPress={() => router.push('/record-symptoms')}
                 style={styles.endPeriodBtn}
               >
-                <Check size={16} color="#e62a09" strokeWidth={2.8} />
+                <Check size={16} color="#F06292" strokeWidth={2.8} />
                 <Text style={styles.endPeriodBtnText}>End Period</Text>
               </TouchableOpacity>
             </View>
@@ -316,7 +316,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
             <Defs>
               <LinearGradient id="pregnancySectionGrad" x1="0%" y1="0%" x2="65%" y2="100%">
                 <Stop offset="0%" stopColor="#F9D7D2" stopOpacity="0.85" />
-                <Stop offset="30%" stopColor="#FBDCD5" stopOpacity="0.65" />
+                <Stop offset="30%" stopColor="#F8BBD0" stopOpacity="0.65" />
                 <Stop offset="65%" stopColor="#FCECE7" stopOpacity="0.4" />
                 <Stop offset="90%" stopColor="#FAF4F0" stopOpacity="0.2" />
                 <Stop offset="100%" stopColor="#FAF9F6" stopOpacity="0" />
@@ -342,7 +342,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
                     cx={RING_SIZE / 2}
                     cy={RING_SIZE / 2}
                     r={RADIUS}
-                    stroke="#e62a09"
+                    stroke="#F06292"
                     strokeWidth={STROKE_WIDTH}
                     strokeDasharray={`${CIRCUMFERENCE}`}
                     strokeDashoffset={STROKE_DASH_OFFSET}
@@ -393,7 +393,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
               style={styles.dailyUtilityBtn}
             >
               <Text style={styles.dailyUtilityText}>Check out my daily utility</Text>
-              <ArrowRight size={14} color="#e62a09" />
+              <ArrowRight size={14} color="#F06292" />
             </TouchableOpacity>
           </View>
         </View>
@@ -477,7 +477,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stageChipActive: {
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
     borderColor: 'transparent',
   },
   stageChipText: {
@@ -519,12 +519,12 @@ const styles = StyleSheet.create({
     height: 68,
     borderRadius: 34,
     borderWidth: 2.5,
-    borderColor: '#e62a09',
+    borderColor: '#F06292',
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
-    shadowColor: '#e62a09',
+    shadowColor: '#F06292',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 5,
@@ -632,7 +632,7 @@ const styles = StyleSheet.create({
   dailyUtilityText: {
     fontSize: 12.5,
     fontWeight: '700',
-    color: '#e62a09',
+    color: '#F06292',
     marginRight: 4,
   },
   pregnantTopRow: {
@@ -677,13 +677,13 @@ const styles = StyleSheet.create({
   weekCount: {
     fontSize: 21,
     fontWeight: '800',
-    color: '#e62a09',
+    color: '#F06292',
     letterSpacing: -0.3,
   },
   dayCount: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#e62a09',
+    color: '#F06292',
   },
   lookMummaRow: {
     marginTop: 6,
@@ -748,7 +748,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 4,
     paddingHorizontal: 4,
-    shadowColor: '#e62a09',
+    shadowColor: '#F06292',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
     shadowRadius: 4,
@@ -768,7 +768,7 @@ const styles = StyleSheet.create({
   pregnancyChanceValue: {
     fontSize: 16.5,
     fontWeight: '800',
-    color: '#e62a09',
+    color: '#F06292',
     textAlign: 'center',
     marginTop: 1,
   },
@@ -829,13 +829,13 @@ const styles = StyleSheet.create({
   },
   calendarBtn: {
     flex: 1,
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
     borderRadius: 12,
     paddingVertical: 9,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#e62a09',
+    shadowColor: '#F06292',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -851,7 +851,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     borderWidth: 1.5,
-    borderColor: '#e62a09',
+    borderColor: '#F06292',
     borderRadius: 12,
     paddingVertical: 9,
     flexDirection: 'row',
@@ -861,7 +861,7 @@ const styles = StyleSheet.create({
   endPeriodBtnText: {
     fontSize: 13,
     fontWeight: '800',
-    color: '#e62a09',
+    color: '#F06292',
     marginLeft: 6,
   },
   tipsCardContainer: {
@@ -889,7 +889,7 @@ const styles = StyleSheet.create({
   tipsTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#e62a09',
+    color: '#F06292',
     marginLeft: 5,
   },
   tipsDescription: {
@@ -901,7 +901,7 @@ const styles = StyleSheet.create({
   moreTipsLink: {
     fontSize: 11.5,
     fontWeight: '700',
-    color: '#e62a09',
+    color: '#F06292',
     textDecorationLine: 'underline',
   },
   shareLink: {

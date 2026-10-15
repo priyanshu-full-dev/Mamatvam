@@ -28,11 +28,7 @@ export function BrandLogo({
 
   const finalImgSize = imageSize || dimensions.img;
 
-  const logoSource =
-    source ||
-    (showText
-      ? require('@/assets/images/logo/mamatvam-logo2.png')
-      : require('@/assets/images/mamatvam-circle-logo.png'));
+  const logoSource = source || require('@/assets/images/logo/logo.png');
 
   return (
     <View style={styles.container}>

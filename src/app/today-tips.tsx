@@ -190,13 +190,13 @@ export default function TodayTipsScreen() {
           >
             <ArrowLeft
               size={16}
-              color={hasPrevious ? '#e62a09' : '#D1D5DB'}
+              color={hasPrevious ? '#F06292' : '#D1D5DB'}
               strokeWidth={2}
             />
             <Text
               style={[
                 styles.navText,
-                { color: hasPrevious ? '#e62a09' : '#D1D5DB' },
+                { color: hasPrevious ? '#F06292' : '#D1D5DB' },
               ]}
             >
               Previous
@@ -212,14 +212,14 @@ export default function TodayTipsScreen() {
             <Text
               style={[
                 styles.navText,
-                { color: hasNext ? '#e62a09' : '#9CA3AF' },
+                { color: hasNext ? '#F06292' : '#9CA3AF' },
               ]}
             >
               Next
             </Text>
             <ArrowRight
               size={16}
-              color={hasNext ? '#e62a09' : '#9CA3AF'}
+              color={hasNext ? '#F06292' : '#9CA3AF'}
               strokeWidth={2}
             />
           </TouchableOpacity>
@@ -352,7 +352,7 @@ const styles = StyleSheet.create({
   tagText: {
     fontSize: 15.5,
     fontWeight: '700',
-    color: '#e62a09',
+    color: '#F06292',
     marginLeft: 8,
   },
   tipTitle: {
@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
   feedbackBtnText: {
     fontSize: 15,
     fontWeight: '700',
-    color: '#e62a09',
+    color: '#F06292',
   },
   feedbackBtnTextSelected: {
     color: '#DC2626',

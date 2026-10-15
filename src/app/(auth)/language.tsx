@@ -137,7 +137,7 @@ export default function LanguageScreen() {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   borderWidth: 2,
-                  borderColor: isSelected ? '#e62a09' : 'transparent',
+                  borderColor: isSelected ? '#F06292' : 'transparent',
                   overflow: 'hidden',
                 }}
               >
@@ -195,7 +195,7 @@ export default function LanguageScreen() {
                     selected={isSelected}
                     onPress={() => handleSelectLanguage(item.id)}
                     size={22}
-                    color="#e62a09"
+                    color="#F06292"
                   />
                 </View>
               </Pressable>

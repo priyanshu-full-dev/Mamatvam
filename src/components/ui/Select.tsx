@@ -134,7 +134,7 @@ export function Select({
                   <View>
                     <Text
                       className={`text-base ${
-                        isSelected ? 'font-bold text-[#e62a09]' : 'font-medium text-[#1E1E1E]'
+                        isSelected ? 'font-bold text-[#F06292]' : 'font-medium text-[#1E1E1E]'
                       }`}
                     >
                       {item.name}
@@ -143,7 +143,7 @@ export function Select({
                       <Text className="text-xs text-[#64748B] mt-0.5">{item.state}</Text>
                     )}
                   </View>
-                  {isSelected && <Check size={20} color="#e62a09" />}
+                  {isSelected && <Check size={20} color="#F06292" />}
                 </Pressable>
               );
             }}

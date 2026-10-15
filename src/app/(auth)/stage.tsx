@@ -138,7 +138,7 @@ export default function StageScreen() {
                       padding: 12,
                     },
                     isSelected
-                      ? { borderColor: '#e62a09', borderWidth: 2 }
+                      ? { borderColor: '#F06292', borderWidth: 2 }
                       : { borderColor: 'transparent', borderWidth: 2 },
                     {
                       shadowColor: '#000000',

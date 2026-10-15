@@ -114,7 +114,7 @@ export default function SignInScreen() {
 
   const isPhoneValid = inputPhone.trim().length >= 10;
   const isPincodeFilled = pincode.trim().length > 0;
-  const isPincodeValid = !isPincodeFilled || (pincode.length === 6 && !!selectedArea);
+  const isPincodeValid = !isPincodeFilled || pincode.length === 6;
   const isFormValid = isPhoneValid && isPincodeValid;
   const hasLocations = locations.length > 0;
 
@@ -193,17 +193,18 @@ export default function SignInScreen() {
     }
 
     const cleanPincode = pincode.trim().replace(/[^0-9]/g, '');
-    if (!cleanPincode) {
-      setPincodeError(t('auth.pincodeRequired', 'Please enter your 6-digit PIN code'));
-      hasError = true;
-    } else if (cleanPincode.length < 6) {
-      setPincodeError(t('auth.invalidPincode', 'Please enter a valid 6-digit PIN code'));
-      hasError = true;
-    } else if (locations.length > 0 && !selectedArea) {
-      setPincodeError(t('auth.selectArea', 'Please select your area for the entered PIN code'));
-      hasError = true;
-    } else if (pincodeError && pincodeError !== 'Please enter your 6-digit PIN code' && pincodeError !== 'Please enter a valid 6-digit PIN code') {
-      hasError = true;
+    if (cleanPincode.length > 0) {
+      if (cleanPincode.length < 6) {
+        setPincodeError(t('auth.invalidPincode', 'Please enter a valid 6-digit PIN code'));
+        hasError = true;
+      } else if (locations.length > 0 && !selectedArea) {
+        setPincodeError(t('auth.selectArea', 'Please select your area for the entered PIN code'));
+        hasError = true;
+      } else if (pincodeError && pincodeError !== 'Please enter your 6-digit PIN code' && pincodeError !== 'Please enter a valid 6-digit PIN code') {
+        hasError = true;
+      } else {
+        setPincodeError('');
+      }
     } else {
       setPincodeError('');
     }
@@ -219,8 +220,10 @@ export default function SignInScreen() {
       setPhone(clean);
       if (selectedArea) {
         setLocation(`${selectedArea.name}, ${selectedArea.district}, ${selectedArea.state}`);
-      } else {
+      } else if (cleanPincode) {
         setLocation(`PIN ${cleanPincode}`);
+      } else {
+        setLocation('');
       }
 
       await sendOtpMutation.mutateAsync({ phone: clean });
@@ -286,7 +289,7 @@ export default function SignInScreen() {
               showText
               showTagline={!hasLocations && !isKeyboardOpen}
               imageSize={160}
-              source={require('@/assets/images/logo/mamatvam-logo2.png')}
+              source={require('@/assets/images/logo/logo.png')}
             />
           </View>
 
@@ -347,8 +350,8 @@ export default function SignInScreen() {
             <View style={{ marginTop: isKeyboardOpen ? 8 : (hasLocations ? 10 : 14) }}>
               <Input
                 ref={pincodeInputRef}
-                label={t('auth.pincode', 'PIN Code *')}
-                placeholder={t('auth.pincodePlaceholder', 'Enter 6-digit PIN code')}
+                label={t('auth.pincode', 'PIN Code (Optional)')}
+                placeholder={t('auth.pincodePlaceholder', 'Enter 6-digit PIN code (optional)')}
                 value={pincode}
                 onChangeText={handlePincodeChange}
                 keyboardType="number-pad"
@@ -362,7 +365,7 @@ export default function SignInScreen() {
             {/* Loading Indicator */}
             {isLoadingPincode && (
               <View style={styles.loadingRow}>
-                <ActivityIndicator size="small" color="#e62a09" />
+                <ActivityIndicator size="small" color="#F06292" />
                 <Text style={styles.loadingText}>Fetching areas for PIN code...</Text>
               </View>
             )}
@@ -504,7 +507,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   locationCardSelected: {
-    borderColor: '#e62a09',
+    borderColor: '#F06292',
     backgroundColor: '#FFF7F6',
   },
   radioCircle: {
@@ -518,13 +521,13 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   radioCircleSelected: {
-    borderColor: '#e62a09',
+    borderColor: '#F06292',
   },
   radioInnerDot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
   },
   locationDetails: {
     flex: 1,
@@ -536,7 +539,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.1,
   },
   locationNameSelected: {
-    color: '#e62a09',
+    color: '#F06292',
   },
   locationSub: {
     fontSize: 12,

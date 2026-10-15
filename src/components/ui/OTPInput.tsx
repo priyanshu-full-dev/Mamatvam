@@ -85,7 +85,7 @@ export function OTPInput({
                 borderColor: hasError
                   ? '#EF4444'
                   : isCurrentActive
-                  ? '#e62a09'
+                  ? '#F06292'
                   : hasValue
                   ? '#9CA3AF'
                   : '#E5E7EB',

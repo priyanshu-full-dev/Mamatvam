@@ -170,7 +170,7 @@ export function HomeHelpfulTools({ stage = 'pregnant' }: HomeHelpfulToolsProps) 
             iconType: 'lucide',
             lucideIcon: CalendarClock,
             bgColor: '#FFF1F2',
-            iconColor: '#e62a09',
+            iconColor: '#F06292',
             borderColor: '#FECDD3',
           },
         ];

@@ -210,22 +210,22 @@ export default function HomeScreen() {
               width: 40,
               height: 40,
               borderRadius: 20,
-              backgroundColor: '#FFF0EE',
+              backgroundColor: '#FCE4EC',
               alignItems: 'center',
               justifyContent: 'center',
               borderWidth: 1.5,
-              borderColor: '#FBDCD5',
+              borderColor: '#F8BBD0',
               overflow: 'hidden',
             }}
           >
             <Image
-              source={require('@/assets/images/mamatvam-circle-logo.png')}
-              style={{ width: 26, height: 26 }}
+              source={require('@/assets/images/logo/logo.png')}
+              style={{ width: 32, height: 32 }}
               contentFit="contain"
             />
           </View>
           <View style={{ marginLeft: 12 }}>
-            <Text style={{ fontSize: 11.5, fontWeight: '600', color: currentStage === 'mother' ? '#8E8E93' : currentStage === 'explore' ? '#8B5CF6' : currentStage === 'conceive' ? '#0284C7' : '#e62a09', letterSpacing: 0.2 }}>
+            <Text style={{ fontSize: 11.5, fontWeight: '600', color: currentStage === 'mother' ? '#8E8E93' : currentStage === 'explore' ? '#8B5CF6' : currentStage === 'conceive' ? '#0284C7' : '#F06292', letterSpacing: 0.2 }}>
               {currentStage === 'mother' ? 'Strawberry' : (currentStage === 'conceive' || currentStage === 'explore') ? 'Fertility Care' : 'Healthcare pvt limited'}
             </Text>
             <Text style={{ fontSize: 16.5, fontWeight: '800', color: '#1E1E1E' }}>
@@ -254,7 +254,7 @@ export default function HomeScreen() {
             elevation: 1,
           }}
         >
-          <Bell size={19} color="#e62a09" />
+          <Bell size={19} color="#F06292" />
           <View
             style={{
               position: 'absolute',
@@ -263,7 +263,7 @@ export default function HomeScreen() {
               width: 7,
               height: 7,
               borderRadius: 3.5,
-              backgroundColor: '#e62a09',
+              backgroundColor: '#F06292',
             }}
           />
         </Pressable>
@@ -340,7 +340,7 @@ export default function HomeScreen() {
                   <Text style={{ fontSize: 10.5, color: '#64748B', marginTop: 2 }}>
                     Essential guides for every stage
                   </Text>
-                  <Text style={{ fontSize: 11, fontWeight: '800', color: '#e62a09', marginTop: 4 }}>
+                  <Text style={{ fontSize: 11, fontWeight: '800', color: '#F06292', marginTop: 4 }}>
                     20% off
                   </Text>
                 </View>
@@ -698,7 +698,7 @@ export default function HomeScreen() {
                 Hear from families like yours
               </Text>
             </View>
-            <ChevronRight size={20} color="#e62a09" strokeWidth={2.4} />
+            <ChevronRight size={20} color="#F06292" strokeWidth={2.4} />
           </TouchableOpacity>
 
           {/* Stories Horizontal Carousel */}
@@ -827,7 +827,7 @@ export default function HomeScreen() {
                   {/* 5 Stars */}
                   <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6, gap: 2 }}>
                     {[1, 2, 3, 4, 5].map((star) => (
-                      <Star key={star} size={12} color="#e62a09" fill="#e62a09" />
+                      <Star key={star} size={12} color="#F06292" fill="#F06292" />
                     ))}
                   </View>
 
@@ -868,7 +868,7 @@ export default function HomeScreen() {
                     width: idx === activeStoryIndex ? 16 : 6,
                     height: 6,
                     borderRadius: 3,
-                    backgroundColor: idx === activeStoryIndex ? '#e62a09' : '#CBD5E1',
+                    backgroundColor: idx === activeStoryIndex ? '#F06292' : '#CBD5E1',
                     marginRight: 5,
                   }}
                 />
@@ -881,10 +881,10 @@ export default function HomeScreen() {
               onPress={() => router.push('/story-detail')}
               style={{ flexDirection: 'row', alignItems: 'center' }}
             >
-              <Text style={{ fontSize: 12.5, fontWeight: '800', color: '#e62a09', marginRight: 4 }}>
+              <Text style={{ fontSize: 12.5, fontWeight: '800', color: '#F06292', marginRight: 4 }}>
                 View all stories
               </Text>
-              <ArrowRight size={13.5} color="#e62a09" strokeWidth={2.4} />
+              <ArrowRight size={13.5} color="#F06292" strokeWidth={2.4} />
             </TouchableOpacity>
           </View>
         </View>

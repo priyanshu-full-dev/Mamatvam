@@ -96,7 +96,7 @@ export default function CarouselScreen() {
             <View style={styles.slide3HeaderRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Image
-                  source={require('@/assets/images/onboarding/mamatvam_icon_transparent.png')}
+                  source={require('@/assets/images/logo/logo-symbol.png')}
                   style={styles.slide3HeaderLogoIcon}
                   contentFit="contain"
                 />
@@ -383,7 +383,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 3.5,
   },
   dotActive: {
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
     width: 10,
     height: 10,
     borderRadius: 5,
@@ -426,13 +426,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   primaryPillButton: {
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
     borderRadius: 26,
     height: 50,
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#e62a09',
+    shadowColor: '#F06292',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
   skipButtonText: {
     fontSize: 13.5,
     fontWeight: '700',
-    color: '#e62a09',
+    color: '#F06292',
     textDecorationLine: 'underline',
   },
 
@@ -476,7 +476,7 @@ const styles = StyleSheet.create({
   slide2Logo: {
     fontSize: 12.5,
     fontWeight: '800',
-    color: '#334155',
+    color: '#F06292',
     letterSpacing: 3,
     marginBottom: 4,
   },
@@ -608,16 +608,6 @@ const styles = StyleSheet.create({
     paddingBottom: 2,
     paddingHorizontal: 16,
   },
-  slide3SkipButton: {
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-  },
-  slide3SkipButtonText: {
-    fontSize: 13.5,
-    fontWeight: '700',
-    color: '#E84A1C',
-    textDecorationLine: 'underline',
-  },
   slide3HeaderLogoIcon: {
     width: 44,
     height: 44,
@@ -630,7 +620,7 @@ const styles = StyleSheet.create({
   slide3HeaderBrandName: {
     fontSize: 22,
     fontWeight: '900',
-    color: '#E84A1C',
+    color: '#F06292',
     letterSpacing: 1.2,
     lineHeight: 25,
   },
@@ -640,6 +630,16 @@ const styles = StyleSheet.create({
     color: '#713F24',
     marginTop: 1,
     letterSpacing: 0.3,
+  },
+  slide3SkipButton: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
+  slide3SkipButtonText: {
+    fontSize: 13.5,
+    fontWeight: '700',
+    color: '#F06292',
+    textDecorationLine: 'underline',
   },
   slide3BodyWrapper: {
     width: '100%',
@@ -665,9 +665,9 @@ const styles = StyleSheet.create({
   featureCardTouchable: {
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#DF532B',
+    shadowColor: '#F06292',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
+    shadowOpacity: 0.08,
     shadowRadius: 5,
     elevation: 1,
   },
@@ -686,12 +686,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontStyle: 'italic',
     fontWeight: '700',
-    color: '#42170D',
+    color: '#8E6BBE',
     textAlign: 'center',
     letterSpacing: 0.2,
   },
   taglineHeart: {
-    color: '#E84A1C',
+    color: '#F06292',
     fontSize: 15,
   },
   slide3BottomBar: {
@@ -715,26 +715,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   slide3DotActive: {
-    backgroundColor: '#E84A1C',
+    backgroundColor: '#F06292',
     width: 9,
     height: 9,
     borderRadius: 4.5,
   },
   slide3DotInactive: {
-    backgroundColor: '#FAD5C0',
+    backgroundColor: '#FCE4EC',
     width: 7,
     height: 7,
     borderRadius: 3.5,
   },
   slide3NextButton: {
-    backgroundColor: '#E84A1C',
+    backgroundColor: '#F06292',
     borderRadius: 25,
     paddingVertical: 12,
     paddingHorizontal: 32,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#E84A1C',
+    shadowColor: '#F06292',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
     shadowRadius: 6,

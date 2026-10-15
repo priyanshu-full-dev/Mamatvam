@@ -4,10 +4,10 @@ export const ThemeColor = {
   light: {
     text: '#11181C',
     background: '#fff',
-    tint: '#0a7ea4',
+    tint: '#F06292',
     icon: '#687076',
     tabIconDefault: '#687076',
-    tabIconSelected: '#0a7ea4',
+    tabIconSelected: '#F06292',
   },
   dark: {
     text: '#ECEDEE',
@@ -21,10 +21,15 @@ export const ThemeColor = {
 
 export const Colors = {
   ...ThemeColor,
-  primary: '#e62a09', // Mamatvam signature coral-red
-  primaryDark: '#c72306',
-  primaryLight: '#FFF1EE',
+  primary: '#F06292', // Mamatvam Brand Pink (Love & Care)
+  primaryDark: '#D81B60',
+  primaryLight: '#FCE4EC',
   primaryDisabled: '#C5CCD6',
+
+  // Secondary brand color
+  secondary: '#8E6BBE', // Mamatvam Purple (Trust & Support)
+  secondaryLight: '#F3E8FF',
+  secondaryDark: '#6A4C9C',
 
   // Status & accents
   success: '#10B981',

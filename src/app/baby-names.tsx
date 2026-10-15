@@ -491,7 +491,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F1F5F9',
   },
   genderChipActive: {
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
   },
   genderChipText: {
     fontSize: 12,

@@ -263,7 +263,7 @@ export default function CommunityScreen() {
           style={styles.notificationBtn}
           accessibilityLabel="Notifications"
         >
-          <Bell size={22} color="#e62a09" />
+          <Bell size={22} color="#F06292" />
         </TouchableOpacity>
       </View>
 
@@ -294,7 +294,7 @@ export default function CommunityScreen() {
                   >
                     <IconComp
                       size={24}
-                      color={isSelected ? '#e62a09' : '#6B7280'}
+                      color={isSelected ? '#F06292' : '#6B7280'}
                     />
                   </View>
                   <Text
@@ -373,12 +373,12 @@ export default function CommunityScreen() {
                 >
                   <ThumbsUp
                     size={15}
-                    color={post.isLiked ? '#e62a09' : '#374151'}
+                    color={post.isLiked ? '#F06292' : '#374151'}
                   />
                   <Text
                     style={[
                       styles.actionLabel,
-                      post.isLiked && { color: '#e62a09', fontWeight: '700' },
+                      post.isLiked && { color: '#F06292', fontWeight: '700' },
                     ]}
                   >
                     {post.likes} like
@@ -629,8 +629,8 @@ const styles = StyleSheet.create({
   },
   circleBadgeSelected: {
     borderWidth: 2,
-    borderColor: '#e62a09',
-    backgroundColor: '#FFF1EE',
+    borderColor: '#F06292',
+    backgroundColor: '#FCE4EC',
   },
   categoryLabelText: {
     fontSize: 11,
@@ -640,7 +640,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   categoryLabelTextSelected: {
-    color: '#e62a09',
+    color: '#F06292',
     fontWeight: '800',
   },
 
@@ -806,7 +806,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   tagChoicePillActive: {
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
   },
   tagChoiceText: {
     fontSize: 11.5,
@@ -830,7 +830,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   publishBtn: {
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
     borderRadius: 14,
     paddingVertical: 12,
     alignItems: 'center',
@@ -874,7 +874,7 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
     alignItems: 'center',
     justifyContent: 'center',
   },

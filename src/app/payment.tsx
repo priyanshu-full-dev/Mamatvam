@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Image } from 'expo-image';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import {
   ChevronLeft,
@@ -103,7 +104,11 @@ export default function PaymentScreen() {
           {/* Logo Row */}
           <View style={styles.logoRow}>
             <View style={styles.logoIconBadge}>
-              <Heart size={16} color="#e62a09" fill="#e62a09" />
+              <Image
+                source={require('@/assets/images/logo/logo-symbol.png')}
+                style={{ width: 22, height: 22 }}
+                contentFit="contain"
+              />
             </View>
             <View>
               <Text style={styles.logoTitle}>MAMATVAM</Text>
@@ -332,7 +337,7 @@ export default function PaymentScreen() {
         {/* 4. Billing Details Form */}
         <View style={styles.formSection}>
           <View style={styles.billingHeaderRow}>
-            <Receipt size={17} color="#e62a09" strokeWidth={2.4} style={{ marginRight: 6 }} />
+            <Receipt size={17} color="#F06292" strokeWidth={2.4} style={{ marginRight: 6 }} />
             <Text style={styles.formSectionTitle}>Billing Details</Text>
           </View>
 
@@ -509,7 +514,7 @@ const styles = StyleSheet.create({
   logoTitle: {
     fontSize: 13.5,
     fontWeight: '900',
-    color: '#e62a09',
+    color: '#F06292',
     letterSpacing: 0.6,
   },
   logoSubtitle: {
@@ -585,7 +590,7 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   methodItemSelected: {
-    borderColor: '#e62a09',
+    borderColor: '#F06292',
     backgroundColor: '#FFFBFB',
   },
   radioCircle: {
@@ -599,13 +604,13 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   radioCircleActive: {
-    borderColor: '#e62a09',
+    borderColor: '#F06292',
   },
   radioInnerDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
   },
   methodIconBadge: {
     width: 34,
@@ -697,12 +702,12 @@ const styles = StyleSheet.create({
     color: '#1E293B',
   },
   payNowButton: {
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
     borderRadius: 16,
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#e62a09',
+    shadowColor: '#F06292',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,
@@ -731,7 +736,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   termsLink: {
-    color: '#e62a09',
+    color: '#F06292',
     fontWeight: '700',
   },
   modalOverlay: {
@@ -776,7 +781,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   modalButton: {
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
     borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 28,

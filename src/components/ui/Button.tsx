@@ -40,7 +40,7 @@ export function Button({
   let containerStyle: ViewStyle = {
     width: '100%',
     height: 54,
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
     borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
@@ -50,13 +50,13 @@ export function Button({
   let labelColor = '#FFFFFF';
 
   if (variant === 'secondary') {
-    containerStyle.backgroundColor = '#FFF1EE';
-    labelColor = '#e62a09';
+    containerStyle.backgroundColor = '#FCE4EC';
+    labelColor = '#F06292';
   } else if (variant === 'outline') {
     containerStyle.backgroundColor = 'transparent';
     containerStyle.borderWidth = 1.5;
-    containerStyle.borderColor = '#e62a09';
-    labelColor = '#e62a09';
+    containerStyle.borderColor = '#F06292';
+    labelColor = '#F06292';
   } else if (variant === 'ghost') {
     containerStyle.backgroundColor = 'transparent';
     labelColor = '#6B7280';
@@ -77,7 +77,7 @@ export function Button({
       {loading ? (
         <ActivityIndicator
           size="small"
-          color={variant === 'secondary' || variant === 'outline' ? '#e62a09' : '#FFFFFF'}
+          color={variant === 'secondary' || variant === 'outline' ? '#F06292' : '#FFFFFF'}
         />
       ) : children ? (
         children

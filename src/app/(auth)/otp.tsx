@@ -234,7 +234,7 @@ export default function OTPScreen() {
             <View style={{ alignItems: 'center', justifyContent: 'center', marginTop: 14 }}>
               {canResend ? (
                 <Pressable onPress={handleResend} hitSlop={10}>
-                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#e62a09' }}>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#F06292' }}>
                     {t('auth.resendNow', 'Resend OTP')}
                   </Text>
                 </Pressable>

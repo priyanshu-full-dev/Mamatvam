@@ -67,7 +67,11 @@ export default function SubscriptionScreen() {
             {/* Logo Row */}
             <View style={styles.logoRow}>
               <View style={styles.logoIconBadge}>
-                <Heart size={16} color="#e62a09" fill="#e62a09" />
+                <Image
+                  source={require('@/assets/images/logo/logo-symbol.png')}
+                  style={{ width: 22, height: 22 }}
+                  contentFit="contain"
+                />
               </View>
               <View>
                 <Text style={styles.logoTitle}>MAMATVAM</Text>
@@ -284,17 +288,17 @@ export default function SubscriptionScreen() {
         {/* 6. Trust Badges Row */}
         <View style={styles.trustBadgesRow}>
           <View style={styles.trustItem}>
-            <ShieldCheck size={20} color="#e62a09" strokeWidth={2.2} />
+            <ShieldCheck size={20} color="#F06292" strokeWidth={2.2} />
             <Text style={styles.trustText}>Secure{'\n'}Payment</Text>
           </View>
           <View style={styles.trustDivider} />
           <View style={styles.trustItem}>
-            <Lock size={19} color="#e62a09" strokeWidth={2.2} />
+            <Lock size={19} color="#F06292" strokeWidth={2.2} />
             <Text style={styles.trustText}>Your Data{'\n'}is Safe</Text>
           </View>
           <View style={styles.trustDivider} />
           <View style={styles.trustItem}>
-            <Headphones size={20} color="#e62a09" strokeWidth={2.2} />
+            <Headphones size={20} color="#F06292" strokeWidth={2.2} />
             <Text style={styles.trustText}>24/7{'\n'}Support</Text>
           </View>
         </View>
@@ -383,7 +387,7 @@ const styles = StyleSheet.create({
   logoTitle: {
     fontSize: 14,
     fontWeight: '900',
-    color: '#e62a09',
+    color: '#F06292',
     letterSpacing: 0.6,
   },
   logoSubtitle: {
@@ -399,7 +403,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   heroHeadingAccent: {
-    color: '#e62a09',
+    color: '#F06292',
   },
   heroTagline: {
     fontSize: 9.5,
@@ -542,14 +546,14 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   planCardSelected: {
-    borderColor: '#e62a09',
+    borderColor: '#F06292',
     backgroundColor: '#FFFBFB',
   },
   popularBadge: {
     position: 'absolute',
     top: -1,
     right: 0,
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
     borderTopRightRadius: 16,
     borderBottomLeftRadius: 12,
     paddingHorizontal: 10,
@@ -577,13 +581,13 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   radioCircleActive: {
-    borderColor: '#e62a09',
+    borderColor: '#F06292',
   },
   radioInnerDot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
   },
   planDetailsCol: {
     flex: 1,
@@ -659,13 +663,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#FED7AA',
   },
   proceedButton: {
-    backgroundColor: '#e62a09',
+    backgroundColor: '#F06292',
     borderRadius: 16,
     paddingVertical: 15,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#e62a09',
+    shadowColor: '#F06292',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.25,
     shadowRadius: 8,

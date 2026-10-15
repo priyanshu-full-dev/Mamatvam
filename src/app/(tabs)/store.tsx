@@ -7,8 +7,8 @@ export default function StoreScreen() {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
-      <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#FFF1EE', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-        <StoreIcon size={32} color="#e62a09" />
+      <View style={{ width: 64, height: 64, borderRadius: 32, backgroundColor: '#FCE4EC', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+        <StoreIcon size={32} color="#F06292" />
       </View>
       <Text style={{ fontSize: 20, fontWeight: '700', color: '#1E1E1E', marginBottom: 8 }}>Mamatvam Store</Text>
       <Text style={{ fontSize: 14, color: '#64748B', textAlign: 'center' }}>
