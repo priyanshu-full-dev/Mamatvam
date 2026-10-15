@@ -7,14 +7,20 @@ import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
 import {
+  ArrowRight,
   Bell,
   BookOpen,
+  ChevronRight,
   Lightbulb,
+  Play,
+  Star,
   Video,
 } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import {
   Dimensions,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   Pressable,
   ScrollView,
   StatusBar,
@@ -74,11 +80,60 @@ const CATEGORIES = [
   { id: '10', title: 'Yoga Instructor', image: require('@/assets/images/home/categories/yoga.jpg') },
 ];
 
+const REAL_STORIES = [
+  {
+    id: 'story-1',
+    name: 'Priya S.',
+    category: 'Pregnancy • Week 28',
+    duration: '0:42',
+    rating: 5,
+    quote: '“I feel supported every week.”',
+    image: require('@/assets/images/stories/story_priya.jpg'),
+  },
+  {
+    id: 'story-2',
+    name: 'Anjali & Rohit',
+    category: 'Trying to Conceive',
+    duration: '0:56',
+    rating: 5,
+    quote: '“We learned together.”',
+    image: require('@/assets/images/stories/story_anjali_rohit.jpg'),
+  },
+  {
+    id: 'story-3',
+    name: 'Neha M.',
+    category: 'New Mom',
+    duration: '0:38',
+    rating: 5,
+    quote: '“Helpful tips for my first weeks.”',
+    image: require('@/assets/images/stories/story_neha.jpg'),
+  },
+  {
+    id: 'story-4',
+    name: 'Kavita R.',
+    category: 'Postpartum Care',
+    duration: '0:49',
+    rating: 5,
+    quote: '“Gentle guidance when I needed it most.”',
+    image: require('@/assets/images/home/mother_baby.jpg'),
+  },
+];
+
 export default function HomeScreen() {
   const router = useRouter();
   const { user } = useAuthStore();
   const { stage, setStage, hasSeenMotherWelcomePopup, setHasSeenMotherWelcomePopup } = useAppStore();
   const [welcomeModalVisible, setWelcomeModalVisible] = useState(false);
+  const [activeStoryIndex, setActiveStoryIndex] = useState(0);
+
+  const handleStoryScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const scrollOffset = event.nativeEvent.contentOffset.x;
+    const itemWidth = 184; // 172 card width + 12 marginRight
+    const index = Math.round(scrollOffset / itemWidth);
+    if (index >= 0 && index < REAL_STORIES.length && index !== activeStoryIndex) {
+      setActiveStoryIndex(index);
+    }
+  };
 
   // Resolve stage: priority to explicit stage in appStore, then user.stage, then detect from user.name, default to 'pregnant'
   const currentStage: PregnancyStage =
@@ -428,11 +483,11 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
 
-        {/* Expert Post Category */}
+        {/* Expert Category */}
         <View style={{ marginTop: 22, paddingHorizontal: 16 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <Text style={{ fontSize: 17, fontWeight: '800', color: '#1E1E1E' }}>
-              Expert Post Category
+              Expert Category
             </Text>
             <Pressable
               onPress={() => router.push('/expert-directory')}
@@ -496,6 +551,229 @@ export default function HomeScreen() {
                 </Text>
               </TouchableOpacity>
             ))}
+          </View>
+        </View>
+
+        {/* Real Stories. Real Smiles. Section */}
+        <View
+          style={{
+            marginHorizontal: 16,
+            marginTop: 18,
+            marginBottom: 14,
+            backgroundColor: '#FFFFFF',
+            borderRadius: 22,
+            padding: 16,
+            borderWidth: 1,
+            borderColor: '#F1F5F9',
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.04,
+            shadowRadius: 8,
+            elevation: 2,
+          }}
+        >
+          {/* Header Row */}
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => router.push('/community')}
+            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+          >
+            <View>
+              <Text style={{ fontSize: 17.5, fontWeight: '800', color: '#0F172A', letterSpacing: -0.2 }}>
+                Real Stories. Real Smiles.
+              </Text>
+              <Text style={{ fontSize: 12.5, color: '#64748B', fontWeight: '500', marginTop: 2 }}>
+                Hear from families like yours
+              </Text>
+            </View>
+            <ChevronRight size={20} color="#e62a09" strokeWidth={2.4} />
+          </TouchableOpacity>
+
+          {/* Stories Horizontal Carousel */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            onScroll={handleStoryScroll}
+            scrollEventThrottle={16}
+            style={{ marginTop: 14, marginHorizontal: -4, paddingHorizontal: 4 }}
+          >
+            {REAL_STORIES.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                activeOpacity={0.88}
+                onPress={() => {
+                  router.push({
+                    pathname: '/community',
+                    params: { storyId: item.id, storyName: item.name },
+                  });
+                }}
+                style={{
+                  width: 172,
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: 16,
+                  padding: 8,
+                  marginRight: 12,
+                  borderWidth: 1,
+                  borderColor: '#F1F5F9',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 0.04,
+                  shadowRadius: 5,
+                  elevation: 2,
+                }}
+              >
+                {/* Thumbnail with overlay badges */}
+                <View style={{ position: 'relative', width: '100%', height: 144, borderRadius: 12, overflow: 'hidden' }}>
+                  <Image
+                    source={item.image}
+                    style={{ width: '100%', height: '100%' }}
+                    contentFit="cover"
+                  />
+                  {/* Top Right: Sample story badge */}
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 6,
+                      right: 6,
+                      backgroundColor: 'rgba(255, 255, 255, 0.92)',
+                      paddingHorizontal: 7,
+                      paddingVertical: 2.5,
+                      borderRadius: 6,
+                      shadowColor: '#000',
+                      shadowOffset: { width: 0, height: 1 },
+                      shadowOpacity: 0.08,
+                      shadowRadius: 2,
+                      elevation: 1,
+                    }}
+                  >
+                    <Text style={{ fontSize: 9.5, fontWeight: '700', color: '#1E293B' }}>
+                      Sample story
+                    </Text>
+                  </View>
+
+                  {/* Centered Play Button */}
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      marginTop: -18,
+                      marginLeft: -18,
+                      width: 36,
+                      height: 36,
+                      borderRadius: 18,
+                      backgroundColor: 'rgba(15, 23, 42, 0.58)',
+                      borderWidth: 1.5,
+                      borderColor: 'rgba(255, 255, 255, 0.65)',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Play size={14} color="#FFFFFF" fill="#FFFFFF" style={{ marginLeft: 2 }} />
+                  </View>
+
+                  {/* Bottom Right Duration Badge */}
+                  <View
+                    style={{
+                      position: 'absolute',
+                      bottom: 6,
+                      right: 6,
+                      backgroundColor: 'rgba(15, 23, 42, 0.82)',
+                      paddingHorizontal: 6,
+                      paddingVertical: 2,
+                      borderRadius: 5,
+                    }}
+                  >
+                    <Text style={{ fontSize: 9.5, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.3 }}>
+                      {item.duration}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Info */}
+                <View style={{ paddingTop: 8, paddingHorizontal: 2 }}>
+                  <Text style={{ fontSize: 13.5, fontWeight: '800', color: '#0F172A' }} numberOfLines={1}>
+                    {item.name}
+                  </Text>
+
+                  {/* Category Pill */}
+                  <View
+                    style={{
+                      alignSelf: 'flex-start',
+                      backgroundColor: '#FCE7F3',
+                      paddingHorizontal: 7,
+                      paddingVertical: 2.5,
+                      borderRadius: 8,
+                      marginTop: 4,
+                    }}
+                  >
+                    <Text style={{ fontSize: 9.5, fontWeight: '700', color: '#BE185D' }}>
+                      {item.category}
+                    </Text>
+                  </View>
+
+                  {/* 5 Stars */}
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6, gap: 2 }}>
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star key={star} size={12} color="#e62a09" fill="#e62a09" />
+                    ))}
+                  </View>
+
+                  {/* Quote */}
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      fontWeight: '600',
+                      color: '#334155',
+                      marginTop: 6,
+                      lineHeight: 15,
+                    }}
+                    numberOfLines={2}
+                  >
+                    {item.quote}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          {/* Footer with pagination dots and View all stories */}
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginTop: 14,
+              paddingTop: 4,
+            }}
+          >
+            {/* Dots */}
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              {REAL_STORIES.map((_, idx) => (
+                <View
+                  key={idx}
+                  style={{
+                    width: idx === activeStoryIndex ? 16 : 6,
+                    height: 6,
+                    borderRadius: 3,
+                    backgroundColor: idx === activeStoryIndex ? '#e62a09' : '#CBD5E1',
+                    marginRight: 5,
+                  }}
+                />
+              ))}
+            </View>
+
+            {/* View all stories link */}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => router.push('/community')}
+              style={{ flexDirection: 'row', alignItems: 'center' }}
+            >
+              <Text style={{ fontSize: 12.5, fontWeight: '800', color: '#e62a09', marginRight: 4 }}>
+                View all stories
+              </Text>
+              <ArrowRight size={13.5} color="#e62a09" strokeWidth={2.4} />
+            </TouchableOpacity>
           </View>
         </View>
 
