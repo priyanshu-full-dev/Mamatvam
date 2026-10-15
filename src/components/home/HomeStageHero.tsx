@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -19,7 +19,8 @@ import {
   Calendar,
   Check,
 } from 'lucide-react-native';
-import { PregnancyStage } from '@/store/useAppStore';
+import { PregnancyStage, useAppStore } from '@/store/useAppStore';
+import { DatePickerModal } from '@/components/ui/DatePickerModal';
 
 const { width } = Dimensions.get('window');
 const HERO_CARD_HEIGHT = 270;
@@ -46,6 +47,45 @@ export interface HomeStageHeroProps {
 export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHeroProps) {
   const router = useRouter();
   const currentStage: PregnancyStage = stage || 'pregnant';
+  const { pregnancyData, setPregnancyData } = useAppStore();
+  const [showCalendarModal, setShowCalendarModal] = useState(false);
+
+  // Dynamically compute Next Period and Ovulation estimates based on Last Period Date
+  const nextPeriodInfo = useMemo(() => {
+    if (!pregnancyData.lastPeriodDate) {
+      return { nextDateStr: '13 Feb', daysSub: 'in 3 days', ovDateStr: '13 Feb', ovSub: 'in 3 days' };
+    }
+    const parts = pregnancyData.lastPeriodDate.split('/');
+    if (parts.length === 3) {
+      const d = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10) - 1;
+      const y = parseInt(parts[2], 10);
+      const lpd = new Date(y, m, d);
+      if (!isNaN(lpd.getTime())) {
+        const nextPeriod = new Date(lpd);
+        nextPeriod.setDate(nextPeriod.getDate() + 28);
+
+        const ovulation = new Date(lpd);
+        ovulation.setDate(ovulation.getDate() + 14);
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const diffNpDays = Math.ceil((nextPeriod.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+        const diffOvDays = Math.ceil((ovulation.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+        const shortMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const npDateStr = `${nextPeriod.getDate()} ${shortMonths[nextPeriod.getMonth()]}`;
+        const ovDateStr = `${ovulation.getDate()} ${shortMonths[ovulation.getMonth()]}`;
+
+        const npSub = diffNpDays === 0 ? 'Today' : diffNpDays > 0 ? `in ${diffNpDays} days` : `${Math.abs(diffNpDays)} days ago`;
+        const ovSub = diffOvDays === 0 ? 'Today' : diffOvDays > 0 ? `in ${diffOvDays} days` : `${Math.abs(diffOvDays)} days ago`;
+
+        return { nextDateStr: npDateStr, daysSub: npSub, ovDateStr, ovSub };
+      }
+    }
+    return { nextDateStr: '13 Feb', daysSub: 'in 3 days', ovDateStr: '13 Feb', ovSub: 'in 3 days' };
+  }, [pregnancyData.lastPeriodDate]);
 
   return (
     <View style={styles.heroOuterContainer}>
@@ -220,8 +260,8 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
                     <Calendar size={18} color="#e62a09" />
                   </View>
                   <Text style={styles.conceiveCardLabel}>Next Period</Text>
-                  <Text style={styles.conceiveCardValue}>13 Feb</Text>
-                  <Text style={styles.conceiveCardSub}>in 3 days</Text>
+                  <Text style={styles.conceiveCardValue}>{nextPeriodInfo.nextDateStr}</Text>
+                  <Text style={styles.conceiveCardSub}>{nextPeriodInfo.daysSub}</Text>
                 </View>
 
                 {/* Bottom Card: Ovulation */}
@@ -230,8 +270,8 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
                     <Sparkles size={18} color="#EAB308" fill="#FDE047" />
                   </View>
                   <Text style={styles.conceiveCardLabel}>Ovulation</Text>
-                  <Text style={styles.conceiveCardValue}>13 Feb</Text>
-                  <Text style={styles.conceiveCardSub}>in 3 days</Text>
+                  <Text style={styles.conceiveCardValue}>{nextPeriodInfo.ovDateStr}</Text>
+                  <Text style={styles.conceiveCardSub}>{nextPeriodInfo.ovSub}</Text>
                 </View>
               </View>
             </View>
@@ -250,7 +290,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
             <View style={styles.conceiveActionsRow}>
               <TouchableOpacity
                 activeOpacity={0.8}
-                onPress={() => router.push('/practical-tools')}
+                onPress={() => setShowCalendarModal(true)}
                 style={styles.calendarBtn}
               >
                 <Calendar size={16} color="#FFFFFF" strokeWidth={2.4} />
@@ -396,6 +436,16 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
           contentFit="contain"
         />
       </View>
+
+      {/* Date Picker Calendar Modal for Try to Conceive Stage */}
+      <DatePickerModal
+        visible={showCalendarModal}
+        onClose={() => setShowCalendarModal(false)}
+        selectedDate={pregnancyData.lastPeriodDate}
+        onConfirm={(dateStr) => {
+          setPregnancyData({ lastPeriodDate: dateStr });
+        }}
+      />
     </View>
   );
 }

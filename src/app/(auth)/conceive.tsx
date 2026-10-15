@@ -435,14 +435,29 @@ export default function ConceiveScreen() {
         visible={showDatePicker}
         transparent
         animationType="fade"
-        onRequestClose={() => setShowDatePicker(false)}
+        onRequestClose={() => {
+          setShowYearSelector(false);
+          setShowMonthSelector(false);
+          setShowDatePicker(false);
+        }}
       >
         <View style={styles.modalOverlay}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => {
+              if (showMonthSelector || showYearSelector) {
+                setShowMonthSelector(false);
+                setShowYearSelector(false);
+              } else {
+                setShowDatePicker(false);
+              }
+            }}
+          />
           <View style={styles.calendarModalContent}>
             {/* Header */}
             <View style={styles.modalHeaderRow}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                {/* Clickable Month Selector */}
+                {/* Clickable Month Selector (Dropdown Trigger) */}
                 <Pressable
                   onPress={() => {
                     setShowYearSelector(false);
@@ -463,7 +478,7 @@ export default function ConceiveScreen() {
                   />
                 </Pressable>
 
-                {/* Clickable Year Selector */}
+                {/* Clickable Year Selector (Dropdown Trigger) */}
                 <Pressable
                   onPress={() => {
                     setShowMonthSelector(false);
@@ -486,26 +501,22 @@ export default function ConceiveScreen() {
               </View>
 
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                {!showYearSelector && !showMonthSelector && (
-                  <>
-                    <Pressable
-                      onPress={handlePrevMonth}
-                      hitSlop={10}
-                      disabled={isMinMonth}
-                      style={{ padding: 6, marginRight: 2, opacity: isMinMonth ? 0.25 : 1 }}
-                    >
-                      <ChevronLeft size={20} color="#64748B" />
-                    </Pressable>
-                    <Pressable
-                      onPress={handleNextMonth}
-                      hitSlop={10}
-                      disabled={isMaxMonth}
-                      style={{ padding: 6, marginRight: 8, opacity: isMaxMonth ? 0.25 : 1 }}
-                    >
-                      <ChevronRight size={20} color="#64748B" />
-                    </Pressable>
-                  </>
-                )}
+                <Pressable
+                  onPress={handlePrevMonth}
+                  hitSlop={10}
+                  disabled={isMinMonth}
+                  style={{ padding: 6, marginRight: 2, opacity: isMinMonth ? 0.25 : 1 }}
+                >
+                  <ChevronLeft size={20} color="#64748B" />
+                </Pressable>
+                <Pressable
+                  onPress={handleNextMonth}
+                  hitSlop={10}
+                  disabled={isMaxMonth}
+                  style={{ padding: 6, marginRight: 8, opacity: isMaxMonth ? 0.25 : 1 }}
+                >
+                  <ChevronRight size={20} color="#64748B" />
+                </Pressable>
 
                 <Pressable
                   onPress={() => {
@@ -522,133 +533,153 @@ export default function ConceiveScreen() {
             </View>
 
             <Text style={styles.modalSubheading}>
-              {showYearSelector
-                ? 'Tap a year to switch'
-                : showMonthSelector
-                ? 'Tap a month to switch'
-                : 'Valid from today up to 2 years'}
+              Valid from today up to 2 years
             </Text>
 
-            {/* Fixed Height Calendar / Year / Month Container (consistent across every month) */}
+            {/* Fixed Height Calendar Container (Always visible & interactive) */}
             <View style={styles.calendarBodyContainer}>
-              {showYearSelector ? (
-                <View style={styles.yearPickerView}>
-                  <View style={styles.yearListContainer}>
-                    {availableYears.map((yr) => {
-                      const isSelected = pickerYear === yr;
-                      return (
-                        <Pressable
-                          key={yr}
-                          onPress={() => handleSelectYear(yr)}
-                          style={[
-                            styles.yearOptionCard,
-                            isSelected && styles.yearOptionCardSelected,
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.yearOptionText,
-                              isSelected && styles.yearOptionTextSelected,
-                            ]}
-                          >
-                            {yr}
-                          </Text>
-                          {isSelected ? (
-                            <Check size={20} color="#FFFFFF" strokeWidth={2.5} />
-                          ) : (
-                            <View style={{ width: 20 }} />
-                          )}
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                </View>
-              ) : showMonthSelector ? (
-                <View style={styles.monthPickerView}>
-                  <View style={styles.monthGridContainer}>
-                    {MONTH_NAMES.map((name, index) => {
-                      const isSelected = pickerMonth === index;
-                      const disabled = isMonthDisabled(index);
-                      return (
-                        <Pressable
-                          key={name}
-                          disabled={disabled}
-                          onPress={() => handleSelectMonth(index)}
-                          style={[
-                            styles.monthOptionCard,
-                            isSelected && styles.monthOptionCardSelected,
-                            disabled && styles.monthOptionCardDisabled,
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.monthOptionText,
-                              isSelected && styles.monthOptionTextSelected,
-                              disabled && styles.monthOptionTextDisabled,
-                            ]}
-                          >
-                            {SHORT_MONTH_NAMES[index]}
-                          </Text>
-                          {isSelected && (
-                            <Check size={14} color="#FFFFFF" strokeWidth={2.6} style={{ marginLeft: 4 }} />
-                          )}
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                </View>
-              ) : (
-                <>
-                  {/* Days of Week */}
-                  <View style={styles.weekDaysRow}>
-                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                      <Text key={i} style={styles.weekDayText}>
-                        {d}
-                      </Text>
-                    ))}
-                  </View>
+              {/* Days of Week */}
+              <View style={styles.weekDaysRow}>
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                  <Text key={i} style={styles.weekDayText}>
+                    {d}
+                  </Text>
+                ))}
+              </View>
 
-                  {/* Calendar Days Grid */}
-                  <View style={styles.daysGrid}>
-                    {Array.from({ length: firstDayIndex }).map((_, i) => (
-                      <View key={`empty-start-${i}`} style={styles.daySlot} />
-                    ))}
-                    {Array.from({ length: daysInMonth }).map((_, i) => {
-                      const day = i + 1;
-                      const cellDate = new Date(pickerYear, pickerMonth, day);
-                      cellDate.setHours(0, 0, 0, 0);
-                      const isDisabled = cellDate < today || cellDate > maxDate;
-                      const isSelected = !isDisabled && pickerDay === day;
-                      return (
-                        <Pressable
-                          key={day}
-                          disabled={isDisabled}
-                          onPress={() => !isDisabled && setPickerDay(day)}
-                          style={[
-                            styles.daySlot,
-                            isSelected && styles.daySlotSelected,
-                            isDisabled && styles.daySlotDisabled,
-                          ]}
-                        >
-                          <Text
+              {/* Calendar Days 6-Row Fixed Grid */}
+              <View style={styles.daysGrid}>
+                {Array.from({ length: firstDayIndex }).map((_, i) => (
+                  <View key={`empty-start-${i}`} style={styles.daySlot} />
+                ))}
+                {Array.from({ length: daysInMonth }).map((_, i) => {
+                  const day = i + 1;
+                  const cellDate = new Date(pickerYear, pickerMonth, day);
+                  cellDate.setHours(0, 0, 0, 0);
+                  const isDisabled = cellDate < today || cellDate > maxDate;
+                  const isSelected = !isDisabled && pickerDay === day;
+                  return (
+                    <Pressable
+                      key={day}
+                      disabled={isDisabled}
+                      onPress={() => !isDisabled && setPickerDay(day)}
+                      style={[
+                        styles.daySlot,
+                        isSelected && styles.daySlotSelected,
+                        isDisabled && styles.daySlotDisabled,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.dayNumberText,
+                          isSelected && styles.dayNumberTextSelected,
+                          isDisabled && styles.dayNumberTextDisabled,
+                        ]}
+                      >
+                        {day}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+                {Array.from({ length: trailingEmptyCount }).map((_, i) => (
+                  <View key={`empty-end-${i}`} style={styles.daySlot} />
+                ))}
+              </View>
+            </View>
+
+            {/* Floating Month Dropdown Menu */}
+            {showMonthSelector && (
+              <>
+                <Pressable
+                  style={StyleSheet.absoluteFill}
+                  onPress={() => setShowMonthSelector(false)}
+                />
+                <View style={styles.monthDropdownMenu}>
+                  <View style={styles.dropdownInner}>
+                    <ScrollView
+                      nestedScrollEnabled
+                      showsVerticalScrollIndicator={true}
+                      style={styles.dropdownScrollView}
+                    >
+                      {MONTH_NAMES.map((name, index) => {
+                        const isSelected = pickerMonth === index;
+                        const disabled = isMonthDisabled(index);
+                        return (
+                          <Pressable
+                            key={name}
+                            disabled={disabled}
+                            onPress={() => handleSelectMonth(index)}
                             style={[
-                              styles.dayNumberText,
-                              isSelected && styles.dayNumberTextSelected,
-                              isDisabled && styles.dayNumberTextDisabled,
+                              styles.dropdownMenuItem,
+                              isSelected && styles.dropdownMenuItemSelected,
+                              disabled && styles.dropdownMenuItemDisabled,
                             ]}
                           >
-                            {day}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                    {Array.from({ length: trailingEmptyCount }).map((_, i) => (
-                      <View key={`empty-end-${i}`} style={styles.daySlot} />
-                    ))}
+                            <Text
+                              style={[
+                                styles.dropdownItemText,
+                                isSelected && styles.dropdownItemTextSelected,
+                                disabled && styles.dropdownItemTextDisabled,
+                              ]}
+                            >
+                              {name}
+                            </Text>
+                            {isSelected && (
+                              <Check size={16} color="#e62a09" strokeWidth={2.6} />
+                            )}
+                          </Pressable>
+                        );
+                      })}
+                    </ScrollView>
                   </View>
-                </>
-              )}
-            </View>
+                </View>
+              </>
+            )}
+
+            {/* Floating Year Dropdown Menu */}
+            {showYearSelector && (
+              <>
+                <Pressable
+                  style={StyleSheet.absoluteFill}
+                  onPress={() => setShowYearSelector(false)}
+                />
+                <View style={styles.yearDropdownMenu}>
+                  <View style={styles.dropdownInner}>
+                    <ScrollView
+                      nestedScrollEnabled
+                      showsVerticalScrollIndicator={false}
+                      style={styles.dropdownScrollView}
+                    >
+                      {availableYears.map((yr) => {
+                        const isSelected = pickerYear === yr;
+                        return (
+                          <Pressable
+                            key={yr}
+                            onPress={() => handleSelectYear(yr)}
+                            style={[
+                              styles.dropdownMenuItem,
+                              isSelected && styles.dropdownMenuItemSelected,
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.dropdownItemText,
+                                isSelected && styles.dropdownItemTextSelected,
+                              ]}
+                            >
+                              {yr}
+                            </Text>
+                            {isSelected && (
+                              <Check size={16} color="#e62a09" strokeWidth={2.6} />
+                            )}
+                          </Pressable>
+                        );
+                      })}
+                    </ScrollView>
+                  </View>
+                </View>
+              </>
+            )}
 
             {/* Actions */}
             <View style={{ marginTop: 20 }}>
@@ -884,6 +915,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderRadius: 24,
     padding: 20,
+    position: 'relative',
   },
   modalHeaderRow: {
     flexDirection: 'row',
@@ -917,81 +949,78 @@ const styles = StyleSheet.create({
   calendarYearTextActive: {
     color: '#e62a09',
   },
-  monthPickerView: {
-    flex: 1,
-    paddingVertical: 4,
-    justifyContent: 'center',
-  },
-  monthGridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    rowGap: 10,
-  },
-  monthOptionCard: {
-    width: '31%',
-    height: 52,
-    borderRadius: 12,
+  monthDropdownMenu: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    width: 175,
+    maxHeight: 250,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
+    elevation: 30,
+    zIndex: 9999,
+  },
+  yearDropdownMenu: {
+    position: 'absolute',
+    top: 60,
+    left: 135,
+    width: 125,
+    maxHeight: 180,
     backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
+    elevation: 30,
+    zIndex: 9999,
+  },
+  dropdownInner: {
+    borderRadius: 12.5,
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+  },
+  dropdownScrollView: {
+    maxHeight: 250,
+  },
+  dropdownMenuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 11,
+    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
   },
-  monthOptionCardSelected: {
-    borderColor: '#e62a09',
-    backgroundColor: '#e62a09',
+  dropdownMenuItemSelected: {
+    backgroundColor: '#FFF1EE',
   },
-  monthOptionCardDisabled: {
-    backgroundColor: '#F8FAFC',
-    borderColor: '#F1F5F9',
+  dropdownMenuItemDisabled: {
     opacity: 0.35,
+    backgroundColor: '#FFFFFF',
   },
-  monthOptionText: {
-    fontSize: 15,
+  dropdownItemText: {
+    fontSize: 14.5,
+    fontWeight: '600',
+    color: '#1E293B',
+  },
+  dropdownItemTextSelected: {
+    color: '#e62a09',
     fontWeight: '700',
-    color: '#334155',
   },
-  monthOptionTextSelected: {
-    color: '#FFFFFF',
-  },
-  monthOptionTextDisabled: {
+  dropdownItemTextDisabled: {
     color: '#94A3B8',
   },
   calendarBodyContainer: {
     height: 278,
-  },
-  yearPickerView: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 8,
-  },
-  yearListContainer: {
-    gap: 12,
-  },
-  yearOptionCard: {
-    backgroundColor: '#F8FAFC',
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-    borderRadius: 14,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  yearOptionCardSelected: {
-    backgroundColor: '#e62a09',
-    borderColor: '#e62a09',
-  },
-  yearOptionText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1E293B',
-  },
-  yearOptionTextSelected: {
-    color: '#FFFFFF',
   },
   modalSubheading: {
     fontSize: 13,
