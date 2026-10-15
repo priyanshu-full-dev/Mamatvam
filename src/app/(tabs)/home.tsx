@@ -463,11 +463,11 @@ export default function HomeScreen() {
         {/* Dynamic Helpful Tools Section for 3 Stages */}
         <HomeHelpfulTools stage={currentStage} />
 
-        {/* Expert Advice For You */}
+        {/* Knowledge Hub */}
         <View style={{ marginTop: 14, paddingHorizontal: 16 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
             <Text style={{ fontSize: 17, fontWeight: '800', color: '#1E1E1E' }}>
-              Expert Advice For You
+              Knowledge Hub
             </Text>
             <Pressable onPress={() => router.push('/playlist')} hitSlop={8}>
               <Text style={{ fontSize: 12, color: '#94A3B8', fontWeight: '500' }}>
