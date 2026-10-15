@@ -290,41 +290,44 @@ export default function CarouselScreen() {
               </Text>
             </View>
 
-            {/* Center 3 Mothers on Sofa Watercolor Artwork */}
-            <View style={styles.slide2ImageWrapper}>
-              <Image
-                source={require('@/assets/images/onboarding/slide_trusted_mothers.jpg')}
-                style={[styles.slide2Image, { height: slide2ImgHeight }]}
-                contentFit="cover"
-                priority="high"
-              />
-            </View>
-
-            {/* Social Proof Bar (3 Avatars + Rating 4.9) */}
-            <View style={styles.socialProofBar}>
-              <View style={styles.avatarsWrapper}>
+            {/* Body Content (Artwork + Social Proof Bar + Tagline) */}
+            <View style={styles.slide3TrustedBodyWrapper}>
+              {/* Center 3 Mothers on Sofa Watercolor Artwork */}
+              <View style={styles.slide2ImageWrapper}>
                 <Image
-                  source={require('@/assets/images/onboarding/slide_mothers_avatars.jpg')}
-                  style={styles.avatarsImage}
-                  contentFit="contain"
+                  source={require('@/assets/images/onboarding/slide_trusted_mothers.jpg')}
+                  style={[styles.slide2Image, { height: slide2ImgHeight }]}
+                  contentFit="cover"
+                  priority="high"
                 />
               </View>
 
-              <View style={styles.socialDivider} />
-
-              <View style={styles.ratingInfoCol}>
-                <Text style={styles.ratingNumber}>4.9</Text>
-                <View style={styles.miniStarsRow}>
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <Star key={s} size={9} color="#D97706" fill="#F59E0B" style={{ marginRight: 1 }} />
-                  ))}
+              {/* Social Proof Bar (3 Avatars + Rating 4.9) */}
+              <View style={styles.socialProofBar}>
+                <View style={styles.avatarsWrapper}>
+                  <Image
+                    source={require('@/assets/images/onboarding/slide_mothers_avatars.jpg')}
+                    style={styles.avatarsImage}
+                    contentFit="contain"
+                  />
                 </View>
-                <Text style={styles.ratingCount}>• 10k+ mothers</Text>
-              </View>
-            </View>
 
-            {/* Tagline */}
-            <Text style={styles.slide2Tagline}>Join our happy community</Text>
+                <View style={styles.socialDivider} />
+
+                <View style={styles.ratingInfoCol}>
+                  <Text style={styles.ratingNumber}>4.9</Text>
+                  <View style={styles.miniStarsRow}>
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <Star key={s} size={9} color="#D97706" fill="#F59E0B" style={{ marginRight: 1 }} />
+                    ))}
+                  </View>
+                  <Text style={styles.ratingCount}>• 10k+ mothers</Text>
+                </View>
+              </View>
+
+              {/* Tagline */}
+              <Text style={styles.slide2Tagline}>Join our happy community</Text>
+            </View>
 
             {/* Get Started Button -> Finishes Onboarding */}
             <View style={styles.bottomButtonWrapper}>
@@ -473,7 +476,13 @@ const styles = StyleSheet.create({
   /* ------------------- SLIDE 2 STYLES ------------------- */
   slide2Header: {
     alignItems: 'center',
-    paddingTop: 2,
+    paddingTop: 6,
+  },
+  slide3TrustedBodyWrapper: {
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 16,
   },
   slide2Logo: {
     fontSize: 12.5,
@@ -495,6 +504,7 @@ const styles = StyleSheet.create({
     lineHeight: 25,
   },
   slide2ImageWrapper: {
+    width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
     marginVertical: 4,
@@ -526,7 +536,8 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.04,
     shadowRadius: 5,
     elevation: 2,
-    marginVertical: 2,
+    marginTop: 18,
+    marginBottom: 10,
   },
   avatarsWrapper: {
     width: 105,
@@ -569,7 +580,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#451A03',
     textAlign: 'center',
-    marginVertical: 2,
+    marginTop: 6,
+    marginBottom: 4,
   },
   bottomButtonWrapper: {
     width: '100%',
