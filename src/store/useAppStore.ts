@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import i18n from '@/i18n';
 
-export type SupportedLanguage = 'en' | 'hi' | 'bn' | 'te';
+export type SupportedLanguage = 'en' | 'hi' | 'mr' | 'te' | 'bn';
 export type PregnancyStage = 'conceive' | 'pregnant' | 'mother' | 'explore';
 
 export interface PregnancyData {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable, StatusBar, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,6 +8,13 @@ import Svg, { Path } from 'react-native-svg';
 import { Button } from '@/components/ui/Button';
 import { BottomActionBar } from '@/components/ui/BottomActionBar';
 import { useAppStore, PregnancyStage } from '@/store/useAppStore';
+import { useAuthStore } from '@/store/useAuthStore';
+import {
+  getOnboardingCategoriesApi,
+  selectCategoryApi,
+  getRouteForOnboardingStep,
+  OnboardingCategory,
+} from '@/api/onboarding.api';
 
 const { width, height } = Dimensions.get('window');
 const horizontalPadding = 24;
@@ -20,55 +27,138 @@ const topGapBelowWave = Math.round(height * 0.055); // ~45-50px of clean white s
 
 interface StageOption {
   id: PregnancyStage;
+  code: string;
   titleKey: string;
   defaultTitle: string;
   bgColor: string;
   image: any;
 }
 
-const STAGES: StageOption[] = [
-  {
-    id: 'conceive',
+const CATEGORY_META: Record<string, { stageId: PregnancyStage; titleKey: string; defaultTitle: string; bgColor: string; image: any }> = {
+  CONCEIVE: {
+    stageId: 'conceive',
     titleKey: 'stage.conceive',
     defaultTitle: 'Try To Conceive',
     bgColor: '#DEF2FB',
     image: require('@/assets/images/stages/conceive.png'),
   },
-  {
-    id: 'pregnant',
+  PREGNANCY: {
+    stageId: 'pregnant',
     titleKey: 'stage.pregnant',
     defaultTitle: 'Pregnancy',
     bgColor: '#FFE8E5',
     image: require('@/assets/images/stages/pregnant.png'),
   },
-  {
-    id: 'mother',
+  MOTHER: {
+    stageId: 'mother',
     titleKey: 'stage.mother',
     defaultTitle: 'Post Pregnancy',
     bgColor: '#E5F9EA',
     image: require('@/assets/images/stages/mother.png'),
   },
-  {
-    id: 'explore',
+  IUI_IVF: {
+    stageId: 'explore',
     titleKey: 'stage.explore',
     defaultTitle: 'IUI, IVF',
     bgColor: '#F3E8FF',
     image: require('@/assets/images/stages/explore.png'),
   },
+};
+
+const DEFAULT_STAGES: StageOption[] = [
+  { code: 'CONCEIVE', id: 'conceive', ...CATEGORY_META.CONCEIVE },
+  { code: 'PREGNANCY', id: 'pregnant', ...CATEGORY_META.PREGNANCY },
+  { code: 'MOTHER', id: 'mother', ...CATEGORY_META.MOTHER },
+  { code: 'IUI_IVF', id: 'explore', ...CATEGORY_META.IUI_IVF },
 ];
 
 export default function StageScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { stage, setStage } = useAppStore();
+  const { token, setOnboarding } = useAuthStore();
 
+  const [stages, setStages] = useState<StageOption[]>(DEFAULT_STAGES);
   const [selectedStage, setSelectedStage] = useState<PregnancyStage>(stage || 'conceive');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchCategories() {
+      try {
+        const res = await getOnboardingCategoriesApi(token || undefined);
+        if (isMounted && res?.data && Array.isArray(res.data) && res.data.length > 0) {
+          const mapped: StageOption[] = res.data.map((item) => {
+            const meta = CATEGORY_META[item.code] || {
+              stageId: item.code.toLowerCase() as PregnancyStage,
+              titleKey: `stage.${item.code.toLowerCase()}`,
+              defaultTitle: item.name,
+              bgColor: '#F1F5F9',
+              image: require('@/assets/images/stages/conceive.png'),
+            };
+            return {
+              code: item.code,
+              id: meta.stageId,
+              titleKey: meta.titleKey,
+              defaultTitle: meta.defaultTitle,
+              bgColor: meta.bgColor,
+              image: meta.image,
+            };
+          });
+          setStages(mapped);
+        }
+      } catch (err) {
+        console.warn('Error fetching categories from backend, using defaults:', err);
+      }
+    }
+
+    fetchCategories();
+    return () => {
+      isMounted = false;
+    };
+  }, [token]);
 
   const handleStagePress = (stageId: PregnancyStage) => {
     setSelectedStage(stageId);
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    const currentOption = stages.find((s) => s.id === selectedStage) || DEFAULT_STAGES.find((s) => s.id === selectedStage);
+    const categoryCode = currentOption?.code || 'CONCEIVE';
+
+    try {
+      const res = await selectCategoryApi({ categoryCode }, token || undefined);
+      if (res?.data) {
+        await setOnboarding({
+          completed: res.data.completed,
+          nextStep: res.data.nextStep,
+          language: res.data.language?.code || null,
+          category: res.data.category?.code || categoryCode,
+          profileComplete: res.data.profileComplete,
+        });
+
+        setStage(selectedStage);
+
+        // Navigate based on API response
+        const nextRoute = getRouteForOnboardingStep({
+          completed: res.data.completed,
+          nextStep: res.data.nextStep,
+          language: res.data.language?.code || null,
+          category: res.data.category?.code || categoryCode,
+          profileComplete: res.data.profileComplete,
+        });
+        router.push(nextRoute as any);
+        return;
+      }
+    } catch (err) {
+      console.warn('Failed to select category on backend, proceeding locally:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+
     setStage(selectedStage);
     if (selectedStage === 'pregnant') {
       router.push('/(auth)/pregnancy');
@@ -119,7 +209,7 @@ export default function StageScreen() {
         {/* 2x2 Grid of Stages with comfortable top margin */}
         <View style={{ marginTop: topGapBelowWave, paddingHorizontal: horizontalPadding }}>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' }}>
-            {STAGES.map((item) => {
+            {stages.map((item) => {
               const isSelected = selectedStage === item.id;
 
               return (
@@ -178,6 +268,8 @@ export default function StageScreen() {
         <BottomActionBar
           title={t('stage.continue', 'Continue')}
           onPress={handleContinue}
+          loading={isSubmitting}
+          disabled={isSubmitting}
         />
       </View>
     </View>

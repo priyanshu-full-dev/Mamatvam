@@ -75,7 +75,7 @@ export default function SubscriptionScreen() {
               </View>
               <View>
                 <Text style={styles.logoTitle}>MAMATVAM</Text>
-                <Text style={styles.logoSubtitle}>Healthy Mother | Happy Family</Text>
+                <Text style={styles.logoSubtitle}>SCIENCE, SOUL & SUPPORT</Text>
               </View>
             </View>
 
@@ -391,9 +391,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
   },
   logoSubtitle: {
-    fontSize: 8.5,
-    fontWeight: '600',
+    fontSize: 9.5,
+    fontWeight: '700',
     color: '#64748B',
+    letterSpacing: 0.4,
   },
   heroHeading: {
     fontSize: 16,

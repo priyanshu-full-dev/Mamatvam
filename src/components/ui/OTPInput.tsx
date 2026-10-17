@@ -44,7 +44,11 @@ export function OTPInput({
   };
 
   return (
-    <Pressable onPress={handlePress} className="w-full items-center my-2">
+    <Pressable
+      onPress={handlePress}
+      className="w-full items-center my-2"
+      style={{ backgroundColor: 'transparent' }}
+    >
       {/* Invisible Single TextInput: Keeps soft keyboard open and handles paste/SMS autofill */}
       <TextInput
         ref={inputRef}
@@ -57,8 +61,18 @@ export function OTPInput({
         autoFocus={autoFocus}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        style={[StyleSheet.absoluteFill, { opacity: 0.01 }]}
+        underlineColorAndroid="transparent"
+        selectionColor="transparent"
+        cursorColor="transparent"
         caretHidden
+        style={{
+          position: 'absolute',
+          width: 1,
+          height: 1,
+          opacity: 0,
+          backgroundColor: 'transparent',
+          color: 'transparent',
+        }}
       />
 
       {/* Visual OTP Boxes */}

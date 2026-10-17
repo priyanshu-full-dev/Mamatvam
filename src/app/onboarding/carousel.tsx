@@ -102,7 +102,7 @@ export default function CarouselScreen() {
                 />
                 <View style={styles.slide3HeaderLogoTextCol}>
                   <Text style={styles.slide3HeaderBrandName}>MAMATVAM</Text>
-                  <Text style={styles.slide3HeaderTagline}>Healthy Mother | Happy Family</Text>
+                  <Text style={styles.slide3HeaderTagline}>SCIENCE, SOUL & SUPPORT</Text>
                 </View>
               </View>
 
@@ -261,12 +261,11 @@ export default function CarouselScreen() {
 
         {/* ==================== SLIDE 3 (NEW): TRUSTED BY 10,000+ MOTHERS ==================== */}
         <View style={[styles.slideContent, { width }]}>
-            {/* Top Header: Mamatvam & 5 Stars */}
+            {/* Top Header: 5 Stars & Title */}
             <View style={styles.slide2Header}>
-              <Text style={styles.slide2Logo}>M A M A T V A M</Text>
               <View style={styles.starsRow}>
                 {[1, 2, 3, 4, 5].map((s) => (
-                  <Star key={s} size={15} color="#D97706" fill="#F59E0B" style={{ marginHorizontal: 2 }} />
+                  <Star key={s} size={16} color="#D97706" fill="#F59E0B" style={{ marginHorizontal: 2.5 }} />
                 ))}
               </View>
               <Text style={styles.slide2Title}>
@@ -412,12 +411,13 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
   slide1Subtitle: {
-    fontSize: 13,
+    fontSize: 15.5,
+    fontWeight: '500',
     color: '#64748B',
     textAlign: 'center',
-    lineHeight: 18,
-    marginTop: 6,
-    maxWidth: 320,
+    lineHeight: 22,
+    marginTop: 8,
+    maxWidth: 340,
   },
   slide1ActionsContainer: {
     width: '100%',
@@ -471,7 +471,8 @@ const styles = StyleSheet.create({
   },
   slide2Header: {
     alignItems: 'center',
-    paddingTop: 6,
+    paddingTop: 8,
+    marginBottom: 6,
   },
   slide2Logo: {
     fontSize: 12.5,
@@ -483,14 +484,15 @@ const styles = StyleSheet.create({
   starsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 10,
   },
   slide2Title: {
-    fontSize: 19,
+    fontSize: 19.5,
     fontWeight: '800',
     color: '#451A03',
     textAlign: 'center',
-    lineHeight: 25,
+    lineHeight: 31,
+    letterSpacing: -0.2,
   },
   slide2ImageWrapper: {
     width: '100%',
@@ -609,8 +611,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   slide3HeaderLogoIcon: {
-    width: 44,
-    height: 44,
+    width: 54,
+    height: 54,
     marginRight: 10,
   },
   slide3HeaderLogoTextCol: {
@@ -625,11 +627,11 @@ const styles = StyleSheet.create({
     lineHeight: 25,
   },
   slide3HeaderTagline: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: 13,
+    fontWeight: '800',
     color: '#713F24',
-    marginTop: 1,
-    letterSpacing: 0.3,
+    marginTop: 2,
+    letterSpacing: 0.6,
   },
   slide3SkipButton: {
     paddingVertical: 4,

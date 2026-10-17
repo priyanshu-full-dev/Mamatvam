@@ -19,13 +19,15 @@ import { OTPInput } from '@/components/ui/OTPInput';
 import { Button } from '@/components/ui/Button';
 import { BottomActionBar } from '@/components/ui/BottomActionBar';
 import { useAuthStore } from '@/store/useAuthStore';
+import { useAppStore } from '@/store/useAppStore';
 import { useVerifyOtpMutation, useSendOtpMutation } from '@/api/auth.api';
+import { getRouteForOnboardingStep } from '@/api/onboarding.api';
 
 export default function OTPScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ phone?: string }>();
+  const params = useLocalSearchParams<{ phone?: string; pincode?: string; pincodeId?: string }>();
   const { t } = useTranslation();
-  const { phone, location, login } = useAuthStore();
+  const { phone, location, login, setOnboarding } = useAuthStore();
 
   const userPhone = (params.phone as string) || phone || '';
   const formattedPhone = userPhone
@@ -104,15 +106,53 @@ export default function OTPScreen() {
     Keyboard.dismiss();
 
     try {
+      const cleanMobile = (userPhone || phone || '').replace(/[^0-9]/g, '');
+      const mobileToSend = cleanMobile.length === 12 && cleanMobile.startsWith('91')
+        ? cleanMobile.slice(2)
+        : cleanMobile;
+
       const res = await verifyOtpMutation.mutateAsync({
-        phone: userPhone || '9999999999',
+        mobile: mobileToSend,
         otp: codeToVerify,
-        location,
       });
 
-      await login(res.token, res.user);
+      const { accessToken, refreshToken, user } = res.data;
 
-      // Navigate to Language Selection Screen
+      // Save accessToken, refreshToken, and user info to local storage
+      await login(accessToken, user, refreshToken);
+
+      // Immediately route to the next page specified by the verify-otp response
+      if (user?.onboarding) {
+        await setOnboarding(user.onboarding);
+
+        // Sync saved language to app state if available
+        const rawLang =
+          typeof user.onboarding.language === 'object' && user.onboarding.language !== null
+            ? (user.onboarding.language.code || user.onboarding.language.name || '')
+            : (user.onboarding.language || '');
+        if (rawLang) {
+          useAppStore.getState().setLanguage(String(rawLang).toLowerCase() as any);
+        }
+
+        // Sync saved category to app state if available
+        const rawCat =
+          typeof user.onboarding.category === 'object' && user.onboarding.category !== null
+            ? (user.onboarding.category.code || user.onboarding.category.name || '')
+            : (user.onboarding.category || '');
+        if (rawCat) {
+          const cat = String(rawCat).toLowerCase();
+          if (cat.includes('conceive')) useAppStore.getState().setStage('conceive');
+          else if (cat.includes('pregnant') || cat.includes('pregnancy')) useAppStore.getState().setStage('pregnant');
+          else if (cat.includes('mother') || cat.includes('post')) useAppStore.getState().setStage('mother');
+          else if (cat.includes('ivf') || cat.includes('explore') || cat.includes('iui')) useAppStore.getState().setStage('explore');
+        }
+
+        const nextRoute = getRouteForOnboardingStep(user.onboarding);
+        router.replace(nextRoute as any);
+        return;
+      }
+
+      // Fallback if onboarding object is absent
       router.replace('/(auth)/language');
     } catch (err: any) {
       setHasError(true);
@@ -125,9 +165,14 @@ export default function OTPScreen() {
   const handleResend = async () => {
     if (!canResend) return;
     try {
+      const cleanMobile = (userPhone || phone || '').replace(/[^0-9]/g, '');
+      const mobileToSend = cleanMobile.length === 12 && cleanMobile.startsWith('91')
+        ? cleanMobile.slice(2)
+        : cleanMobile;
+
       await sendOtpMutation.mutateAsync({
-        mobile: userPhone || '9999999999',
-        pincodeId: '1',
+        mobile: mobileToSend,
+        pincodeId: params.pincodeId || params.pincode || '1',
       });
       setCountdown(120);
       setCanResend(false);
@@ -165,7 +210,12 @@ export default function OTPScreen() {
               paddingBottom: isKeyboardOpen ? 2 : 6,
             }}
           >
-            <BrandLogo size="lg" showText imageSize={160} />
+            <BrandLogo
+              size="lg"
+              showText
+              imageSize={160}
+              source={require('@/assets/images/logo/50360fdf-4693-4fda-a5f0-c2c2a85ea1cd-removebg-preview.png')}
+            />
           </View>
 
           {/* Heading & Subtitle */}

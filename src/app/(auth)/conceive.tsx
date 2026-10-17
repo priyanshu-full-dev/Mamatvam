@@ -30,6 +30,8 @@ import { Radio } from '@/components/ui/Radio';
 import { Button } from '@/components/ui/Button';
 import { BottomActionBar } from '@/components/ui/BottomActionBar';
 import { useAppStore } from '@/store/useAppStore';
+import { useAuthStore } from '@/store/useAuthStore';
+import { saveConceiveProfileApi, getRouteForOnboardingStep } from '@/api/onboarding.api';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
@@ -47,6 +49,8 @@ export default function ConceiveScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { pregnancyData, setPregnancyData, setStage } = useAppStore();
+  const { setOnboarding } = useAuthStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [lastPeriodDate, setLastPeriodDate] = useState(pregnancyData.lastPeriodDate || '');
   const [height, setHeight] = useState(
@@ -62,47 +66,44 @@ export default function ConceiveScreen() {
   );
   const [dateError, setDateError] = useState('');
 
-  const isFormValid = !!lastPeriodDate.trim();
+  const isFormValid =
+    !!lastPeriodDate.trim() &&
+    !!height.trim() &&
+    !isNaN(parseFloat(height)) &&
+    parseFloat(height) > 0 &&
+    !!weight.trim() &&
+    !isNaN(parseFloat(weight)) &&
+    parseFloat(weight) > 0 &&
+    !!bloodGroup.trim();
 
   // Modals
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showBloodGroupPicker, setShowBloodGroupPicker] = useState(false);
 
-  // Calendar modal state & restrictions: valid from today to upcoming 2 years
+  // Calendar modal state & restrictions: valid for past 5 months up to today
   const today = useMemo(() => {
     const d = new Date();
-    d.setHours(0, 0, 0, 0);
+    d.setHours(23, 59, 59, 999);
     return d;
   }, []);
 
-  const maxDate = useMemo(() => {
-    const d = new Date(today.getFullYear() + 2, today.getMonth(), today.getDate());
-    d.setHours(23, 59, 59, 999);
+  const minDate = useMemo(() => {
+    const d = new Date(today.getFullYear(), today.getMonth() - 5, today.getDate());
+    d.setHours(0, 0, 0, 0);
     return d;
   }, [today]);
 
   const [pickerYear, setPickerYear] = useState(today.getFullYear());
   const [pickerMonth, setPickerMonth] = useState(today.getMonth());
   const [pickerDay, setPickerDay] = useState(today.getDate());
-  const [showYearSelector, setShowYearSelector] = useState(false);
   const [showMonthSelector, setShowMonthSelector] = useState(false);
-
-  const availableYears = useMemo(() => {
-    const start = today.getFullYear();
-    const end = maxDate.getFullYear();
-    const list: number[] = [];
-    for (let y = start; y <= end; y++) {
-      list.push(y);
-    }
-    return list;
-  }, [today, maxDate]);
 
   const daysInMonth = new Date(pickerYear, pickerMonth + 1, 0).getDate();
   const firstDayIndex = new Date(pickerYear, pickerMonth, 1).getDay();
   const trailingEmptyCount = Math.max(0, 42 - (firstDayIndex + daysInMonth));
 
-  const isMinMonth = pickerYear === today.getFullYear() && pickerMonth === today.getMonth();
-  const isMaxMonth = pickerYear === maxDate.getFullYear() && pickerMonth === maxDate.getMonth();
+  const isMinMonth = pickerYear === minDate.getFullYear() && pickerMonth === minDate.getMonth();
+  const isMaxMonth = pickerYear === today.getFullYear() && pickerMonth === today.getMonth();
 
   const handlePrevMonth = () => {
     if (isMinMonth) return;
@@ -124,35 +125,10 @@ export default function ConceiveScreen() {
     }
   };
 
-  const handleSelectYear = (year: number) => {
-    let newMonth = pickerMonth;
-    if (year === today.getFullYear() && newMonth < today.getMonth()) {
-      newMonth = today.getMonth();
-    } else if (year === maxDate.getFullYear() && newMonth > maxDate.getMonth()) {
-      newMonth = maxDate.getMonth();
-    }
-
-    const maxDays = new Date(year, newMonth + 1, 0).getDate();
-    let newDay = Math.min(pickerDay, maxDays);
-    const newDate = new Date(year, newMonth, newDay);
-    newDate.setHours(0, 0, 0, 0);
-    if (newDate < today) {
-      newDay = today.getDate();
-    } else if (newDate > maxDate) {
-      newDay = maxDate.getDate();
-    }
-
-    setPickerYear(year);
-    setPickerMonth(newMonth);
-    setPickerDay(newDay);
-    setShowYearSelector(false);
-    setShowMonthSelector(false);
-  };
-
   const isMonthDisabled = (m: number) => {
     const monthStart = new Date(pickerYear, m, 1);
     const monthEnd = new Date(pickerYear, m + 1, 0, 23, 59, 59, 999);
-    return monthEnd < today || monthStart > maxDate;
+    return monthEnd < minDate || monthStart > today;
   };
 
   const handleSelectMonth = (m: number) => {
@@ -161,11 +137,11 @@ export default function ConceiveScreen() {
     const maxDays = new Date(pickerYear, m + 1, 0).getDate();
     let newDay = Math.min(pickerDay, maxDays);
     const newDate = new Date(pickerYear, m, newDay);
-    newDate.setHours(0, 0, 0, 0);
-    if (newDate < today) {
+    newDate.setHours(12, 0, 0, 0);
+    if (newDate < minDate) {
+      newDay = minDate.getDate();
+    } else if (newDate > today) {
       newDay = today.getDate();
-    } else if (newDate > maxDate) {
-      newDay = maxDate.getDate();
     }
 
     setPickerMonth(m);
@@ -174,7 +150,6 @@ export default function ConceiveScreen() {
   };
 
   const handleOpenDatePicker = () => {
-    setShowYearSelector(false);
     setShowMonthSelector(false);
     if (lastPeriodDate) {
       const parts = lastPeriodDate.split('/');
@@ -183,8 +158,8 @@ export default function ConceiveScreen() {
         const m = parseInt(parts[1], 10) - 1;
         const y = parseInt(parts[2], 10);
         const parsed = new Date(y, m, d);
-        parsed.setHours(0, 0, 0, 0);
-        if (parsed >= today && parsed <= maxDate) {
+        parsed.setHours(12, 0, 0, 0);
+        if (parsed >= minDate && parsed <= today) {
           setPickerYear(y);
           setPickerMonth(m);
           setPickerDay(d);
@@ -201,9 +176,9 @@ export default function ConceiveScreen() {
 
   const handleConfirmDate = () => {
     const selectedDate = new Date(pickerYear, pickerMonth, pickerDay);
-    selectedDate.setHours(0, 0, 0, 0);
-    if (selectedDate < today || selectedDate > maxDate) {
-      Alert.alert('Invalid Date', 'Date must be between today and the next 2 years.');
+    selectedDate.setHours(12, 0, 0, 0);
+    if (selectedDate < minDate || selectedDate > today) {
+      Alert.alert('Invalid Date', 'Last Period Date must be within the past 5 months.');
       return;
     }
     const formatted = `${String(pickerDay).padStart(2, '0')}/${String(pickerMonth + 1).padStart(2, '0')}/${pickerYear}`;
@@ -212,10 +187,25 @@ export default function ConceiveScreen() {
     setShowDatePicker(false);
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!lastPeriodDate.trim()) {
       setDateError('Please select Last Period Date');
       Alert.alert('Required Field', 'Last Period Date is mandatory. Please select a date to proceed.');
+      return;
+    }
+
+    if (!height.trim() || isNaN(parseFloat(height)) || parseFloat(height) <= 0) {
+      Alert.alert('Required Field', 'Please enter your Height in cm (must be greater than zero).');
+      return;
+    }
+
+    if (!weight.trim() || isNaN(parseFloat(weight)) || parseFloat(weight) <= 0) {
+      Alert.alert('Required Field', 'Please enter your Weight in kg (must be greater than zero).');
+      return;
+    }
+
+    if (!bloodGroup.trim()) {
+      Alert.alert('Required Field', 'Please select your Blood Group.');
       return;
     }
 
@@ -225,14 +215,22 @@ export default function ConceiveScreen() {
       const m = parseInt(parts[1], 10) - 1;
       const y = parseInt(parts[2], 10);
       const parsed = new Date(y, m, d);
-      parsed.setHours(0, 0, 0, 0);
-      if (parsed < today || parsed > maxDate) {
-        setDateError('Date must be between today and next 2 years');
-        Alert.alert('Invalid Date', 'Last Period Date must be between today and the next 2 years.');
+      parsed.setHours(12, 0, 0, 0);
+      if (parsed < minDate || parsed > today) {
+        setDateError('Date must be within past 5 months');
+        Alert.alert('Invalid Date', 'Last Period Date must be within the past 5 months.');
         return;
       }
     }
 
+    // Format DD/MM/YYYY into YYYY-MM-DD
+    let isoDate = lastPeriodDate;
+    if (parts.length === 3) {
+      const [d, m, y] = parts;
+      isoDate = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+    }
+
+    // Update local client state
     setPregnancyData({
       lastPeriodDate,
       height,
@@ -242,7 +240,48 @@ export default function ConceiveScreen() {
       bloodPressure,
     });
     setStage('conceive');
-    router.replace('/(tabs)/home');
+
+    try {
+      setIsSubmitting(true);
+      const res = await saveConceiveProfileApi({
+        heightCm: height ? parseFloat(height) : undefined,
+        weightKg: weight ? parseFloat(weight) : undefined,
+        bloodGroup: bloodGroup || undefined,
+        diabetic: !!isDiabetic,
+        bloodPressure: bloodPressure === 'low' ? 'LOW' : bloodPressure === 'high' ? 'HIGH' : 'NORMAL',
+        lastPeriodDate: isoDate,
+      });
+
+      if (res?.data) {
+        await setOnboarding({
+          completed: res.data.completed,
+          nextStep: res.data.nextStep,
+          language: res.data.language?.code || null,
+          category: res.data.category?.code || 'CONCEIVE',
+          profileComplete: res.data.profileComplete,
+        });
+
+        const targetRoute = getRouteForOnboardingStep({
+          completed: res.data.completed,
+          nextStep: res.data.nextStep,
+          category: res.data.category?.code || 'CONCEIVE',
+          language: res.data.language?.code || null,
+          profileComplete: res.data.profileComplete,
+        });
+
+        router.replace(targetRoute as any);
+      } else {
+        router.replace('/(tabs)/home');
+      }
+    } catch (err: any) {
+      console.warn('Failed to save conceive profile:', err);
+      Alert.alert(
+        'Submission Failed',
+        err?.message || 'Could not save conceive profile. Please try again.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -290,12 +329,12 @@ export default function ConceiveScreen() {
           )}
         </View>
 
-        {/* 2. Your Height and Your Weight Row (Optional) */}
+        {/* 2. Your Height and Your Weight Row */}
         <View style={styles.twoColumnRow}>
           {/* Your Height */}
           <View style={styles.halfCol}>
             <Text style={styles.fieldLabel}>
-              Your Height <Text style={styles.optionalLabel}>(Optional)</Text>
+              Your Height <Text style={styles.requiredStar}>*</Text>
             </Text>
             <TextInput
               value={height}
@@ -310,7 +349,7 @@ export default function ConceiveScreen() {
           {/* Your Weight */}
           <View style={styles.halfCol}>
             <Text style={styles.fieldLabel}>
-              Your Weight <Text style={styles.optionalLabel}>(Optional)</Text>
+              Your Weight <Text style={styles.requiredStar}>*</Text>
             </Text>
             <TextInput
               value={weight}
@@ -323,10 +362,10 @@ export default function ConceiveScreen() {
           </View>
         </View>
 
-        {/* 3. Blood Group (Optional) */}
+        {/* 3. Blood Group */}
         <View style={styles.fieldGroup}>
           <Text style={styles.fieldLabel}>
-            Blood Group <Text style={styles.optionalLabel}>(Optional)</Text>
+            Blood Group <Text style={styles.requiredStar}>*</Text>
           </Text>
           <Pressable
             onPress={() => setShowBloodGroupPicker(true)}
@@ -426,7 +465,8 @@ export default function ConceiveScreen() {
       <BottomActionBar
         title="Continue"
         onPress={handleContinue}
-        disabled={!isFormValid}
+        disabled={!isFormValid || isSubmitting}
+        loading={isSubmitting}
       />
     </KeyboardAvoidingView>
 
@@ -436,7 +476,6 @@ export default function ConceiveScreen() {
         transparent
         animationType="fade"
         onRequestClose={() => {
-          setShowYearSelector(false);
           setShowMonthSelector(false);
           setShowDatePicker(false);
         }}
@@ -445,9 +484,8 @@ export default function ConceiveScreen() {
           <Pressable
             style={StyleSheet.absoluteFill}
             onPress={() => {
-              if (showMonthSelector || showYearSelector) {
+              if (showMonthSelector) {
                 setShowMonthSelector(false);
-                setShowYearSelector(false);
               } else {
                 setShowDatePicker(false);
               }
@@ -460,7 +498,6 @@ export default function ConceiveScreen() {
                 {/* Clickable Month Selector (Dropdown Trigger) */}
                 <Pressable
                   onPress={() => {
-                    setShowYearSelector(false);
                     setShowMonthSelector((prev) => !prev);
                   }}
                   hitSlop={8}
@@ -478,26 +515,17 @@ export default function ConceiveScreen() {
                   />
                 </Pressable>
 
-                {/* Clickable Year Selector (Dropdown Trigger) */}
-                <Pressable
-                  onPress={() => {
-                    setShowMonthSelector(false);
-                    setShowYearSelector((prev) => !prev);
-                  }}
-                  hitSlop={8}
+                {/* Static Year Badge (Dropdown turned OFF) */}
+                <View
                   style={[
                     styles.yearBadgeButton,
-                    showYearSelector && styles.yearBadgeButtonActive,
+                    { borderWidth: 1, borderColor: '#E2E8F0' },
                   ]}
                 >
-                  <Text style={[styles.calendarYearText, showYearSelector && styles.calendarYearTextActive]}>
+                  <Text style={styles.calendarYearText}>
                     {pickerYear}
                   </Text>
-                  <ChevronDown
-                    size={16}
-                    color={showYearSelector ? '#F06292' : '#64748B'}
-                  />
-                </Pressable>
+                </View>
               </View>
 
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -520,7 +548,6 @@ export default function ConceiveScreen() {
 
                 <Pressable
                   onPress={() => {
-                    setShowYearSelector(false);
                     setShowMonthSelector(false);
                     setShowDatePicker(false);
                   }}
@@ -533,7 +560,7 @@ export default function ConceiveScreen() {
             </View>
 
             <Text style={styles.modalSubheading}>
-              Valid from today up to 2 years
+              Valid for past 5 months up to today
             </Text>
 
             {/* Fixed Height Calendar Container (Always visible & interactive) */}
@@ -555,8 +582,8 @@ export default function ConceiveScreen() {
                 {Array.from({ length: daysInMonth }).map((_, i) => {
                   const day = i + 1;
                   const cellDate = new Date(pickerYear, pickerMonth, day);
-                  cellDate.setHours(0, 0, 0, 0);
-                  const isDisabled = cellDate < today || cellDate > maxDate;
+                  cellDate.setHours(12, 0, 0, 0);
+                  const isDisabled = cellDate < minDate || cellDate > today;
                   const isSelected = !isDisabled && pickerDay === day;
                   return (
                     <Pressable
@@ -602,24 +629,22 @@ export default function ConceiveScreen() {
                       style={styles.dropdownScrollView}
                     >
                       {MONTH_NAMES.map((name, index) => {
-                        const isSelected = pickerMonth === index;
                         const disabled = isMonthDisabled(index);
+                        if (disabled) return null;
+                        const isSelected = pickerMonth === index;
                         return (
                           <Pressable
                             key={name}
-                            disabled={disabled}
                             onPress={() => handleSelectMonth(index)}
                             style={[
                               styles.dropdownMenuItem,
                               isSelected && styles.dropdownMenuItemSelected,
-                              disabled && styles.dropdownMenuItemDisabled,
                             ]}
                           >
                             <Text
                               style={[
                                 styles.dropdownItemText,
                                 isSelected && styles.dropdownItemTextSelected,
-                                disabled && styles.dropdownItemTextDisabled,
                               ]}
                             >
                               {name}
@@ -636,50 +661,6 @@ export default function ConceiveScreen() {
               </>
             )}
 
-            {/* Floating Year Dropdown Menu */}
-            {showYearSelector && (
-              <>
-                <Pressable
-                  style={StyleSheet.absoluteFill}
-                  onPress={() => setShowYearSelector(false)}
-                />
-                <View style={styles.yearDropdownMenu}>
-                  <View style={styles.dropdownInner}>
-                    <ScrollView
-                      nestedScrollEnabled
-                      showsVerticalScrollIndicator={false}
-                      style={styles.dropdownScrollView}
-                    >
-                      {availableYears.map((yr) => {
-                        const isSelected = pickerYear === yr;
-                        return (
-                          <Pressable
-                            key={yr}
-                            onPress={() => handleSelectYear(yr)}
-                            style={[
-                              styles.dropdownMenuItem,
-                              isSelected && styles.dropdownMenuItemSelected,
-                            ]}
-                          >
-                            <Text
-                              style={[
-                                styles.dropdownItemText,
-                                isSelected && styles.dropdownItemTextSelected,
-                              ]}
-                            >
-                              {yr}
-                            </Text>
-                            {isSelected && (
-                              <Check size={16} color="#F06292" strokeWidth={2.6} />
-                            )}
-                          </Pressable>
-                        );
-                      })}
-                    </ScrollView>
-                  </View>
-                </View>
-              </>
-            )}
 
             {/* Actions */}
             <View style={{ marginTop: 20 }}>

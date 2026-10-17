@@ -1,26 +1,25 @@
-import React, { useState, useMemo } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Pressable,
-  Dimensions,
-} from 'react-native';
+import { PregnancyStage, useAppStore } from '@/store/useAppStore';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
-import Svg, { Circle, Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import {
   ArrowRight,
+  Calendar,
   Lightbulb,
   Pencil,
-  Sparkles,
-  Heart,
-  Calendar,
-  Check,
+  Ruler,
+  Scale,
+  Sparkles
 } from 'lucide-react-native';
-import { PregnancyStage, useAppStore } from '@/store/useAppStore';
-import { DatePickerModal } from '@/components/ui/DatePickerModal';
+import { useMemo } from 'react';
+import {
+  Dimensions,
+  Pressable,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import Svg, { Circle, Defs, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 
 const { width } = Dimensions.get('window');
 const HERO_CARD_HEIGHT = 270;
@@ -48,7 +47,6 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
   const router = useRouter();
   const currentStage: PregnancyStage = stage || 'pregnant';
   const { pregnancyData, setPregnancyData } = useAppStore();
-  const [showCalendarModal, setShowCalendarModal] = useState(false);
 
   // Dynamically compute Next Period and Ovulation estimates based on Last Period Date
   const nextPeriodInfo = useMemo(() => {
@@ -98,10 +96,10 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
               st === 'conceive'
                 ? 'Try To Conceive'
                 : st === 'pregnant'
-                ? 'Pregnancy'
-                : st === 'mother'
-                ? 'Post Pregnancy'
-                : 'IUI, IVF';
+                  ? 'Pregnancy'
+                  : st === 'mother'
+                    ? 'Post Pregnancy'
+                    : 'IUI, IVF';
             return (
               <TouchableOpacity
                 key={st}
@@ -151,42 +149,118 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
           </Svg>
 
           <View style={styles.sectionInnerContent}>
-            {/* Circular Baby Avatar with Coral Ring & Edit Pencil */}
-            <View style={styles.avatarCenterRow}>
-              <View style={styles.babyAvatarContainer}>
-                <Image
-                  source={require('@/assets/images/home/mother_baby.jpg')}
-                  style={styles.babyAvatarImage}
-                  contentFit="cover"
-                />
-                {/* Floating Edit Icon Badge */}
-                <TouchableOpacity
-                  activeOpacity={0.85}
-                  onPress={() => router.push('/(tabs)/profile')}
-                  style={styles.editPencilBadge}
-                >
-                  <Pencil size={13} color="#1E293B" strokeWidth={2.5} />
-                </TouchableOpacity>
+            {/* Horizontal Section: Avatar Card on Left + 2 Metric Cards on Right */}
+            <View style={styles.motherHeroHorizontalRow}>
+              {/* Left Side: White Card with Circular Baby Avatar & Details Column */}
+              <View style={styles.motherLeftAvatarCard}>
+                <View pointerEvents="none" style={styles.cardCornerAccentSvg}>
+                  <Svg
+                    width="100%"
+                    height="100%"
+                    viewBox="0 0 100 100"
+                    preserveAspectRatio="none"
+                  >
+                    <Path
+                      d="M 20 100 Q 55 55 100 25 L 100 100 Z"
+                      fill="rgba(254, 205, 211, 0.45)"
+                    />
+                  </Svg>
+                </View>
+
+                <View style={styles.babyAvatarContainer}>
+                  <Image
+                    source={require('@/assets/images/home/mother_baby.jpg')}
+                    style={styles.babyAvatarImage}
+                    contentFit="cover"
+                  />
+                  {/* Floating Edit Icon Badge */}
+                  <TouchableOpacity
+                    activeOpacity={0.85}
+                    onPress={() => router.push('/(tabs)/profile')}
+                    style={styles.editPencilBadge}
+                  >
+                    <Pencil size={11} color="#1E293B" strokeWidth={2.4} />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Info Text Column */}
+                <View style={styles.motherAvatarTextCol}>
+                  <Text style={styles.motherBabyTitle}>Baby</Text>
+                  <Text style={styles.motherAgeTitle}>6 weeks old</Text>
+                  <View style={styles.motherDateRow}>
+                    <Calendar size={13} color="#FF3377" strokeWidth={2.2} />
+                    <Text style={styles.motherDateRange}>Mar 31 - Apr 6, 2020</Text>
+                  </View>
+                </View>
               </View>
-            </View>
 
-            {/* Baby Title & Age */}
-            <Text style={styles.motherBabyTitle}>Baby</Text>
-            <Text style={styles.motherAgeTitle}>6 weeks old</Text>
-            <Text style={styles.motherDateRange}>Mar 31, 2020 - Apr 6, 2020</Text>
+              {/* Right Side: 2 Metric Cards Stacked Vertically */}
+              <View style={styles.motherRightCardsCol}>
+                {/* Top Card: Ideal Height */}
+                <View style={styles.motherMetricCard}>
+                  <View pointerEvents="none" style={styles.cardCornerAccentSvg}>
+                    <Svg
+                      width="100%"
+                      height="100%"
+                      viewBox="0 0 100 100"
+                      preserveAspectRatio="none"
+                    >
+                      <Path
+                        d="M 25 100 Q 60 50 100 20 L 100 100 Z"
+                        fill="rgba(224, 242, 254, 0.75)"
+                      />
+                    </Svg>
+                  </View>
+                  <View style={styles.motherMetricTopRow}>
+                    <View style={styles.motherMetricBadgeRow}>
+                      <View style={styles.heightBadgeCircle}>
+                        <Ruler size={13} color="#0284C7" strokeWidth={2.4} />
+                      </View>
+                      <Text style={styles.motherMetricLabel}>IDEAL HEIGHT</Text>
+                    </View>
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => router.push('/(tabs)/profile')}
+                      style={styles.cardPencilBtn}
+                    >
+                      <Pencil size={11} color="#64748B" strokeWidth={2.2} />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.motherMetricValue}>46.3-53.4 cm</Text>
+                </View>
 
-            {/* Two Measurement Pill Cards (Ideal Height & Ideal Weight) */}
-            <View style={styles.pillsRow}>
-              {/* Left Pill: Ideal Height */}
-              <View style={styles.measurementPill}>
-                <Text style={styles.pillLabel}>IDEAL HEIGHT</Text>
-                <Text style={styles.pillValue}>46.3-53.4 cm</Text>
-              </View>
-
-              {/* Right Pill: Ideal Weight */}
-              <View style={styles.measurementPill}>
-                <Text style={styles.pillLabel}>IDEAL WEIGHT</Text>
-                <Text style={styles.pillValue}>2.5-4.3 kg</Text>
+                {/* Bottom Card: Ideal Weight */}
+                <View style={styles.motherMetricCard}>
+                  <View pointerEvents="none" style={styles.cardCornerAccentSvg}>
+                    <Svg
+                      width="100%"
+                      height="100%"
+                      viewBox="0 0 100 100"
+                      preserveAspectRatio="none"
+                    >
+                      <Path
+                        d="M 25 100 Q 60 50 100 20 L 100 100 Z"
+                        fill="rgba(252, 231, 243, 0.75)"
+                      />
+                    </Svg>
+                  </View>
+                  <View style={styles.motherMetricTopRow}>
+                    <View style={styles.motherMetricBadgeRow}>
+                      <View style={styles.weightBadgeCircle}>
+                        <Scale size={13} color="#EC4899" strokeWidth={2.4} />
+                      </View>
+                      <Text style={styles.motherMetricLabel}>IDEAL WEIGHT</Text>
+                    </View>
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() => router.push('/(tabs)/profile')}
+                      style={styles.cardPencilBtn}
+                    >
+                      <Pencil size={11} color="#64748B" strokeWidth={2.2} />
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.motherMetricValue}>2.5-4.3 kg</Text>
+                </View>
               </View>
             </View>
 
@@ -198,20 +272,22 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
               </Text>
             </View>
 
-            {/* Daily Utility CTA */}
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => router.push('/practical-tools')}
-              style={styles.dailyUtilityBtn}
-            >
-              <Text style={styles.dailyUtilityText}>Check out my daily utility</Text>
-              <ArrowRight size={14} color="#F06292" />
-            </TouchableOpacity>
+            {/* Daily Utility CTA - Centered in middle of bottom space */}
+            <View style={styles.motherBottomUtilityContainer}>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => router.push('/practical-tools')}
+                style={[styles.dailyUtilityBtn, { marginTop: 0 }]}
+              >
+                <Text style={styles.dailyUtilityText}>Check out my daily utility</Text>
+                <ArrowRight size={14} color="#F06292" />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       ) : currentStage === 'conceive' || currentStage === 'explore' ? (
         /* ==================== CONCEIVE & IUI, IVF STAGE HERO ==================== */
-        <View style={styles.motherSectionWrapper}>
+        <View style={[styles.conceiveSectionWrapper, currentStage === 'explore' && { height: 188 }]}>
           {/* Multi-tone Pastel Background Gradient */}
           <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" preserveAspectRatio="none">
             <Defs>
@@ -225,7 +301,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
             <Rect x="0" y="0" width="100%" height="100%" fill="url(#conceiveGrad)" />
           </Svg>
 
-          <View style={styles.sectionInnerContent}>
+          <View style={styles.conceiveInnerContent}>
             {/* Horizontal Section: Circle Card on Left + 2 Cards on Right */}
             <View style={styles.conceiveHeroHorizontalRow}>
               {/* Left Side: White Card with Red Circle and Baby label */}
@@ -276,36 +352,19 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
               </View>
             </View>
 
-            {/* Daily Utility CTA */}
-            <TouchableOpacity
-              activeOpacity={0.7}
-              onPress={() => router.push('/practical-tools')}
-              style={styles.dailyUtilityBtn}
-            >
-              <Text style={styles.dailyUtilityText}>Check out my daily utility</Text>
-              <ArrowRight size={14} color="#F06292" />
-            </TouchableOpacity>
-
-            {/* Action Buttons Row (Calendar & End Period) */}
-            <View style={styles.conceiveActionsRow}>
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => setShowCalendarModal(true)}
-                style={styles.calendarBtn}
-              >
-                <Calendar size={16} color="#FFFFFF" strokeWidth={2.4} />
-                <Text style={styles.calendarBtnText}>Calendar</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => router.push('/record-symptoms')}
-                style={styles.endPeriodBtn}
-              >
-                <Check size={16} color="#F06292" strokeWidth={2.8} />
-                <Text style={styles.endPeriodBtnText}>End Period</Text>
-              </TouchableOpacity>
-            </View>
+            {/* Daily Utility CTA - Hidden on IUI, IVF */}
+            {currentStage !== 'explore' && (
+              <View style={styles.conceiveBottomUtilityContainer}>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => router.push('/practical-tools')}
+                  style={[styles.dailyUtilityBtn, { marginTop: 0 }]}
+                >
+                  <Text style={styles.dailyUtilityText}>Check out my daily utility</Text>
+                  <ArrowRight size={14} color="#F06292" />
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </View>
       ) : (
@@ -371,7 +430,7 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
 
             {/* Middle Section: Look Mumma text & Large Corn Sticker */}
             <View style={styles.lookMummaRow}>
-              <View style={{ maxWidth: '64%', paddingRight: 6 }}>
+              <View style={{ maxWidth: '80%', paddingRight: 4 }}>
                 <Text style={styles.lookMummaTitle}>Look Mumma!</Text>
                 <Text style={styles.lookMummaSubtitle}>I am as big as a Corn cob</Text>
                 <Text style={styles.lookMummaDesc}>
@@ -400,10 +459,10 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
       )}
 
       {/* 3. Today's Tips Card (Common across stages with cute baby illustration) */}
-      <View style={styles.tipsCardContainer}>
-        <View style={{ maxWidth: '64%' }}>
+      <View style={[styles.tipsCardContainer, currentStage === 'explore' && { marginTop: 2 }]}>
+        <View style={{ flex: 1, paddingRight: 102 }}>
           <View style={styles.tipsHeaderRow}>
-            <Lightbulb size={18} color="#F59E0B" fill="#FDE68A" />
+            <Lightbulb size={20} color="#F59E0B" fill="#FDE68A" />
             <Text style={styles.tipsTitle}>Todays Plan</Text>
           </View>
 
@@ -411,8 +470,8 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
             {currentStage === 'mother'
               ? 'Try some gentle pelvic tilts today to relieve lower back pressure and improve circulation.'
               : currentStage === 'conceive' || currentStage === 'explore'
-              ? 'Nourish your body with folate and vitamin E rich foods today to support healthy ovulation.'
-              : 'Try some gentle pelvic tilts today to relieve lower back pressure and improve circulation.'}
+                ? 'Nourish your body with folate and vitamin E rich foods today to support healthy ovulation.'
+                : 'Try some gentle pelvic tilts today to relieve lower back pressure and improve circulation.'}
           </Text>
 
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -429,23 +488,22 @@ export function HomeStageHero({ stage = 'pregnant', onStageChange }: HomeStageHe
           </View>
         </View>
 
-        {/* Baby sleeping on cloud sticker */}
+        {/* Stage-specific sticker illustration (consistent size and position across all stages) */}
         <Image
-          source={require('@/assets/images/Pregnancy/45f37be85427b6d3faf0be40074ba3dd086c5cd9.gif')}
-          style={styles.babyCloudSticker}
+          source={
+            currentStage === 'explore'
+              ? require('@/assets/images/stages/iui_ivf_minimal_floating.gif')
+              : currentStage === 'conceive'
+                ? require('@/assets/images/stages/try_to_conceive_floating.gif')
+                : currentStage === 'pregnant'
+                  ? require('@/assets/images/home/pregnant_couple_floating.gif')
+                  : require('@/assets/images/Pregnancy/45f37be85427b6d3faf0be40074ba3dd086c5cd9.gif')
+          }
+          style={styles.todayPlanFloatingGif}
           contentFit="contain"
         />
       </View>
 
-      {/* Date Picker Calendar Modal for Try to Conceive Stage */}
-      <DatePickerModal
-        visible={showCalendarModal}
-        onClose={() => setShowCalendarModal(false)}
-        selectedDate={pregnancyData.lastPeriodDate}
-        onConfirm={(dateStr) => {
-          setPregnancyData({ lastPeriodDate: dateStr });
-        }}
-      />
     </View>
   );
 }
@@ -481,7 +539,7 @@ const styles = StyleSheet.create({
     borderColor: 'transparent',
   },
   stageChipText: {
-    fontSize: 11,
+    fontSize: 12.5,
     fontWeight: '700',
     color: '#64748B',
     textAlign: 'center',
@@ -504,124 +562,214 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingBottom: 10,
   },
+  conceiveSectionWrapper: {
+    width: '100%',
+    height: HERO_CARD_HEIGHT,
+    position: 'relative',
+    paddingTop: 8,
+    paddingBottom: 10,
+  },
+  conceiveInnerContent: {
+    flex: 1,
+    paddingHorizontal: 16,
+    flexDirection: 'column',
+  },
+  conceiveBottomUtilityContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 14,
+  },
+  motherBottomUtilityContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 6,
+  },
   sectionInnerContent: {
     flex: 1,
     paddingHorizontal: 16,
     justifyContent: 'space-between',
   },
-  avatarCenterRow: {
+  motherHeroHorizontalRow: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    gap: 10,
+    marginTop: 2,
+    height: 144,
+  },
+  motherLeftAvatarCard: {
+    flex: 1.55,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 2,
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    position: 'relative',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
   },
   babyAvatarContainer: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    borderWidth: 2.5,
-    borderColor: '#F06292',
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    borderWidth: 3.5,
+    borderColor: '#FF2D75',
     position: 'relative',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
-    shadowColor: '#F06292',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
-    elevation: 3,
+    marginRight: 10,
   },
   babyAvatarImage: {
-    width: 62,
-    height: 62,
-    borderRadius: 31,
+    width: 74,
+    height: 74,
+    borderRadius: 37,
   },
   editPencilBadge: {
     position: 'absolute',
     bottom: -2,
     right: -2,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
     borderColor: '#E2E8F0',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.12,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 1.5 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  motherAvatarTextCol: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingLeft: 2,
   },
   motherBabyTitle: {
-    fontSize: 17,
+    fontSize: 22,
     fontWeight: '800',
     color: '#1E293B',
-    textAlign: 'center',
+    letterSpacing: -0.3,
   },
   motherAgeTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: '#1E293B',
-    textAlign: 'center',
-    marginTop: 1,
+    marginTop: 2,
+  },
+  motherDateRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginTop: 6,
   },
   motherDateRange: {
     fontSize: 11,
     fontWeight: '500',
     color: '#64748B',
-    textAlign: 'center',
-    marginTop: 1,
-    marginBottom: 3,
   },
-  pillsRow: {
+  motherRightCardsCol: {
+    flex: 1,
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  motherMetricCard: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 18,
+    paddingVertical: 10,
+    paddingHorizontal: 11,
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#F1F5F9',
+    position: 'relative',
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  motherMetricTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 10,
-    marginBottom: 3,
   },
-  measurementPill: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    paddingVertical: 6,
-    paddingHorizontal: 8,
+  motherMetricBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  heightBadgeCircle: {
+    width: 25,
+    height: 25,
+    borderRadius: 12.5,
+    backgroundColor: '#E0F2FE',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 3,
-    elevation: 1,
   },
-  pillLabel: {
+  weightBadgeCircle: {
+    width: 25,
+    height: 25,
+    borderRadius: 12.5,
+    backgroundColor: '#FCE7F3',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cardPencilBtn: {
+    width: 21,
+    height: 21,
+    borderRadius: 10.5,
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  motherMetricLabel: {
     fontSize: 9.5,
-    fontWeight: '700',
-    color: '#94A3B8',
+    fontWeight: '800',
+    color: '#64748B',
     letterSpacing: 0.5,
   },
-  pillValue: {
+  motherMetricValue: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#0F172A',
+    marginBottom: 1,
+  },
+  cardCornerAccentSvg: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 65,
+    height: 65,
+  },
+  babySaysContainer: {
+    marginTop: 14,
+  },
+  babySaysHeader: {
     fontSize: 13.5,
     fontWeight: '800',
     color: '#1E293B',
-    marginTop: 1,
-  },
-  babySaysContainer: {
-    marginTop: 0,
-  },
-  babySaysHeader: {
-    fontSize: 12.5,
-    fontWeight: '800',
-    color: '#1E293B',
-    marginBottom: 1,
+    marginBottom: 2,
   },
   babySaysQuote: {
-    fontSize: 11,
-    color: '#64748B',
-    lineHeight: 14.5,
+    fontSize: 13,
+    color: '#475569',
+    lineHeight: 18,
   },
   dailyUtilityBtn: {
     flexDirection: 'row',
@@ -702,9 +850,9 @@ const styles = StyleSheet.create({
     marginTop: 1,
   },
   lookMummaDesc: {
-    fontSize: 11,
-    color: '#64748B',
-    lineHeight: 15,
+    fontSize: 12.8,
+    color: '#475569',
+    lineHeight: 18,
     marginTop: 3,
   },
   cornSticker: {
@@ -804,73 +952,29 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   conceiveCardLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#64748B',
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: '#475569',
   },
   conceiveCardValue: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: '800',
     color: '#1E1E1E',
     marginTop: 1,
   },
   conceiveCardSub: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '500',
-    color: '#94A3B8',
-    marginTop: 1,
-  },
-  conceiveActionsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-    marginTop: 6,
-  },
-  calendarBtn: {
-    flex: 1,
-    backgroundColor: '#F06292',
-    borderRadius: 12,
-    paddingVertical: 9,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#F06292',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  calendarBtnText: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    marginLeft: 6,
-  },
-  endPeriodBtn: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5,
-    borderColor: '#F06292',
-    borderRadius: 12,
-    paddingVertical: 9,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  endPeriodBtnText: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#F06292',
-    marginLeft: 6,
+    color: '#64748B',
+    marginTop: 2,
   },
   tipsCardContainer: {
     marginHorizontal: 16,
-    marginTop: 8,
-    borderRadius: 18,
+    marginTop: 6,
+    borderRadius: 20,
     backgroundColor: '#FFFFFF',
-    paddingVertical: 10,
-    paddingHorizontal: 14,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     borderWidth: 1,
     borderColor: '#EDEFF2',
     shadowColor: '#000',
@@ -879,41 +983,44 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
     position: 'relative',
-    minHeight: 105,
+    minHeight: 122,
+    justifyContent: 'center',
   },
   tipsHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   tipsTitle: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '800',
     color: '#F06292',
-    marginLeft: 5,
+    marginLeft: 6,
+    letterSpacing: -0.2,
   },
   tipsDescription: {
-    fontSize: 11,
-    color: '#334155',
-    lineHeight: 15,
-    marginBottom: 8,
+    fontSize: 14.5,
+    color: '#1E293B',
+    lineHeight: 21.5,
+    fontWeight: '500',
+    marginBottom: 10,
   },
   moreTipsLink: {
-    fontSize: 11.5,
+    fontSize: 13.5,
     fontWeight: '700',
     color: '#F06292',
     textDecorationLine: 'underline',
   },
   shareLink: {
-    fontSize: 11.5,
+    fontSize: 13.5,
     fontWeight: '600',
     color: '#64748B',
   },
-  babyCloudSticker: {
+  todayPlanFloatingGif: {
     position: 'absolute',
     right: 4,
-    bottom: -16,
-    width: 78,
-    height: 82,
+    bottom: -6,
+    width: 106,
+    height: 86,
   },
 });

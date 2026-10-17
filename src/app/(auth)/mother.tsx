@@ -30,6 +30,8 @@ import { Button } from '@/components/ui/Button';
 import { BottomActionBar } from '@/components/ui/BottomActionBar';
 import { Radio } from '@/components/ui/Radio';
 import { useAppStore } from '@/store/useAppStore';
+import { useAuthStore } from '@/store/useAuthStore';
+import { saveMotherProfileApi, getRouteForOnboardingStep } from '@/api/onboarding.api';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
@@ -47,6 +49,8 @@ export default function MotherScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { pregnancyData, setPregnancyData, setStage } = useAppStore();
+  const { setOnboarding } = useAuthStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [babyBirthDate, setBabyBirthDate] = useState(pregnancyData.babyBirthDate || '');
   const [motherHeight, setMotherHeight] = useState(
@@ -72,7 +76,21 @@ export default function MotherScreen() {
   );
   const [dateError, setDateError] = useState('');
 
-  const isFormValid = !!babyBirthDate.trim();
+  const isFormValid =
+    !!babyBirthDate.trim() &&
+    !!motherHeight.trim() &&
+    !isNaN(parseFloat(motherHeight)) &&
+    parseFloat(motherHeight) > 0 &&
+    !!motherWeight.trim() &&
+    !isNaN(parseFloat(motherWeight)) &&
+    parseFloat(motherWeight) > 0 &&
+    !!babyHeight.trim() &&
+    !isNaN(parseFloat(babyHeight)) &&
+    parseFloat(babyHeight) > 0 &&
+    !!babyWeight.trim() &&
+    !isNaN(parseFloat(babyWeight)) &&
+    parseFloat(babyWeight) > 0 &&
+    !!bloodGroup.trim();
 
   // Modal states
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -80,16 +98,16 @@ export default function MotherScreen() {
   const [showYearSelector, setShowYearSelector] = useState(false);
   const [showMonthSelector, setShowMonthSelector] = useState(false);
 
-  // Calendar modal state & restrictions: valid from today to upcoming 1 year
+  // Calendar modal state & restrictions: valid for past 2 years up to today
   const today = useMemo(() => {
     const d = new Date();
-    d.setHours(0, 0, 0, 0);
+    d.setHours(23, 59, 59, 999);
     return d;
   }, []);
 
-  const maxDate = useMemo(() => {
-    const d = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
-    d.setHours(23, 59, 59, 999);
+  const minDate = useMemo(() => {
+    const d = new Date(today.getFullYear() - 2, today.getMonth(), today.getDate());
+    d.setHours(0, 0, 0, 0);
     return d;
   }, [today]);
 
@@ -98,21 +116,21 @@ export default function MotherScreen() {
   const [pickerDay, setPickerDay] = useState(today.getDate());
 
   const availableYears = useMemo(() => {
-    const start = today.getFullYear();
-    const end = maxDate.getFullYear();
+    const start = minDate.getFullYear();
+    const end = today.getFullYear();
     const list: number[] = [];
     for (let y = start; y <= end; y++) {
       list.push(y);
     }
     return list;
-  }, [today, maxDate]);
+  }, [minDate, today]);
 
   const daysInMonth = new Date(pickerYear, pickerMonth + 1, 0).getDate();
   const firstDayIndex = new Date(pickerYear, pickerMonth, 1).getDay();
   const trailingEmptyCount = Math.max(0, 42 - (firstDayIndex + daysInMonth));
 
-  const isMinMonth = pickerYear === today.getFullYear() && pickerMonth === today.getMonth();
-  const isMaxMonth = pickerYear === maxDate.getFullYear() && pickerMonth === maxDate.getMonth();
+  const isMinMonth = pickerYear === minDate.getFullYear() && pickerMonth === minDate.getMonth();
+  const isMaxMonth = pickerYear === today.getFullYear() && pickerMonth === today.getMonth();
 
   const handlePrevMonth = () => {
     if (isMinMonth) return;
@@ -136,20 +154,20 @@ export default function MotherScreen() {
 
   const handleSelectYear = (year: number) => {
     let newMonth = pickerMonth;
-    if (year === today.getFullYear() && newMonth < today.getMonth()) {
+    if (year === minDate.getFullYear() && newMonth < minDate.getMonth()) {
+      newMonth = minDate.getMonth();
+    } else if (year === today.getFullYear() && newMonth > today.getMonth()) {
       newMonth = today.getMonth();
-    } else if (year === maxDate.getFullYear() && newMonth > maxDate.getMonth()) {
-      newMonth = maxDate.getMonth();
     }
 
     const maxDays = new Date(year, newMonth + 1, 0).getDate();
     let newDay = Math.min(pickerDay, maxDays);
     const newDate = new Date(year, newMonth, newDay);
-    newDate.setHours(0, 0, 0, 0);
-    if (newDate < today) {
+    newDate.setHours(12, 0, 0, 0);
+    if (newDate < minDate) {
+      newDay = minDate.getDate();
+    } else if (newDate > today) {
       newDay = today.getDate();
-    } else if (newDate > maxDate) {
-      newDay = maxDate.getDate();
     }
 
     setPickerYear(year);
@@ -162,7 +180,7 @@ export default function MotherScreen() {
   const isMonthDisabled = (m: number) => {
     const monthStart = new Date(pickerYear, m, 1);
     const monthEnd = new Date(pickerYear, m + 1, 0, 23, 59, 59, 999);
-    return monthEnd < today || monthStart > maxDate;
+    return monthEnd < minDate || monthStart > today;
   };
 
   const handleSelectMonth = (m: number) => {
@@ -171,11 +189,11 @@ export default function MotherScreen() {
     const maxDays = new Date(pickerYear, m + 1, 0).getDate();
     let newDay = Math.min(pickerDay, maxDays);
     const newDate = new Date(pickerYear, m, newDay);
-    newDate.setHours(0, 0, 0, 0);
-    if (newDate < today) {
+    newDate.setHours(12, 0, 0, 0);
+    if (newDate < minDate) {
+      newDay = minDate.getDate();
+    } else if (newDate > today) {
       newDay = today.getDate();
-    } else if (newDate > maxDate) {
-      newDay = maxDate.getDate();
     }
 
     setPickerMonth(m);
@@ -193,8 +211,8 @@ export default function MotherScreen() {
         const m = parseInt(parts[1], 10) - 1;
         const y = parseInt(parts[2], 10);
         const parsed = new Date(y, m, d);
-        parsed.setHours(0, 0, 0, 0);
-        if (parsed >= today && parsed <= maxDate) {
+        parsed.setHours(12, 0, 0, 0);
+        if (parsed >= minDate && parsed <= today) {
           setPickerYear(y);
           setPickerMonth(m);
           setPickerDay(d);
@@ -211,9 +229,9 @@ export default function MotherScreen() {
 
   const handleConfirmDate = () => {
     const selectedDate = new Date(pickerYear, pickerMonth, pickerDay);
-    selectedDate.setHours(0, 0, 0, 0);
-    if (selectedDate < today || selectedDate > maxDate) {
-      Alert.alert('Invalid Date', 'Date must be between today and the upcoming 1 year.');
+    selectedDate.setHours(12, 0, 0, 0);
+    if (selectedDate < minDate || selectedDate > today) {
+      Alert.alert('Invalid Date', 'Date of Birth of Baby must be within the past 2 years up to today.');
       return;
     }
     const formatted = `${String(pickerDay).padStart(2, '0')}/${String(pickerMonth + 1).padStart(2, '0')}/${pickerYear}`;
@@ -222,12 +240,61 @@ export default function MotherScreen() {
     setShowDatePicker(false);
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     if (!babyBirthDate.trim()) {
       setDateError('Please select Date of Birth of Baby');
       Alert.alert('Required Field', 'Date of Birth of Baby is mandatory. Please select a date to proceed.');
       return;
     }
+
+    if (!motherHeight.trim() || isNaN(parseFloat(motherHeight)) || parseFloat(motherHeight) <= 0) {
+      Alert.alert('Required Field', 'Please enter Mother Height in cm (must be greater than zero).');
+      return;
+    }
+
+    if (!motherWeight.trim() || isNaN(parseFloat(motherWeight)) || parseFloat(motherWeight) <= 0) {
+      Alert.alert('Required Field', 'Please enter Mother Weight in kg (must be greater than zero).');
+      return;
+    }
+
+    if (!babyHeight.trim() || isNaN(parseFloat(babyHeight)) || parseFloat(babyHeight) <= 0) {
+      Alert.alert('Required Field', 'Please enter Baby Height in cm (must be greater than zero).');
+      return;
+    }
+
+    if (!babyWeight.trim() || isNaN(parseFloat(babyWeight)) || parseFloat(babyWeight) <= 0) {
+      Alert.alert('Required Field', 'Please enter Baby Weight in kg (must be greater than zero).');
+      return;
+    }
+
+    if (!bloodGroup.trim()) {
+      Alert.alert('Required Field', 'Please select Blood Group.');
+      return;
+    }
+
+    const parts = babyBirthDate.split('/');
+    if (parts.length === 3) {
+      const d = parseInt(parts[0], 10);
+      const m = parseInt(parts[1], 10) - 1;
+      const y = parseInt(parts[2], 10);
+      const parsed = new Date(y, m, d);
+      parsed.setHours(12, 0, 0, 0);
+      if (parsed < minDate || parsed > today) {
+        setDateError('Date must be within past 2 years up to today');
+        Alert.alert('Invalid Date', 'Date of Birth of Baby must be within the past 2 years up to today.');
+        return;
+      }
+    }
+
+    // Format DD/MM/YYYY into YYYY-MM-DD
+    let isoDate = babyBirthDate;
+    if (parts.length === 3) {
+      const [d, m, y] = parts;
+      isoDate = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+    }
+
+    const genderRaw = pregnancyData.babyGender || 'boy';
+    const gender: 'BOY' | 'GIRL' = genderRaw.toLowerCase() === 'girl' ? 'GIRL' : 'BOY';
 
     setPregnancyData({
       babyBirthDate,
@@ -240,7 +307,51 @@ export default function MotherScreen() {
       bloodPressure,
     });
     setStage('mother');
-    router.replace('/(tabs)/home');
+
+    try {
+      setIsSubmitting(true);
+      const res = await saveMotherProfileApi({
+        motherHeightCm: motherHeight ? parseFloat(motherHeight) : undefined,
+        motherWeightKg: motherWeight ? parseFloat(motherWeight) : undefined,
+        babyHeightCm: babyHeight ? parseFloat(babyHeight) : undefined,
+        babyWeightKg: babyWeight ? parseFloat(babyWeight) : undefined,
+        babyGender: gender,
+        bloodGroup: bloodGroup || undefined,
+        diabetic: !!isDiabetic,
+        bloodPressure: bloodPressure === 'low' ? 'LOW' : bloodPressure === 'high' ? 'HIGH' : 'NORMAL',
+        babyDateOfBirth: isoDate,
+      });
+
+      if (res?.data) {
+        await setOnboarding({
+          completed: res.data.completed,
+          nextStep: res.data.nextStep,
+          language: res.data.language?.code || null,
+          category: res.data.category?.code || 'MOTHER',
+          profileComplete: res.data.profileComplete,
+        });
+
+        const targetRoute = getRouteForOnboardingStep({
+          completed: res.data.completed,
+          nextStep: res.data.nextStep,
+          category: res.data.category?.code || 'MOTHER',
+          language: res.data.language?.code || null,
+          profileComplete: res.data.profileComplete,
+        });
+
+        router.replace(targetRoute as any);
+      } else {
+        router.replace('/(tabs)/home');
+      }
+    } catch (err: any) {
+      console.warn('Failed to save mother profile:', err);
+      Alert.alert(
+        'Submission Failed',
+        err?.message || 'Could not save profile. Please try again.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -288,12 +399,12 @@ export default function MotherScreen() {
             )}
           </View>
 
-          {/* 2. Mother Height and Mother Weight (Optional) */}
+          {/* 2. Mother Height and Mother Weight */}
           <View style={styles.twoColumnRow}>
-            {/* Mother Height (Optional) */}
+            {/* Mother Height */}
             <View style={styles.halfCol}>
               <Text style={styles.fieldLabel}>
-                Mother Height <Text style={styles.optionalLabel}>(Optional)</Text>
+                Mother Height <Text style={styles.requiredStar}>*</Text>
               </Text>
               <TextInput
                 value={motherHeight}
@@ -305,10 +416,10 @@ export default function MotherScreen() {
               />
             </View>
 
-            {/* Mother Weight (Optional) */}
+            {/* Mother Weight */}
             <View style={styles.halfCol}>
               <Text style={styles.fieldLabel}>
-                Mother Weight <Text style={styles.optionalLabel}>(Optional)</Text>
+                Mother Weight <Text style={styles.requiredStar}>*</Text>
               </Text>
               <TextInput
                 value={motherWeight}
@@ -321,12 +432,12 @@ export default function MotherScreen() {
             </View>
           </View>
 
-          {/* 3. Baby Height and Baby Weight (Optional) */}
+          {/* 3. Baby Height and Baby Weight */}
           <View style={styles.twoColumnRow}>
-            {/* Baby Height (Optional) */}
+            {/* Baby Height */}
             <View style={styles.halfCol}>
               <Text style={styles.fieldLabel}>
-                Baby Height <Text style={styles.optionalLabel}>(Optional)</Text>
+                Baby Height <Text style={styles.requiredStar}>*</Text>
               </Text>
               <TextInput
                 value={babyHeight}
@@ -338,10 +449,10 @@ export default function MotherScreen() {
               />
             </View>
 
-            {/* Baby Weight (Optional) */}
+            {/* Baby Weight */}
             <View style={styles.halfCol}>
               <Text style={styles.fieldLabel}>
-                Baby Weight <Text style={styles.optionalLabel}>(Optional)</Text>
+                Baby Weight <Text style={styles.requiredStar}>*</Text>
               </Text>
               <TextInput
                 value={babyWeight}
@@ -354,10 +465,10 @@ export default function MotherScreen() {
             </View>
           </View>
 
-          {/* 4. Blood Group (Optional) */}
+          {/* 4. Blood Group */}
           <View style={styles.fieldGroup}>
             <Text style={styles.fieldLabel}>
-              Blood Group <Text style={styles.optionalLabel}>(Optional)</Text>
+              Blood Group <Text style={styles.requiredStar}>*</Text>
             </Text>
             <Pressable
               onPress={() => setShowBloodGroupPicker(true)}
@@ -456,7 +567,8 @@ export default function MotherScreen() {
         <BottomActionBar
           title="Continue"
           onPress={handleContinue}
-          disabled={!isFormValid}
+          disabled={!isFormValid || isSubmitting}
+          loading={isSubmitting}
         />
       </KeyboardAvoidingView>
 
@@ -472,6 +584,17 @@ export default function MotherScreen() {
         }}
       >
         <View style={styles.modalOverlay}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => {
+              if (showMonthSelector || showYearSelector) {
+                setShowMonthSelector(false);
+                setShowYearSelector(false);
+              } else {
+                setShowDatePicker(false);
+              }
+            }}
+          />
           <View style={styles.calendarModalContent}>
             {/* Header */}
             <View style={styles.modalHeaderRow}>
@@ -520,26 +643,22 @@ export default function MotherScreen() {
               </View>
 
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                {!showYearSelector && !showMonthSelector && (
-                  <>
-                    <Pressable
-                      onPress={handlePrevMonth}
-                      disabled={isMinMonth}
-                      hitSlop={10}
-                      style={[{ padding: 6, marginRight: 2 }, isMinMonth && { opacity: 0.3 }]}
-                    >
-                      <ChevronLeft size={20} color={isMinMonth ? '#CBD5E1' : '#64748B'} />
-                    </Pressable>
-                    <Pressable
-                      onPress={handleNextMonth}
-                      disabled={isMaxMonth}
-                      hitSlop={10}
-                      style={[{ padding: 6, marginRight: 8 }, isMaxMonth && { opacity: 0.3 }]}
-                    >
-                      <ChevronRight size={20} color={isMaxMonth ? '#CBD5E1' : '#64748B'} />
-                    </Pressable>
-                  </>
-                )}
+                <Pressable
+                  onPress={handlePrevMonth}
+                  disabled={isMinMonth}
+                  hitSlop={10}
+                  style={[{ padding: 6, marginRight: 2 }, isMinMonth && { opacity: 0.3 }]}
+                >
+                  <ChevronLeft size={20} color={isMinMonth ? '#CBD5E1' : '#64748B'} />
+                </Pressable>
+                <Pressable
+                  onPress={handleNextMonth}
+                  disabled={isMaxMonth}
+                  hitSlop={10}
+                  style={[{ padding: 6, marginRight: 8 }, isMaxMonth && { opacity: 0.3 }]}
+                >
+                  <ChevronRight size={20} color={isMaxMonth ? '#CBD5E1' : '#64748B'} />
+                </Pressable>
 
                 <Pressable
                   onPress={() => {
@@ -556,133 +675,151 @@ export default function MotherScreen() {
             </View>
 
             <Text style={styles.modalSubheading}>
-              {showYearSelector
-                ? 'Tap a year to switch'
-                : showMonthSelector
-                ? 'Tap a month to switch'
-                : 'Select Date of Birth of Baby'}
+              Select Date of Birth of Baby (Past 2 years)
             </Text>
 
-            {/* Fixed Height Calendar / Year / Month Container */}
+            {/* Fixed Height Calendar Container (Always visible & interactive) */}
             <View style={styles.calendarBodyContainer}>
-              {showYearSelector ? (
-                <View style={styles.yearPickerView}>
-                  <View style={styles.yearListContainer}>
-                    {availableYears.map((yr) => {
-                      const isSelected = pickerYear === yr;
-                      return (
-                        <Pressable
-                          key={yr}
-                          onPress={() => handleSelectYear(yr)}
-                          style={[
-                            styles.yearOptionCard,
-                            isSelected && styles.yearOptionCardSelected,
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.yearOptionText,
-                              isSelected && styles.yearOptionTextSelected,
-                            ]}
-                          >
-                            {yr}
-                          </Text>
-                          {isSelected ? (
-                            <Check size={20} color="#FFFFFF" strokeWidth={2.5} />
-                          ) : (
-                            <View style={{ width: 20 }} />
-                          )}
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                </View>
-              ) : showMonthSelector ? (
-                <View style={styles.monthPickerView}>
-                  <View style={styles.monthGridContainer}>
-                    {MONTH_NAMES.map((name, index) => {
-                      const isSelected = pickerMonth === index;
-                      const disabled = isMonthDisabled(index);
-                      return (
-                        <Pressable
-                          key={name}
-                          disabled={disabled}
-                          onPress={() => handleSelectMonth(index)}
-                          style={[
-                            styles.monthOptionCard,
-                            isSelected && styles.monthOptionCardSelected,
-                            disabled && styles.monthOptionCardDisabled,
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.monthOptionText,
-                              isSelected && styles.monthOptionTextSelected,
-                              disabled && styles.monthOptionTextDisabled,
-                            ]}
-                          >
-                            {SHORT_MONTH_NAMES[index]}
-                          </Text>
-                          {isSelected && (
-                            <Check size={14} color="#FFFFFF" strokeWidth={2.6} style={{ marginLeft: 4 }} />
-                          )}
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                </View>
-              ) : (
-                <>
-                  {/* Days of Week */}
-                  <View style={styles.weekDaysRow}>
-                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                      <Text key={i} style={styles.weekDayText}>
-                        {d}
-                      </Text>
-                    ))}
-                  </View>
+              {/* Days of Week */}
+              <View style={styles.weekDaysRow}>
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                  <Text key={i} style={styles.weekDayText}>
+                    {d}
+                  </Text>
+                ))}
+              </View>
 
-                  {/* Calendar Days Grid */}
-                  <View style={styles.daysGrid}>
-                    {Array.from({ length: firstDayIndex }).map((_, i) => (
-                      <View key={`empty-start-${i}`} style={styles.daySlot} />
-                    ))}
-                    {Array.from({ length: daysInMonth }).map((_, i) => {
-                      const day = i + 1;
-                      const cellDate = new Date(pickerYear, pickerMonth, day);
-                      cellDate.setHours(0, 0, 0, 0);
-                      const isDisabled = cellDate < today || cellDate > maxDate;
-                      const isSelected = !isDisabled && pickerDay === day;
-                      return (
-                        <Pressable
-                          key={day}
-                          disabled={isDisabled}
-                          onPress={() => !isDisabled && setPickerDay(day)}
-                          style={[
-                            styles.daySlot,
-                            isSelected && styles.daySlotSelected,
-                            isDisabled && styles.daySlotDisabled,
-                          ]}
-                        >
-                          <Text
+              {/* Calendar Days Grid */}
+              <View style={styles.daysGrid}>
+                {Array.from({ length: firstDayIndex }).map((_, i) => (
+                  <View key={`empty-start-${i}`} style={styles.daySlot} />
+                ))}
+                {Array.from({ length: daysInMonth }).map((_, i) => {
+                  const day = i + 1;
+                  const cellDate = new Date(pickerYear, pickerMonth, day);
+                  cellDate.setHours(12, 0, 0, 0);
+                  const isDisabled = cellDate < minDate || cellDate > today;
+                  const isSelected = !isDisabled && pickerDay === day;
+                  return (
+                    <Pressable
+                      key={day}
+                      disabled={isDisabled}
+                      onPress={() => !isDisabled && setPickerDay(day)}
+                      style={[
+                        styles.daySlot,
+                        isSelected && styles.daySlotSelected,
+                        isDisabled && styles.daySlotDisabled,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.dayNumberText,
+                          isSelected && styles.dayNumberTextSelected,
+                          isDisabled && styles.dayNumberTextDisabled,
+                        ]}
+                      >
+                        {day}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+                {Array.from({ length: trailingEmptyCount }).map((_, i) => (
+                  <View key={`empty-end-${i}`} style={styles.daySlot} />
+                ))}
+              </View>
+            </View>
+
+            {/* Floating Month Dropdown Menu */}
+            {showMonthSelector && (
+              <>
+                <Pressable
+                  style={StyleSheet.absoluteFill}
+                  onPress={() => setShowMonthSelector(false)}
+                />
+                <View style={styles.monthDropdownMenu}>
+                  <View style={styles.dropdownInner}>
+                    <ScrollView
+                      nestedScrollEnabled
+                      showsVerticalScrollIndicator={true}
+                      style={styles.dropdownScrollView}
+                    >
+                      {MONTH_NAMES.map((name, index) => {
+                        const disabled = isMonthDisabled(index);
+                        if (disabled) return null;
+                        const isSelected = pickerMonth === index;
+                        return (
+                          <Pressable
+                            key={name}
+                            onPress={() => handleSelectMonth(index)}
                             style={[
-                              styles.dayNumberText,
-                              isSelected && styles.dayNumberTextSelected,
-                              isDisabled && styles.dayNumberTextDisabled,
+                              styles.dropdownMenuItem,
+                              isSelected && styles.dropdownMenuItemSelected,
                             ]}
                           >
-                            {day}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                    {Array.from({ length: trailingEmptyCount }).map((_, i) => (
-                      <View key={`empty-end-${i}`} style={styles.daySlot} />
-                    ))}
+                            <Text
+                              style={[
+                                styles.dropdownItemText,
+                                isSelected && styles.dropdownItemTextSelected,
+                              ]}
+                            >
+                              {name}
+                            </Text>
+                            {isSelected && (
+                              <Check size={16} color="#F06292" strokeWidth={2.6} />
+                            )}
+                          </Pressable>
+                        );
+                      })}
+                    </ScrollView>
                   </View>
-                </>
-              )}
-            </View>
+                </View>
+              </>
+            )}
+
+            {/* Floating Year Dropdown Menu */}
+            {showYearSelector && (
+              <>
+                <Pressable
+                  style={StyleSheet.absoluteFill}
+                  onPress={() => setShowYearSelector(false)}
+                />
+                <View style={styles.yearDropdownMenu}>
+                  <View style={styles.dropdownInner}>
+                    <ScrollView
+                      nestedScrollEnabled
+                      showsVerticalScrollIndicator={true}
+                      style={styles.dropdownScrollView}
+                    >
+                      {availableYears.map((yr) => {
+                        const isSelected = pickerYear === yr;
+                        return (
+                          <Pressable
+                            key={yr}
+                            onPress={() => handleSelectYear(yr)}
+                            style={[
+                              styles.dropdownMenuItem,
+                              isSelected && styles.dropdownMenuItemSelected,
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.dropdownItemText,
+                                isSelected && styles.dropdownItemTextSelected,
+                              ]}
+                            >
+                              {yr}
+                            </Text>
+                            {isSelected && (
+                              <Check size={16} color="#F06292" strokeWidth={2.6} />
+                            )}
+                          </Pressable>
+                        );
+                      })}
+                    </ScrollView>
+                  </View>
+                </View>
+              </>
+            )}
 
             {/* Actions */}
             <View style={{ marginTop: 20 }}>
@@ -948,82 +1085,68 @@ const styles = StyleSheet.create({
   calendarYearTextActive: {
     color: '#F06292',
   },
-  monthPickerView: {
-    flex: 1,
-    paddingVertical: 4,
-    justifyContent: 'center',
-  },
-  monthGridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    rowGap: 10,
-  },
-  monthOptionCard: {
-    width: '31%',
-    height: 52,
-    borderRadius: 12,
+  monthDropdownMenu: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    width: 175,
+    maxHeight: 250,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
+    elevation: 30,
+    zIndex: 9999,
+  },
+  yearDropdownMenu: {
+    position: 'absolute',
+    top: 60,
+    left: 135,
+    width: 125,
+    maxHeight: 180,
     backgroundColor: '#FFFFFF',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  monthOptionCardSelected: {
-    borderColor: '#F06292',
-    backgroundColor: '#F06292',
-  },
-  monthOptionCardDisabled: {
-    backgroundColor: '#F8FAFC',
-    borderColor: '#F1F5F9',
-    opacity: 0.35,
-  },
-  monthOptionText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#334155',
-  },
-  monthOptionTextSelected: {
-    color: '#FFFFFF',
-  },
-  monthOptionTextDisabled: {
-    color: '#94A3B8',
-  },
-  yearPickerView: {
-    flex: 1,
-    paddingVertical: 8,
-    justifyContent: 'center',
-  },
-  yearListContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    justifyContent: 'center',
-  },
-  yearOptionCard: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
+    elevation: 30,
+    zIndex: 9999,
+  },
+  dropdownInner: {
+    borderRadius: 12.5,
+    overflow: 'hidden',
     backgroundColor: '#FFFFFF',
+  },
+  dropdownScrollView: {
+    maxHeight: 250,
+  },
+  dropdownMenuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minWidth: 120,
+    paddingVertical: 11,
+    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
   },
-  yearOptionCardSelected: {
-    borderColor: '#F06292',
-    backgroundColor: '#F06292',
+  dropdownMenuItemSelected: {
+    backgroundColor: '#FCE4EC',
   },
-  yearOptionText: {
-    fontSize: 16,
+  dropdownItemText: {
+    fontSize: 14.5,
+    fontWeight: '600',
+    color: '#1E293B',
+  },
+  dropdownItemTextSelected: {
+    color: '#F06292',
     fontWeight: '700',
-    color: '#334155',
-  },
-  yearOptionTextSelected: {
-    color: '#FFFFFF',
   },
   modalSubheading: {
     fontSize: 13,

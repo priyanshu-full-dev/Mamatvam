@@ -31,6 +31,8 @@ import { Radio } from '@/components/ui/Radio';
 import { Button } from '@/components/ui/Button';
 import { BottomActionBar } from '@/components/ui/BottomActionBar';
 import { useAppStore } from '@/store/useAppStore';
+import { useAuthStore } from '@/store/useAuthStore';
+import { saveIuiIvfProfileApi, getRouteForOnboardingStep } from '@/api/onboarding.api';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
@@ -48,6 +50,8 @@ export default function IuiIvfScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { pregnancyData, setPregnancyData, setStage } = useAppStore();
+  const { setOnboarding } = useAuthStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [lastPeriodDate, setLastPeriodDate] = useState(pregnancyData.lastPeriodDate || '');
   const [periodCycle, setPeriodCycle] = useState(pregnancyData.periodCycle || '28');
@@ -67,22 +71,32 @@ export default function IuiIvfScreen() {
   const [dateError, setDateError] = useState('');
   const [periodCycleError, setPeriodCycleError] = useState('');
 
+  const isFormValid =
+    !!lastPeriodDate.trim() &&
+    !!periodCycle.trim() &&
+    !!height.trim() &&
+    !isNaN(parseFloat(height)) &&
+    parseFloat(height) > 0 &&
+    !!weight.trim() &&
+    !isNaN(parseFloat(weight)) &&
+    parseFloat(weight) > 0 &&
+    !!bloodGroup.trim();
+
   // Modals
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showBloodGroupPicker, setShowBloodGroupPicker] = useState(false);
-  const [showYearSelector, setShowYearSelector] = useState(false);
   const [showMonthSelector, setShowMonthSelector] = useState(false);
 
-  // Calendar modal state & restrictions: valid from today to upcoming 2 years
+  // Calendar modal state & restrictions: valid for past 5 months up to today
   const today = useMemo(() => {
     const d = new Date();
-    d.setHours(0, 0, 0, 0);
+    d.setHours(23, 59, 59, 999);
     return d;
   }, []);
 
-  const maxDate = useMemo(() => {
-    const d = new Date(today.getFullYear() + 2, today.getMonth(), today.getDate());
-    d.setHours(23, 59, 59, 999);
+  const minDate = useMemo(() => {
+    const d = new Date(today.getFullYear(), today.getMonth() - 5, today.getDate());
+    d.setHours(0, 0, 0, 0);
     return d;
   }, [today]);
 
@@ -90,22 +104,12 @@ export default function IuiIvfScreen() {
   const [pickerMonth, setPickerMonth] = useState(today.getMonth());
   const [pickerDay, setPickerDay] = useState(today.getDate());
 
-  const availableYears = useMemo(() => {
-    const start = today.getFullYear();
-    const end = maxDate.getFullYear();
-    const list: number[] = [];
-    for (let y = start; y <= end; y++) {
-      list.push(y);
-    }
-    return list;
-  }, [today, maxDate]);
-
   const daysInMonth = new Date(pickerYear, pickerMonth + 1, 0).getDate();
   const firstDayIndex = new Date(pickerYear, pickerMonth, 1).getDay();
   const trailingEmptyCount = Math.max(0, 42 - (firstDayIndex + daysInMonth));
 
-  const isMinMonth = pickerYear === today.getFullYear() && pickerMonth === today.getMonth();
-  const isMaxMonth = pickerYear === maxDate.getFullYear() && pickerMonth === maxDate.getMonth();
+  const isMinMonth = pickerYear === minDate.getFullYear() && pickerMonth === minDate.getMonth();
+  const isMaxMonth = pickerYear === today.getFullYear() && pickerMonth === today.getMonth();
 
   const handlePrevMonth = () => {
     if (isMinMonth) return;
@@ -127,35 +131,10 @@ export default function IuiIvfScreen() {
     }
   };
 
-  const handleSelectYear = (year: number) => {
-    let newMonth = pickerMonth;
-    if (year === today.getFullYear() && newMonth < today.getMonth()) {
-      newMonth = today.getMonth();
-    } else if (year === maxDate.getFullYear() && newMonth > maxDate.getMonth()) {
-      newMonth = maxDate.getMonth();
-    }
-
-    const maxDays = new Date(year, newMonth + 1, 0).getDate();
-    let newDay = Math.min(pickerDay, maxDays);
-    const newDate = new Date(year, newMonth, newDay);
-    newDate.setHours(0, 0, 0, 0);
-    if (newDate < today) {
-      newDay = today.getDate();
-    } else if (newDate > maxDate) {
-      newDay = maxDate.getDate();
-    }
-
-    setPickerYear(year);
-    setPickerMonth(newMonth);
-    setPickerDay(newDay);
-    setShowYearSelector(false);
-    setShowMonthSelector(false);
-  };
-
   const isMonthDisabled = (m: number) => {
     const monthStart = new Date(pickerYear, m, 1);
     const monthEnd = new Date(pickerYear, m + 1, 0, 23, 59, 59, 999);
-    return monthEnd < today || monthStart > maxDate;
+    return monthEnd < minDate || monthStart > today;
   };
 
   const handleSelectMonth = (m: number) => {
@@ -164,11 +143,11 @@ export default function IuiIvfScreen() {
     const maxDays = new Date(pickerYear, m + 1, 0).getDate();
     let newDay = Math.min(pickerDay, maxDays);
     const newDate = new Date(pickerYear, m, newDay);
-    newDate.setHours(0, 0, 0, 0);
-    if (newDate < today) {
+    newDate.setHours(12, 0, 0, 0);
+    if (newDate < minDate) {
+      newDay = minDate.getDate();
+    } else if (newDate > today) {
       newDay = today.getDate();
-    } else if (newDate > maxDate) {
-      newDay = maxDate.getDate();
     }
 
     setPickerMonth(m);
@@ -177,7 +156,6 @@ export default function IuiIvfScreen() {
   };
 
   const handleOpenDatePicker = () => {
-    setShowYearSelector(false);
     setShowMonthSelector(false);
     if (lastPeriodDate) {
       const parts = lastPeriodDate.split('/');
@@ -186,8 +164,8 @@ export default function IuiIvfScreen() {
         const m = parseInt(parts[1], 10) - 1;
         const y = parseInt(parts[2], 10);
         const parsed = new Date(y, m, d);
-        parsed.setHours(0, 0, 0, 0);
-        if (parsed >= today && parsed <= maxDate) {
+        parsed.setHours(12, 0, 0, 0);
+        if (parsed >= minDate && parsed <= today) {
           setPickerYear(y);
           setPickerMonth(m);
           setPickerDay(d);
@@ -204,9 +182,9 @@ export default function IuiIvfScreen() {
 
   const handleConfirmDate = () => {
     const selectedDate = new Date(pickerYear, pickerMonth, pickerDay);
-    selectedDate.setHours(0, 0, 0, 0);
-    if (selectedDate < today || selectedDate > maxDate) {
-      Alert.alert('Invalid Date', 'Date must be between today and the next 2 years.');
+    selectedDate.setHours(12, 0, 0, 0);
+    if (selectedDate < minDate || selectedDate > today) {
+      Alert.alert('Invalid Date', 'Last Period Date must be within the past 5 months.');
       return;
     }
     const formatted = `${String(pickerDay).padStart(2, '0')}/${String(pickerMonth + 1).padStart(2, '0')}/${pickerYear}`;
@@ -215,7 +193,7 @@ export default function IuiIvfScreen() {
     setShowDatePicker(false);
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
     let hasError = false;
 
     if (!lastPeriodDate.trim()) {
@@ -228,10 +206,10 @@ export default function IuiIvfScreen() {
         const m = parseInt(parts[1], 10) - 1;
         const y = parseInt(parts[2], 10);
         const parsed = new Date(y, m, d);
-        parsed.setHours(0, 0, 0, 0);
-        if (parsed < today || parsed > maxDate) {
-          setDateError('Date must be between today and next 2 years');
-          Alert.alert('Invalid Date', 'Last Period Date must be between today and the next 2 years.');
+        parsed.setHours(12, 0, 0, 0);
+        if (parsed < minDate || parsed > today) {
+          setDateError('Date must be within past 5 months');
+          Alert.alert('Invalid Date', 'Last Period Date must be within the past 5 months.');
           return;
         }
       }
@@ -250,6 +228,29 @@ export default function IuiIvfScreen() {
       return;
     }
 
+    if (!height.trim() || isNaN(parseFloat(height)) || parseFloat(height) <= 0) {
+      Alert.alert('Required Field', 'Please enter your Height in cm (must be greater than zero).');
+      return;
+    }
+
+    if (!weight.trim() || isNaN(parseFloat(weight)) || parseFloat(weight) <= 0) {
+      Alert.alert('Required Field', 'Please enter your Weight in kg (must be greater than zero).');
+      return;
+    }
+
+    if (!bloodGroup.trim()) {
+      Alert.alert('Required Field', 'Please select your Blood Group.');
+      return;
+    }
+
+    // Format DD/MM/YYYY into YYYY-MM-DD
+    let isoDate = lastPeriodDate;
+    const parts = lastPeriodDate.split('/');
+    if (parts.length === 3) {
+      const [d, m, y] = parts;
+      isoDate = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+    }
+
     setPregnancyData({
       lastPeriodDate,
       periodCycle,
@@ -260,7 +261,48 @@ export default function IuiIvfScreen() {
       bloodPressure,
     });
     setStage('explore');
-    router.replace('/(tabs)/home');
+
+    try {
+      setIsSubmitting(true);
+      const res = await saveIuiIvfProfileApi({
+        heightCm: height ? parseFloat(height) : undefined,
+        weightKg: weight ? parseFloat(weight) : undefined,
+        bloodGroup: bloodGroup || undefined,
+        diabetic: !!isDiabetic,
+        bloodPressure: bloodPressure === 'low' ? 'LOW' : bloodPressure === 'high' ? 'HIGH' : 'NORMAL',
+        lastPeriodDate: isoDate,
+      });
+
+      if (res?.data) {
+        await setOnboarding({
+          completed: res.data.completed,
+          nextStep: res.data.nextStep,
+          language: res.data.language?.code || null,
+          category: res.data.category?.code || 'IUI_IVF',
+          profileComplete: res.data.profileComplete,
+        });
+
+        const targetRoute = getRouteForOnboardingStep({
+          completed: res.data.completed,
+          nextStep: res.data.nextStep,
+          category: res.data.category?.code || 'IUI_IVF',
+          language: res.data.language?.code || null,
+          profileComplete: res.data.profileComplete,
+        });
+
+        router.replace(targetRoute as any);
+      } else {
+        router.replace('/(tabs)/home');
+      }
+    } catch (err: any) {
+      console.warn('Failed to save IUI/IVF profile:', err);
+      Alert.alert(
+        'Submission Failed',
+        err?.message || 'Could not save profile. Please try again.'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -371,12 +413,12 @@ export default function IuiIvfScreen() {
             </View>
           </View>
 
-          {/* 3. Your Height and Your Weight Row (Optional) */}
+          {/* 3. Your Height and Your Weight Row */}
           <View style={styles.twoColumnRow}>
             {/* Your Height */}
             <View style={styles.halfCol}>
               <Text style={styles.fieldLabel}>
-                Your Height <Text style={styles.optionalLabel}>(Optional)</Text>
+                Your Height <Text style={styles.requiredStar}>*</Text>
               </Text>
               <TextInput
                 value={height}
@@ -391,7 +433,7 @@ export default function IuiIvfScreen() {
             {/* Your Weight */}
             <View style={styles.halfCol}>
               <Text style={styles.fieldLabel}>
-                Your Weight <Text style={styles.optionalLabel}>(Optional)</Text>
+                Your Weight <Text style={styles.requiredStar}>*</Text>
               </Text>
               <TextInput
                 value={weight}
@@ -404,10 +446,10 @@ export default function IuiIvfScreen() {
             </View>
           </View>
 
-          {/* 4. Blood Group (Optional) */}
+          {/* 4. Blood Group */}
           <View style={styles.fieldGroup}>
             <Text style={styles.fieldLabel}>
-              Blood Group <Text style={styles.optionalLabel}>(Optional)</Text>
+              Blood Group <Text style={styles.requiredStar}>*</Text>
             </Text>
             <Pressable
               onPress={() => setShowBloodGroupPicker(true)}
@@ -506,6 +548,8 @@ export default function IuiIvfScreen() {
         <BottomActionBar
           title="Continue"
           onPress={handleContinue}
+          loading={isSubmitting}
+          disabled={!isFormValid || isSubmitting}
         />
       </KeyboardAvoidingView>
 
@@ -515,12 +559,21 @@ export default function IuiIvfScreen() {
         transparent
         animationType="fade"
         onRequestClose={() => {
-          setShowYearSelector(false);
           setShowMonthSelector(false);
           setShowDatePicker(false);
         }}
       >
         <View style={styles.modalOverlay}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => {
+              if (showMonthSelector) {
+                setShowMonthSelector(false);
+              } else {
+                setShowDatePicker(false);
+              }
+            }}
+          />
           <View style={styles.calendarModalContent}>
             {/* Header */}
             <View style={styles.modalHeaderRow}>
@@ -528,7 +581,6 @@ export default function IuiIvfScreen() {
                 {/* Clickable Month Selector */}
                 <Pressable
                   onPress={() => {
-                    setShowYearSelector(false);
                     setShowMonthSelector((prev) => !prev);
                   }}
                   hitSlop={8}
@@ -546,53 +598,39 @@ export default function IuiIvfScreen() {
                   />
                 </Pressable>
 
-                {/* Clickable Year Selector */}
-                <Pressable
-                  onPress={() => {
-                    setShowMonthSelector(false);
-                    setShowYearSelector((prev) => !prev);
-                  }}
-                  hitSlop={8}
+                {/* Static Year Badge (Dropdown turned OFF) */}
+                <View
                   style={[
                     styles.yearBadgeButton,
-                    showYearSelector && styles.yearBadgeButtonActive,
+                    { borderWidth: 1, borderColor: '#E2E8F0' },
                   ]}
                 >
-                  <Text style={[styles.calendarYearText, showYearSelector && styles.calendarYearTextActive]}>
+                  <Text style={styles.calendarYearText}>
                     {pickerYear}
                   </Text>
-                  <ChevronDown
-                    size={16}
-                    color={showYearSelector ? '#F06292' : '#64748B'}
-                  />
-                </Pressable>
+                </View>
               </View>
 
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                {!showYearSelector && !showMonthSelector && (
-                  <>
-                    <Pressable
-                      onPress={handlePrevMonth}
-                      hitSlop={10}
-                      disabled={isMinMonth}
-                      style={{ padding: 6, marginRight: 2, opacity: isMinMonth ? 0.25 : 1 }}
-                    >
-                      <ChevronLeft size={20} color="#64748B" />
-                    </Pressable>
-                    <Pressable
-                      onPress={handleNextMonth}
-                      hitSlop={10}
-                      disabled={isMaxMonth}
-                      style={{ padding: 6, marginRight: 8, opacity: isMaxMonth ? 0.25 : 1 }}
-                    >
-                      <ChevronRight size={20} color="#64748B" />
-                    </Pressable>
-                  </>
-                )}
+                <Pressable
+                  onPress={handlePrevMonth}
+                  hitSlop={10}
+                  disabled={isMinMonth}
+                  style={{ padding: 6, marginRight: 2, opacity: isMinMonth ? 0.25 : 1 }}
+                >
+                  <ChevronLeft size={20} color="#64748B" />
+                </Pressable>
+                <Pressable
+                  onPress={handleNextMonth}
+                  hitSlop={10}
+                  disabled={isMaxMonth}
+                  style={{ padding: 6, marginRight: 8, opacity: isMaxMonth ? 0.25 : 1 }}
+                >
+                  <ChevronRight size={20} color="#64748B" />
+                </Pressable>
 
                 <Pressable
                   onPress={() => {
-                    setShowYearSelector(false);
                     setShowMonthSelector(false);
                     setShowDatePicker(false);
                   }}
@@ -605,133 +643,106 @@ export default function IuiIvfScreen() {
             </View>
 
             <Text style={styles.modalSubheading}>
-              {showYearSelector
-                ? 'Tap a year to switch'
-                : showMonthSelector
-                ? 'Tap a month to switch'
-                : 'Valid from today up to 2 years'}
+              Valid for past 5 months up to today
             </Text>
 
-            {/* Fixed Height Calendar / Year / Month Container */}
+            {/* Fixed Height Calendar Container (Always visible & interactive) */}
             <View style={styles.calendarBodyContainer}>
-              {showYearSelector ? (
-                <View style={styles.yearPickerView}>
-                  <View style={styles.yearListContainer}>
-                    {availableYears.map((yr) => {
-                      const isSelected = pickerYear === yr;
-                      return (
-                        <Pressable
-                          key={yr}
-                          onPress={() => handleSelectYear(yr)}
-                          style={[
-                            styles.yearOptionCard,
-                            isSelected && styles.yearOptionCardSelected,
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.yearOptionText,
-                              isSelected && styles.yearOptionTextSelected,
-                            ]}
-                          >
-                            {yr}
-                          </Text>
-                          {isSelected ? (
-                            <Check size={20} color="#FFFFFF" strokeWidth={2.5} />
-                          ) : (
-                            <View style={{ width: 20 }} />
-                          )}
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                </View>
-              ) : showMonthSelector ? (
-                <View style={styles.monthPickerView}>
-                  <View style={styles.monthGridContainer}>
-                    {MONTH_NAMES.map((name, index) => {
-                      const isSelected = pickerMonth === index;
-                      const disabled = isMonthDisabled(index);
-                      return (
-                        <Pressable
-                          key={name}
-                          disabled={disabled}
-                          onPress={() => handleSelectMonth(index)}
-                          style={[
-                            styles.monthOptionCard,
-                            isSelected && styles.monthOptionCardSelected,
-                            disabled && styles.monthOptionCardDisabled,
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.monthOptionText,
-                              isSelected && styles.monthOptionTextSelected,
-                              disabled && styles.monthOptionTextDisabled,
-                            ]}
-                          >
-                            {SHORT_MONTH_NAMES[index]}
-                          </Text>
-                          {isSelected && (
-                            <Check size={14} color="#FFFFFF" strokeWidth={2.6} style={{ marginLeft: 4 }} />
-                          )}
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                </View>
-              ) : (
-                <>
-                  {/* Days of Week */}
-                  <View style={styles.weekDaysRow}>
-                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
-                      <Text key={i} style={styles.weekDayText}>
-                        {d}
-                      </Text>
-                    ))}
-                  </View>
+              {/* Days of Week */}
+              <View style={styles.weekDaysRow}>
+                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                  <Text key={i} style={styles.weekDayText}>
+                    {d}
+                  </Text>
+                ))}
+              </View>
 
-                  {/* Calendar Days Grid */}
-                  <View style={styles.daysGrid}>
-                    {Array.from({ length: firstDayIndex }).map((_, i) => (
-                      <View key={`empty-start-${i}`} style={styles.daySlot} />
-                    ))}
-                    {Array.from({ length: daysInMonth }).map((_, i) => {
-                      const day = i + 1;
-                      const cellDate = new Date(pickerYear, pickerMonth, day);
-                      cellDate.setHours(0, 0, 0, 0);
-                      const isDisabled = cellDate < today || cellDate > maxDate;
-                      const isSelected = !isDisabled && pickerDay === day;
-                      return (
-                        <Pressable
-                          key={day}
-                          disabled={isDisabled}
-                          onPress={() => !isDisabled && setPickerDay(day)}
-                          style={[
-                            styles.daySlot,
-                            isSelected && styles.daySlotSelected,
-                            isDisabled && styles.daySlotDisabled,
-                          ]}
-                        >
-                          <Text
+              {/* Calendar Days Grid */}
+              <View style={styles.daysGrid}>
+                {Array.from({ length: firstDayIndex }).map((_, i) => (
+                  <View key={`empty-start-${i}`} style={styles.daySlot} />
+                ))}
+                {Array.from({ length: daysInMonth }).map((_, i) => {
+                  const day = i + 1;
+                  const cellDate = new Date(pickerYear, pickerMonth, day);
+                  cellDate.setHours(12, 0, 0, 0);
+                  const isDisabled = cellDate < minDate || cellDate > today;
+                  const isSelected = !isDisabled && pickerDay === day;
+                  return (
+                    <Pressable
+                      key={day}
+                      disabled={isDisabled}
+                      onPress={() => !isDisabled && setPickerDay(day)}
+                      style={[
+                        styles.daySlot,
+                        isSelected && styles.daySlotSelected,
+                        isDisabled && styles.daySlotDisabled,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.dayNumberText,
+                          isSelected && styles.dayNumberTextSelected,
+                          isDisabled && styles.dayNumberTextDisabled,
+                        ]}
+                      >
+                        {day}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+                {Array.from({ length: trailingEmptyCount }).map((_, i) => (
+                  <View key={`empty-end-${i}`} style={styles.daySlot} />
+                ))}
+              </View>
+            </View>
+
+            {/* Floating Month Dropdown Menu */}
+            {showMonthSelector && (
+              <>
+                <Pressable
+                  style={StyleSheet.absoluteFill}
+                  onPress={() => setShowMonthSelector(false)}
+                />
+                <View style={styles.monthDropdownMenu}>
+                  <View style={styles.dropdownInner}>
+                    <ScrollView
+                      nestedScrollEnabled
+                      showsVerticalScrollIndicator={true}
+                      style={styles.dropdownScrollView}
+                    >
+                      {MONTH_NAMES.map((name, index) => {
+                        const disabled = isMonthDisabled(index);
+                        if (disabled) return null;
+                        const isSelected = pickerMonth === index;
+                        return (
+                          <Pressable
+                            key={name}
+                            onPress={() => handleSelectMonth(index)}
                             style={[
-                              styles.dayNumberText,
-                              isSelected && styles.dayNumberTextSelected,
-                              isDisabled && styles.dayNumberTextDisabled,
+                              styles.dropdownMenuItem,
+                              isSelected && styles.dropdownMenuItemSelected,
                             ]}
                           >
-                            {day}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                    {Array.from({ length: trailingEmptyCount }).map((_, i) => (
-                      <View key={`empty-end-${i}`} style={styles.daySlot} />
-                    ))}
+                            <Text
+                              style={[
+                                styles.dropdownItemText,
+                                isSelected && styles.dropdownItemTextSelected,
+                              ]}
+                            >
+                              {name}
+                            </Text>
+                            {isSelected && (
+                              <Check size={16} color="#F06292" strokeWidth={2.6} />
+                            )}
+                          </Pressable>
+                        );
+                      })}
+                    </ScrollView>
                   </View>
-                </>
-              )}
-            </View>
+                </View>
+              </>
+            )}
 
             {/* Actions */}
             <View style={{ marginTop: 20 }}>
@@ -1061,82 +1072,51 @@ const styles = StyleSheet.create({
   calendarYearTextActive: {
     color: '#F06292',
   },
-  monthPickerView: {
-    flex: 1,
-    paddingVertical: 4,
-    justifyContent: 'center',
-  },
-  monthGridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    rowGap: 10,
-  },
-  monthOptionCard: {
-    width: '31%',
-    height: 52,
-    borderRadius: 12,
+  monthDropdownMenu: {
+    position: 'absolute',
+    top: 60,
+    left: 20,
+    width: 175,
+    maxHeight: 250,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
     borderWidth: 1.5,
     borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
+    elevation: 30,
+    zIndex: 9999,
+  },
+  dropdownInner: {
+    borderRadius: 12.5,
+    overflow: 'hidden',
     backgroundColor: '#FFFFFF',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  monthOptionCardSelected: {
-    borderColor: '#F06292',
-    backgroundColor: '#F06292',
+  dropdownScrollView: {
+    maxHeight: 250,
   },
-  monthOptionCardDisabled: {
-    backgroundColor: '#F8FAFC',
-    borderColor: '#F1F5F9',
-    opacity: 0.35,
-  },
-  monthOptionText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: '#334155',
-  },
-  monthOptionTextSelected: {
-    color: '#FFFFFF',
-  },
-  monthOptionTextDisabled: {
-    color: '#94A3B8',
-  },
-  yearPickerView: {
-    flex: 1,
-    paddingVertical: 8,
-    justifyContent: 'center',
-  },
-  yearListContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    justifyContent: 'center',
-  },
-  yearOptionCard: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#FFFFFF',
+  dropdownMenuItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    minWidth: 120,
+    paddingVertical: 11,
+    paddingHorizontal: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
   },
-  yearOptionCardSelected: {
-    borderColor: '#F06292',
-    backgroundColor: '#F06292',
+  dropdownMenuItemSelected: {
+    backgroundColor: '#FCE4EC',
   },
-  yearOptionText: {
-    fontSize: 16,
+  dropdownItemText: {
+    fontSize: 14.5,
+    fontWeight: '600',
+    color: '#1E293B',
+  },
+  dropdownItemTextSelected: {
+    color: '#F06292',
     fontWeight: '700',
-    color: '#334155',
-  },
-  yearOptionTextSelected: {
-    color: '#FFFFFF',
   },
   modalSubheading: {
     fontSize: 13,

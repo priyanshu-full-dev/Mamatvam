@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable, StatusBar, useWindowDimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Pressable, StatusBar, useWindowDimensions, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
@@ -8,6 +8,12 @@ import { Radio } from '@/components/ui/Radio';
 import { Button } from '@/components/ui/Button';
 import { BottomActionBar } from '@/components/ui/BottomActionBar';
 import { useAppStore, SupportedLanguage } from '@/store/useAppStore';
+import { useAuthStore } from '@/store/useAuthStore';
+import {
+  getOnboardingLanguagesApi,
+  selectLanguageApi,
+  getRouteForOnboardingStep,
+} from '@/api/onboarding.api';
 
 interface LanguageOption {
   id: SupportedLanguage;
@@ -17,33 +23,41 @@ interface LanguageOption {
   watermark: string;
 }
 
-const LANGUAGES: LanguageOption[] = [
+const LANGUAGE_META: Record<string, { nativeTitle: string; watermark: string; bgColor: string }> = {
+  en: { nativeTitle: 'English', watermark: 'Aa', bgColor: '#FCE2E2' }, // soft coral pink
+  hi: { nativeTitle: 'हिन्दी', watermark: 'अ', bgColor: '#FDE8D7' }, // soft peach
+  mr: { nativeTitle: 'मराठी', watermark: 'म', bgColor: '#DFF8D8' }, // soft mint green
+  te: { nativeTitle: 'తెలుగు', watermark: 'అ', bgColor: '#D5ECFD' }, // soft sky blue
+  bn: { nativeTitle: 'বাংলা', watermark: 'অ', bgColor: '#F3E8FF' }, // soft lavender
+};
+
+const DEFAULT_LANGUAGES: LanguageOption[] = [
   {
     id: 'en',
     nativeTitle: 'English',
     subtitle: 'English',
-    bgColor: '#FCE2E2', // soft coral pink
+    bgColor: '#FCE2E2',
     watermark: 'Aa',
   },
   {
     id: 'hi',
     nativeTitle: 'हिन्दी',
     subtitle: 'Hindi',
-    bgColor: '#FDE8D7', // soft peach
+    bgColor: '#FDE8D7',
     watermark: 'अ',
   },
   {
-    id: 'bn',
-    nativeTitle: 'বাংলা',
-    subtitle: 'Bangla',
-    bgColor: '#DFF8D8', // soft mint green
-    watermark: 'অ',
+    id: 'mr',
+    nativeTitle: 'मराठी',
+    subtitle: 'Marathi',
+    bgColor: '#DFF8D8',
+    watermark: 'म',
   },
   {
     id: 'te',
     nativeTitle: 'తెలుగు',
     subtitle: 'Telugu',
-    bgColor: '#D5ECFD', // soft sky blue
+    bgColor: '#D5ECFD',
     watermark: 'అ',
   },
 ];
@@ -52,22 +66,100 @@ export default function LanguageScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { language, setLanguage } = useAppStore();
+  const { token, setOnboarding } = useAuthStore();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
 
+  const [languages, setLanguages] = useState<LanguageOption[]>(DEFAULT_LANGUAGES);
   const [selectedLang, setSelectedLang] = useState<SupportedLanguage>(language || 'en');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchLanguages() {
+      setIsLoading(true);
+      try {
+        const res = await getOnboardingLanguagesApi(token || undefined);
+        if (isMounted && res?.data && Array.isArray(res.data) && res.data.length > 0) {
+          const mapped: LanguageOption[] = res.data.map((item) => {
+            const code = item.code.toLowerCase();
+            const meta = LANGUAGE_META[code] || {
+              nativeTitle: item.name,
+              watermark: item.name.charAt(0),
+              bgColor: '#F1F5F9',
+            };
+            return {
+              id: code as SupportedLanguage,
+              nativeTitle: meta.nativeTitle,
+              subtitle: item.name,
+              bgColor: meta.bgColor,
+              watermark: meta.watermark,
+            };
+          });
+          setLanguages(mapped);
+        }
+      } catch (err) {
+        console.warn('Error fetching onboarding languages, using defaults:', err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    }
+
+    fetchLanguages();
+    return () => {
+      isMounted = false;
+    };
+  }, [token]);
 
   const handleSelectLanguage = (lang: SupportedLanguage) => {
     setSelectedLang(lang);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    try {
+      const res = await selectLanguageApi({ languageCode: selectedLang }, token || undefined);
+      if (res?.data) {
+        // Update user onboarding state in auth store
+        await setOnboarding({
+          completed: res.data.completed,
+          nextStep: res.data.nextStep,
+          language: res.data.language?.code || selectedLang,
+          category: res.data.category,
+          profileComplete: res.data.profileComplete,
+        });
+
+        // Set language in local app store & i18n
+        setLanguage(selectedLang);
+
+        // Determine destination based on API nextStep (e.g. 'CATEGORY' -> /(auth)/stage)
+        const nextRoute = getRouteForOnboardingStep({
+          completed: res.data.completed,
+          nextStep: res.data.nextStep,
+          language: res.data.language?.code || selectedLang,
+          category: res.data.category,
+          profileComplete: res.data.profileComplete,
+        });
+        router.push(nextRoute as any);
+        return;
+      }
+    } catch (err: any) {
+      console.warn('Failed to update language on server, falling back locally:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+
+    // Fallback: update local store and navigate to stage
     setLanguage(selectedLang);
     router.push('/(auth)/stage');
   };
 
   const isShortScreen = height < 750;
-  const globeSize = isShortScreen ? 120 : Math.min(width * 0.46, 175);
+  const globeSize = isShortScreen ? 110 : Math.min(width * 0.42, 150);
   const cardMinHeight = isShortScreen ? 56 : 64;
   const cardGap = isShortScreen ? 8 : 12;
 
@@ -92,22 +184,24 @@ export default function LanguageScreen() {
           <View style={{ alignItems: 'center', marginTop: isShortScreen ? 8 : 14, paddingHorizontal: 12 }}>
             <Text
               style={{
-                fontSize: isShortScreen ? 20 : 23,
-                fontWeight: '700',
+                fontSize: isShortScreen ? 21 : 24,
+                fontWeight: '800',
                 color: '#1E1E1E',
                 textAlign: 'center',
+                letterSpacing: -0.3,
               }}
             >
               {t('language.title', 'Choose your language')}
             </Text>
             <Text
               style={{
-                fontSize: 12,
-                color: '#6B7280',
+                fontSize: isShortScreen ? 13.5 : 15,
+                color: '#4B5563',
                 textAlign: 'center',
-                marginTop: 4,
-                lineHeight: 17,
-                maxWidth: 320,
+                marginTop: 6,
+                lineHeight: isShortScreen ? 19 : 22,
+                maxWidth: 340,
+                fontWeight: '500',
               }}
             >
               {t(
@@ -118,9 +212,9 @@ export default function LanguageScreen() {
           </View>
         </View>
 
-        {/* Middle: 4 Language Cards */}
-        <View style={{ gap: cardGap, width: '100%' }}>
-          {LANGUAGES.map((item) => {
+        {/* Middle: Language Cards from API */}
+        <View style={{ gap: cardGap, width: '100%', marginTop: isShortScreen ? 22 : 36 }}>
+          {languages.map((item) => {
             const isSelected = selectedLang === item.id;
 
             return (
@@ -208,6 +302,8 @@ export default function LanguageScreen() {
       <BottomActionBar
         title={t('common.next', 'Next')}
         onPress={handleNext}
+        loading={isSubmitting}
+        disabled={isSubmitting}
       />
     </View>
   </SafeAreaView>

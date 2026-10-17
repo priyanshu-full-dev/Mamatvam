@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "mamatvam",
+    "name": "Mamatvam",
     "slug": "mamatvam",
     "owner": "prish07s-team",
     "version": "1.0.0",
@@ -8,6 +8,11 @@
     "icon": "./assets/images/icon.png",
     "scheme": "mamatvam",
     "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FFFFFF"
+    },
     "ios": {
       "supportsTablet": true
     },

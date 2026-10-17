@@ -27,51 +27,31 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { BottomActionBar } from '@/components/ui/BottomActionBar';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useSendOtpMutation } from '@/api/auth.api';
+import { useSendOtpMutation, getPincodeDataApi, PincodeItem } from '@/api/auth.api';
 
-export interface PincodeLocation {
-  name: string;
-  district: string;
-  state: string;
-  pincode: string;
-}
+export type PincodeLocation = PincodeItem;
 
 const FALLBACK_PINCODES: Record<string, PincodeLocation[]> = {
   '829301': [
-    { name: 'Arajoo', district: 'Bokaro', state: 'Jharkhand', pincode: '829301' },
-    { name: 'Bahadurpur', district: 'Bokaro', state: 'Jharkhand', pincode: '829301' },
-    { name: 'Bandhdih', district: 'Bokaro', state: 'Jharkhand', pincode: '829301' },
-    { name: 'Baroo', district: 'Bokaro', state: 'Jharkhand', pincode: '829301' },
-    { name: 'Chando', district: 'Bokaro', state: 'Jharkhand', pincode: '829301' },
-    { name: 'Chilgada', district: 'Bokaro', state: 'Jharkhand', pincode: '829301' },
-    { name: 'Gangjori', district: 'Bokaro', state: 'Jharkhand', pincode: '829301' },
-    { name: 'Jaina', district: 'Bokaro', state: 'Jharkhand', pincode: '829301' },
-    { name: 'Pathuria', district: 'Bokaro', state: 'Jharkhand', pincode: '829301' },
+    { id: 20, name: 'Arajoo', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
+    { id: 21, name: 'Bahadurpur', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
+    { id: 22, name: 'Bandhdih', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
+    { id: 23, name: 'Baroo', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
+    { id: 24, name: 'Chando', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
+    { id: 25, name: 'Chilgada', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
+    { id: 26, name: 'Gangjori', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
+    { id: 27, name: 'Jaina', district: 'Bokaro', block: 'Bermo', state: 'Jharkhand', country: 'India', pincode: '829301' },
+    { id: 28, name: 'Pathuria', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
   ],
   '826001': [
-    { name: 'Dhanbad Hirapur', district: 'Dhanbad', state: 'Jharkhand', pincode: '826001' },
-    { name: 'D.S.E.', district: 'Dhanbad', state: 'Jharkhand', pincode: '826001' },
-    { name: 'Manaitand', district: 'Dhanbad', state: 'Jharkhand', pincode: '826001' },
-    { name: 'Dhanbad', district: 'Dhanbad', state: 'Jharkhand', pincode: '826001' },
-    { name: 'Dhanbad Bazar', district: 'Dhanbad', state: 'Jharkhand', pincode: '826001' },
-    { name: 'Cmpf', district: 'Dhanbad', state: 'Jharkhand', pincode: '826001' },
-    { name: 'Cmrs', district: 'Dhanbad', state: 'Jharkhand', pincode: '826001' },
-    { name: 'Naya Bazar Wasseypur', district: 'Dhanbad', state: 'Jharkhand', pincode: '826001' },
-  ],
-  '110001': [
-    { name: 'Connaught Place', district: 'Central Delhi', state: 'Delhi', pincode: '110001' },
-    { name: 'Barakhamba Road', district: 'Central Delhi', state: 'Delhi', pincode: '110001' },
-    { name: 'Janpath', district: 'Central Delhi', state: 'Delhi', pincode: '110001' },
-  ],
-  '400001': [
-    { name: 'Fort', district: 'Mumbai', state: 'Maharashtra', pincode: '400001' },
-    { name: 'Colaba', district: 'Mumbai', state: 'Maharashtra', pincode: '400001' },
-    { name: 'Marine Lines', district: 'Mumbai', state: 'Maharashtra', pincode: '400001' },
-  ],
-  '560001': [
-    { name: 'MG Road', district: 'Bengaluru', state: 'Karnataka', pincode: '560001' },
-    { name: 'Shivajinagar', district: 'Bengaluru', state: 'Karnataka', pincode: '560001' },
-    { name: 'Brigade Road', district: 'Bengaluru', state: 'Karnataka', pincode: '560001' },
+    { id: 101, name: 'Dhanbad Hirapur', district: 'Dhanbad', block: 'Dhanbad', state: 'Jharkhand', country: 'India', pincode: '826001' },
+    { id: 102, name: 'D.S.E.', district: 'Dhanbad', block: 'Dhanbad', state: 'Jharkhand', country: 'India', pincode: '826001' },
+    { id: 103, name: 'Manaitand', district: 'Dhanbad', block: 'Dhanbad', state: 'Jharkhand', country: 'India', pincode: '826001' },
+    { id: 104, name: 'Dhanbad', district: 'Dhanbad', block: 'Dhanbad', state: 'Jharkhand', country: 'India', pincode: '826001' },
+    { id: 105, name: 'Dhanbad Bazar', district: 'Dhanbad', block: 'Dhanbad', state: 'Jharkhand', country: 'India', pincode: '826001' },
+    { id: 106, name: 'Cmpf', district: 'Dhanbad', block: 'Dhanbad', state: 'Jharkhand', country: 'India', pincode: '826001' },
+    { id: 107, name: 'Cmrs', district: 'Dhanbad', block: 'Dhanbad', state: 'Jharkhand', country: 'India', pincode: '826001' },
+    { id: 108, name: 'Naya Bazar Wasseypur', district: 'Dhanbad', block: 'Dhanbad', state: 'Jharkhand', country: 'India', pincode: '826001' },
   ],
 };
 
@@ -114,7 +94,7 @@ export default function SignInScreen() {
 
   const isPhoneValid = inputPhone.trim().length >= 10;
   const isPincodeFilled = pincode.trim().length > 0;
-  const isPincodeValid = !isPincodeFilled || pincode.length === 6;
+  const isPincodeValid = pincode.trim().length === 6 && (locations.length === 0 || !!selectedArea);
   const isFormValid = isPhoneValid && isPincodeValid;
   const hasLocations = locations.length > 0;
 
@@ -133,34 +113,28 @@ export default function SignInScreen() {
 
       setIsLoadingPincode(true);
       try {
-        const res = await fetch(`https://api.postalpincode.in/pincode/${cleanText}`);
-        const data = await res.json();
-        if (
-          Array.isArray(data) &&
-          data[0]?.Status === 'Success' &&
-          Array.isArray(data[0]?.PostOffice)
-        ) {
-          const parsed: PincodeLocation[] = data[0].PostOffice.map((po: any) => ({
-            name: po.Name,
-            district: po.District,
-            state: po.State,
-            pincode: po.Pincode,
-          }));
+        const res = await getPincodeDataApi(cleanText);
+        if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
           LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-          setLocations(parsed);
+          setLocations(res.data);
           setSelectedArea((prev) => {
-            if (prev && parsed.some((p) => p.name === prev.name)) return prev;
-            return parsed[0];
+            if (prev && res.data.some((p) => p.id === prev.id || p.name === prev.name)) {
+              return res.data.find((p) => p.id === prev.id || p.name === prev.name) || res.data[0];
+            }
+            return res.data[0];
           });
         } else if (!FALLBACK_PINCODES[cleanText]) {
           LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
           setLocations([]);
           setSelectedArea(null);
-          setPincodeError('No locations found for this PIN code');
+          setPincodeError(res?.message || 'No locations found for this PIN code');
         }
-      } catch (err) {
+      } catch (err: any) {
         if (!FALLBACK_PINCODES[cleanText]) {
-          setPincodeError('Unable to fetch locations. Please check connection.');
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+          setLocations([]);
+          setSelectedArea(null);
+          setPincodeError(err?.message || 'No locations found for this PIN code');
         }
       } finally {
         setIsLoadingPincode(false);
@@ -193,18 +167,17 @@ export default function SignInScreen() {
     }
 
     const cleanPincode = pincode.trim().replace(/[^0-9]/g, '');
-    if (cleanPincode.length > 0) {
-      if (cleanPincode.length < 6) {
-        setPincodeError(t('auth.invalidPincode', 'Please enter a valid 6-digit PIN code'));
-        hasError = true;
-      } else if (locations.length > 0 && !selectedArea) {
-        setPincodeError(t('auth.selectArea', 'Please select your area for the entered PIN code'));
-        hasError = true;
-      } else if (pincodeError && pincodeError !== 'Please enter your 6-digit PIN code' && pincodeError !== 'Please enter a valid 6-digit PIN code') {
-        hasError = true;
-      } else {
-        setPincodeError('');
-      }
+    if (!cleanPincode) {
+      setPincodeError(t('auth.pincodeRequired', 'Please enter your 6-digit PIN code'));
+      hasError = true;
+    } else if (cleanPincode.length < 6) {
+      setPincodeError(t('auth.invalidPincode', 'Please enter a valid 6-digit PIN code'));
+      hasError = true;
+    } else if (locations.length > 0 && !selectedArea) {
+      setPincodeError(t('auth.selectArea', 'Please select your area for the entered PIN code'));
+      hasError = true;
+    } else if (pincodeError && pincodeError !== 'Please enter your 6-digit PIN code' && pincodeError !== 'Please enter a valid 6-digit PIN code') {
+      hasError = true;
     } else {
       setPincodeError('');
     }
@@ -220,20 +193,24 @@ export default function SignInScreen() {
       setPhone(clean);
       if (selectedArea) {
         setLocation(`${selectedArea.name}, ${selectedArea.district}, ${selectedArea.state}`);
-      } else if (cleanPincode) {
-        setLocation(`PIN ${cleanPincode}`);
       } else {
-        setLocation('');
+        setLocation(`PIN ${cleanPincode}`);
       }
+
+      const pincodeIdToUse = selectedArea?.id !== undefined ? selectedArea.id : cleanPincode;
 
       await sendOtpMutation.mutateAsync({
         mobile: clean,
-        pincodeId: cleanPincode || '1',
+        pincodeId: pincodeIdToUse,
       });
 
       router.push({
         pathname: '/(auth)/otp',
-        params: { phone: clean },
+        params: {
+          phone: clean,
+          pincode: cleanPincode,
+          pincodeId: String(pincodeIdToUse),
+        },
       });
     } catch (err: any) {
       Alert.alert('Error', err?.message || 'Failed to send OTP. Please try again.');
@@ -292,7 +269,7 @@ export default function SignInScreen() {
               showText
               showTagline={!hasLocations && !isKeyboardOpen}
               imageSize={160}
-              source={require('@/assets/images/logo/logo.png')}
+              source={require('@/assets/images/logo/50360fdf-4693-4fda-a5f0-c2c2a85ea1cd-removebg-preview.png')}
             />
           </View>
 
@@ -353,8 +330,8 @@ export default function SignInScreen() {
             <View style={{ marginTop: isKeyboardOpen ? 8 : (hasLocations ? 10 : 14) }}>
               <Input
                 ref={pincodeInputRef}
-                label={t('auth.pincode', 'PIN Code (Optional)')}
-                placeholder={t('auth.pincodePlaceholder', 'Enter 6-digit PIN code (optional)')}
+                label={t('auth.pincode', 'PIN Code *')}
+                placeholder={t('auth.pincodePlaceholder', 'Enter 6-digit PIN code')}
                 value={pincode}
                 onChangeText={handlePincodeChange}
                 keyboardType="number-pad"
@@ -429,7 +406,7 @@ export default function SignInScreen() {
                               {item.name}
                             </Text>
                             <Text style={styles.locationSub}>
-                              {item.district}, {item.state}
+                              {item.block && item.block !== item.district ? `${item.block}, ` : ''}{item.district}, {item.state}
                             </Text>
                             <Text style={styles.locationPincode}>{item.pincode}</Text>
                           </View>
