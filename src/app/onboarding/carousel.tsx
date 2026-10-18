@@ -238,7 +238,7 @@ export default function CarouselScreen() {
               {/* Heading & Subtitle */}
               <View style={styles.slide1TextContainer}>
                 <Text style={styles.slide1Title}>
-                  Dedicated to All Upcoming{'\n'}Mommies ♡
+                  Dedicated to All Upcoming{'\n'}Mommies <Text style={{ color: '#F06292' }}>♥</Text>
                 </Text>
                 <Text style={styles.slide1Subtitle}>
                   Your beautiful journey to motherhood starts here.{'\n'}
@@ -461,17 +461,17 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 16,
+    paddingTop: 28,
   },
   slide3TrustedBodyWrapper: {
     width: '100%',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: 16,
+    paddingTop: 12,
   },
   slide2Header: {
     alignItems: 'center',
-    paddingTop: 8,
+    paddingTop: Platform.OS === 'android' ? 36 : 22,
     marginBottom: 6,
   },
   slide2Logo: {
@@ -489,9 +489,9 @@ const styles = StyleSheet.create({
   slide2Title: {
     fontSize: 19.5,
     fontWeight: '800',
-    color: '#451A03',
+    color: '#1E293B',
     textAlign: 'center',
-    lineHeight: 31,
+    lineHeight: 28,
     letterSpacing: -0.2,
   },
   slide2ImageWrapper: {
@@ -569,7 +569,7 @@ const styles = StyleSheet.create({
   slide2Tagline: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#451A03',
+    color: '#F06292',
     textAlign: 'center',
     marginVertical: 2,
   },
@@ -646,12 +646,13 @@ const styles = StyleSheet.create({
   slide3BodyWrapper: {
     width: '100%',
     alignItems: 'center',
-    paddingTop: 14,
+    paddingTop: 20,
   },
   slide3HeroWrapper: {
     width: '100%',
     alignItems: 'center',
     justifyContent: 'flex-start',
+    marginTop: 6,
   },
   slide3CardsSection: {
     paddingHorizontal: 16,
