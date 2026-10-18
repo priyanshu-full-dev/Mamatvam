@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,10 @@ import {
   TouchableOpacity,
   Dimensions,
   StatusBar,
+  Modal,
+  Alert,
 } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -28,6 +31,11 @@ import {
   AlertCircle,
   HelpCircle,
   Share2,
+  ChevronDown,
+  Plus,
+  Trash2,
+  X,
+  Check,
 } from 'lucide-react-native';
 
 const { width } = Dimensions.get('window');
@@ -148,6 +156,136 @@ function HeartPulseBadge({ size = 24 }: { size?: number }) {
   );
 }
 
+interface ContractionLog {
+  id: string;
+  timestamp: number;
+  dateStr: string;
+  timeStr: string;
+  durationSec: number;
+  durationFormatted: string;
+  intervalFormatted: string;
+  intensity: 'Mild' | 'Moderate' | 'Strong';
+}
+
+const STORAGE_KEY = '@mamatvam_contractions_history_v2';
+
+function formatLogTime(date: Date): string {
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+  const minsStr = minutes < 10 ? `0${minutes}` : `${minutes}`;
+  return `${hours}:${minsStr} ${ampm}`;
+}
+
+function formatLogDate(date: Date): string {
+  const today = new Date();
+  if (
+    date.getDate() === today.getDate() &&
+    date.getMonth() === today.getMonth() &&
+    date.getFullYear() === today.getFullYear()
+  ) {
+    return 'Today';
+  }
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  if (
+    date.getDate() === yesterday.getDate() &&
+    date.getMonth() === yesterday.getMonth() &&
+    date.getFullYear() === yesterday.getFullYear()
+  ) {
+    return 'Yesterday';
+  }
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function formatDuration(sec: number): string {
+  if (sec < 60) return `${sec}s`;
+  const mins = Math.floor(sec / 60);
+  const remSec = sec % 60;
+  return remSec > 0 ? `${mins}m ${remSec}s` : `${mins}m`;
+}
+
+function formatTimer(sec: number): string {
+  const mins = Math.floor(sec / 60);
+  const remainingSecs = sec % 60;
+  return `${String(mins).padStart(2, '0')}:${String(remainingSecs).padStart(2, '0')}`;
+}
+
+const SEED_HISTORY: ContractionLog[] = [
+  {
+    id: 'seed-1',
+    timestamp: Date.now() - 15 * 60 * 1000,
+    dateStr: 'Today',
+    timeStr: formatLogTime(new Date(Date.now() - 15 * 60 * 1000)),
+    durationSec: 48,
+    durationFormatted: '48s',
+    intervalFormatted: '5m apart',
+    intensity: 'Moderate',
+  },
+  {
+    id: 'seed-2',
+    timestamp: Date.now() - 20 * 60 * 1000,
+    dateStr: 'Today',
+    timeStr: formatLogTime(new Date(Date.now() - 20 * 60 * 1000)),
+    durationSec: 52,
+    durationFormatted: '52s',
+    intervalFormatted: '6m apart',
+    intensity: 'Moderate',
+  },
+  {
+    id: 'seed-3',
+    timestamp: Date.now() - 26 * 60 * 1000,
+    dateStr: 'Today',
+    timeStr: formatLogTime(new Date(Date.now() - 26 * 60 * 1000)),
+    durationSec: 45,
+    durationFormatted: '45s',
+    intervalFormatted: '5m apart',
+    intensity: 'Mild',
+  },
+  {
+    id: 'seed-4',
+    timestamp: Date.now() - 24 * 3600 * 1000 - 45 * 60 * 1000,
+    dateStr: 'Yesterday',
+    timeStr: '08:15 PM',
+    durationSec: 40,
+    durationFormatted: '40s',
+    intervalFormatted: '8m apart',
+    intensity: 'Mild',
+  },
+  {
+    id: 'seed-5',
+    timestamp: Date.now() - 24 * 3600 * 1000 - 53 * 60 * 1000,
+    dateStr: 'Yesterday',
+    timeStr: '08:07 PM',
+    durationSec: 38,
+    durationFormatted: '38s',
+    intervalFormatted: '9m apart',
+    intensity: 'Mild',
+  },
+  {
+    id: 'seed-6',
+    timestamp: Date.now() - 2 * 24 * 3600 * 1000,
+    dateStr: formatLogDate(new Date(Date.now() - 2 * 24 * 3600 * 1000)),
+    timeStr: '06:30 PM',
+    durationSec: 35,
+    durationFormatted: '35s',
+    intervalFormatted: '12m apart',
+    intensity: 'Mild',
+  },
+  {
+    id: 'seed-7',
+    timestamp: Date.now() - 3 * 24 * 3600 * 1000,
+    dateStr: formatLogDate(new Date(Date.now() - 3 * 24 * 3600 * 1000)),
+    timeStr: '04:15 PM',
+    durationSec: 32,
+    durationFormatted: '32s',
+    intervalFormatted: '15m apart',
+    intensity: 'Mild',
+  },
+];
+
 export default function ContractionsScreen() {
   const router = useRouter();
 
@@ -156,13 +294,73 @@ export default function ContractionsScreen() {
   const [seconds, setSeconds] = useState(0);
   const [lastFrequency, setLastFrequency] = useState('5m apart');
   const [lastTimeAgo, setLastTimeAgo] = useState('15m ago');
-  const [history, setHistory] = useState([
-    { id: '1', duration: '48s', interval: '5m', time: '15m ago', intensity: 'Moderate' },
-    { id: '2', duration: '52s', interval: '6m', time: '21m ago', intensity: 'Mild' },
-    { id: '3', duration: '45s', interval: '5m', time: '27m ago', intensity: 'Moderate' },
-  ]);
+  const [history, setHistory] = useState<ContractionLog[]>([]);
+
+  // Filter dropdown state ('Last 7 days' | 'Today' | 'All')
+  const [filterPeriod, setFilterPeriod] = useState<'Last 7 days' | 'Today' | 'All'>('Last 7 days');
+  const [showFilterModal, setShowFilterModal] = useState(false);
+
+  // Manual entry modal state
+  const [showManualModal, setShowManualModal] = useState(false);
+  const [manualDuration, setManualDuration] = useState(45);
+  const [manualIntensity, setManualIntensity] = useState<'Mild' | 'Moderate' | 'Strong'>('Moderate');
+  const [manualMinutesAgo, setManualMinutesAgo] = useState(0);
 
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Update summary string from latest log
+  const updateSummaryFromLogs = (logs: ContractionLog[]) => {
+    if (logs.length > 0) {
+      const latest = logs[0];
+      setLastFrequency(latest.intervalFormatted !== '--' ? latest.intervalFormatted : '5m apart');
+      const diffMs = Date.now() - latest.timestamp;
+      const minsAgo = Math.floor(diffMs / 60000);
+      if (minsAgo < 1) {
+        setLastTimeAgo('Just now');
+      } else if (minsAgo < 60) {
+        setLastTimeAgo(`${minsAgo}m ago`);
+      } else {
+        const hoursAgo = Math.floor(minsAgo / 60);
+        setLastTimeAgo(`${hoursAgo}h ago`);
+      }
+    }
+  };
+
+  // Load saved history on mount
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        const stored = await SecureStore.getItemAsync(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setHistory(parsed);
+            updateSummaryFromLogs(parsed);
+            return;
+          }
+        }
+        // Fallback to seed data
+        setHistory(SEED_HISTORY);
+        updateSummaryFromLogs(SEED_HISTORY);
+        await SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(SEED_HISTORY));
+      } catch {
+        setHistory(SEED_HISTORY);
+        updateSummaryFromLogs(SEED_HISTORY);
+      }
+    };
+    loadHistory();
+  }, []);
+
+  // Save history helper
+  const saveHistoryLogs = async (newLogs: ContractionLog[]) => {
+    setHistory(newLogs);
+    updateSummaryFromLogs(newLogs);
+    try {
+      await SecureStore.setItemAsync(STORAGE_KEY, JSON.stringify(newLogs));
+    } catch (e) {
+      console.warn('Could not save contractions history:', e);
+    }
+  };
 
   useEffect(() => {
     if (isTiming) {
@@ -177,18 +375,39 @@ export default function ContractionsScreen() {
     };
   }, [isTiming]);
 
-  const handleToggleTimer = () => {
+  const handleToggleTimer = async () => {
     if (isTiming) {
-      // Stop timer and log
+      // Stop timer and log contraction
       setIsTiming(false);
-      const newEntry = {
-        id: Date.now().toString(),
-        duration: `${seconds}s`,
-        interval: '5m',
-        time: 'Just now',
-        intensity: seconds > 45 ? 'Moderate' : 'Mild',
+      const duration = Math.max(1, seconds);
+      const now = Date.now();
+      const nowDate = new Date(now);
+
+      // Compute interval since previous contraction
+      let intervalStr = '--';
+      if (history.length > 0) {
+        const diffMs = now - history[0].timestamp;
+        const diffMins = Math.max(1, Math.round(diffMs / 60000));
+        intervalStr = `${diffMins}m apart`;
+      }
+
+      const durationStr = formatDuration(duration);
+      const intensity: 'Mild' | 'Moderate' | 'Strong' =
+        duration > 55 ? 'Strong' : duration >= 35 ? 'Moderate' : 'Mild';
+
+      const newEntry: ContractionLog = {
+        id: `c_${now}`,
+        timestamp: now,
+        dateStr: 'Today',
+        timeStr: formatLogTime(nowDate),
+        durationSec: duration,
+        durationFormatted: durationStr,
+        intervalFormatted: intervalStr,
+        intensity,
       };
-      setHistory([newEntry, ...history.slice(0, 4)]);
+
+      const updated = [newEntry, ...history];
+      await saveHistoryLogs(updated);
       setSeconds(0);
       setLastTimeAgo('Just now');
     } else {
@@ -198,11 +417,70 @@ export default function ContractionsScreen() {
     }
   };
 
-  const formatTimer = (sec: number) => {
-    const mins = Math.floor(sec / 60);
-    const remainingSecs = sec % 60;
-    return `${String(mins).padStart(2, '0')}:${String(remainingSecs).padStart(2, '0')}`;
+  // Add Manual Contraction Entry
+  const handleAddManualEntry = async () => {
+    const entryTime = Date.now() - manualMinutesAgo * 60 * 1000;
+    const dateObj = new Date(entryTime);
+
+    let intervalStr = '--';
+    if (history.length > 0) {
+      const diffMs = Math.abs(entryTime - history[0].timestamp);
+      const diffMins = Math.max(1, Math.round(diffMs / 60000));
+      intervalStr = `${diffMins}m apart`;
+    }
+
+    const newEntry: ContractionLog = {
+      id: `manual_${Date.now()}`,
+      timestamp: entryTime,
+      dateStr: formatLogDate(dateObj),
+      timeStr: formatLogTime(dateObj),
+      durationSec: manualDuration,
+      durationFormatted: formatDuration(manualDuration),
+      intervalFormatted: intervalStr,
+      intensity: manualIntensity,
+    };
+
+    // Keep chronological order (newest first)
+    const updated = [newEntry, ...history].sort((a, b) => b.timestamp - a.timestamp);
+    await saveHistoryLogs(updated);
+    setShowManualModal(false);
   };
+
+  // Delete single entry
+  const handleDeleteEntry = async (id: string) => {
+    const updated = history.filter((item) => item.id !== id);
+    await saveHistoryLogs(updated);
+  };
+
+  // Clear all history
+  const handleClearHistory = () => {
+    Alert.alert(
+      'Clear Contraction History?',
+      'Are you sure you want to remove all saved contraction logs? This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Clear All',
+          style: 'destructive',
+          onPress: async () => {
+            await saveHistoryLogs([]);
+          },
+        },
+      ]
+    );
+  };
+
+  // Filtered logs based on selected filter
+  const filteredHistory = useMemo(() => {
+    if (filterPeriod === 'Today') {
+      return history.filter((item) => item.dateStr === 'Today');
+    }
+    if (filterPeriod === 'Last 7 days') {
+      const sevenDaysAgo = Date.now() - 7 * 24 * 3600 * 1000;
+      return history.filter((item) => item.timestamp >= sevenDaysAgo);
+    }
+    return history;
+  }, [history, filterPeriod]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right', 'bottom']}>
@@ -299,6 +577,146 @@ export default function ContractionsScreen() {
               </>
             )}
           </TouchableOpacity>
+        </View>
+
+        {/* 3b. Section: Contraction History (Design matching Kick Counter History) */}
+        <View style={styles.historyContainer}>
+          <View style={styles.historyHeaderRow}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Text style={styles.historySectionTitle}>History</Text>
+              <View style={styles.historyCountBadge}>
+                <Text style={styles.historyCountText}>{filteredHistory.length}</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => setShowFilterModal(true)}
+              style={styles.filterDropdownBtn}
+            >
+              <Text style={styles.filterDropdownText}>{filterPeriod}</Text>
+              <ChevronDown size={14} color="#7C3AED" strokeWidth={2.4} />
+            </TouchableOpacity>
+          </View>
+
+          {/* History Table Card (Matching Kick Counter Image 2) */}
+          <View style={styles.historyTableCard}>
+            {/* Table Header Pill */}
+            <View style={styles.tableHeaderRow}>
+              <Text style={[styles.tableHeaderCell, { width: '32%', textAlign: 'left', paddingLeft: 12 }]}>
+                DATE & TIME
+              </Text>
+              <Text style={[styles.tableHeaderCell, { width: '22%' }]}>DURATION</Text>
+              <Text style={[styles.tableHeaderCell, { width: '24%' }]}>INTERVAL</Text>
+              <Text style={[styles.tableHeaderCell, { width: '22%' }]}>INTENSITY</Text>
+            </View>
+
+            {/* Contraction Rows */}
+            {filteredHistory.map((row, idx) => {
+              const isToday = row.dateStr === 'Today';
+              return (
+                <View
+                  key={row.id}
+                  style={[
+                    styles.tableRow,
+                    isToday ? styles.tableTodayRow : { backgroundColor: idx % 2 === 1 ? '#FBF9FE' : '#FFFFFF' },
+                    idx === filteredHistory.length - 1 && { borderBottomWidth: 0 },
+                  ]}
+                >
+                  {/* Column 1: Date & Time */}
+                  <View style={{ width: '32%', paddingLeft: 12 }}>
+                    <Text
+                      style={[
+                        styles.tableCellDate,
+                        isToday && { color: '#7C3AED', fontWeight: '800' },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {row.dateStr}
+                    </Text>
+                    <Text style={styles.tableCellTime}>{row.timeStr}</Text>
+                  </View>
+
+                  {/* Column 2: Duration */}
+                  <Text
+                    style={[
+                      styles.tableCellBold,
+                      { width: '22%' },
+                      isToday && { color: '#7C3AED' },
+                    ]}
+                  >
+                    {row.durationFormatted}
+                  </Text>
+
+                  {/* Column 3: Interval */}
+                  <Text style={[styles.tableCellRegular, { width: '24%' }]}>
+                    {row.intervalFormatted}
+                  </Text>
+
+                  {/* Column 4: Intensity Badge */}
+                  <View style={{ width: '22%', alignItems: 'center' }}>
+                    <View
+                      style={[
+                        styles.intensityBadge,
+                        row.intensity === 'Strong'
+                          ? styles.intensityBadgeStrong
+                          : row.intensity === 'Moderate'
+                          ? styles.intensityBadgeModerate
+                          : styles.intensityBadgeMild,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.intensityBadgeText,
+                          row.intensity === 'Strong'
+                            ? styles.intensityTextStrong
+                            : row.intensity === 'Moderate'
+                            ? styles.intensityTextModerate
+                            : styles.intensityTextMild,
+                        ]}
+                      >
+                        {row.intensity}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              );
+            })}
+
+            {/* Empty State */}
+            {filteredHistory.length === 0 && (
+              <View style={styles.emptyHistoryState}>
+                <Clock size={28} color="#94A3B8" />
+                <Text style={styles.emptyHistoryTitle}>No contractions recorded</Text>
+                <Text style={styles.emptyHistorySubtitle}>
+                  Tap "Start Contraction" above to log contractions in real-time.
+                </Text>
+              </View>
+            )}
+
+            {/* Bottom Actions Row */}
+            <View style={styles.historyFooterRow}>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => setShowManualModal(true)}
+                style={styles.addManualButton}
+              >
+                <Plus size={15} color="#7C3AED" strokeWidth={2.4} />
+                <Text style={styles.addManualButtonText}>Log Past Contraction</Text>
+              </TouchableOpacity>
+
+              {history.length > 0 && (
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={handleClearHistory}
+                  style={styles.clearHistoryButton}
+                >
+                  <Trash2 size={13} color="#94A3B8" />
+                  <Text style={styles.clearHistoryButtonText}>Clear</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
         </View>
 
         {/* 4. Section: How to Recognize a Contraction? */}
@@ -506,6 +924,149 @@ export default function ContractionsScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Filter Period Modal */}
+      <Modal visible={showFilterModal} transparent animationType="fade">
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={() => setShowFilterModal(false)}
+          style={styles.modalOverlay}
+        >
+          <View style={styles.filterModalCard}>
+            <Text style={styles.filterModalTitle}>Filter History</Text>
+            {(['Last 7 days', 'Today', 'All'] as const).map((period) => (
+              <TouchableOpacity
+                key={period}
+                activeOpacity={0.7}
+                onPress={() => {
+                  setFilterPeriod(period);
+                  setShowFilterModal(false);
+                }}
+                style={[
+                  styles.filterOptionRow,
+                  filterPeriod === period && styles.filterOptionRowSelected,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.filterOptionText,
+                    filterPeriod === period && styles.filterOptionTextSelected,
+                  ]}
+                >
+                  {period}
+                </Text>
+                {filterPeriod === period && <Check size={18} color="#7C3AED" strokeWidth={2.4} />}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      {/* Manual Entry Modal */}
+      <Modal visible={showManualModal} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.manualModalCard}>
+            <View style={styles.manualModalHeader}>
+              <Text style={styles.manualModalTitle}>Log Past Contraction</Text>
+              <TouchableOpacity
+                onPress={() => setShowManualModal(false)}
+                style={styles.manualModalCloseBtn}
+              >
+                <X size={20} color="#64748B" />
+              </TouchableOpacity>
+            </View>
+
+            {/* When did it happen? */}
+            <Text style={styles.manualSectionLabel}>When did it occur?</Text>
+            <View style={styles.manualPillsRow}>
+              {[
+                { label: 'Just now', val: 0 },
+                { label: '10m ago', val: 10 },
+                { label: '30m ago', val: 30 },
+                { label: '1h ago', val: 60 },
+              ].map((item) => (
+                <TouchableOpacity
+                  key={item.label}
+                  activeOpacity={0.75}
+                  onPress={() => setManualMinutesAgo(item.val)}
+                  style={[
+                    styles.manualPill,
+                    manualMinutesAgo === item.val && styles.manualPillSelected,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.manualPillText,
+                      manualMinutesAgo === item.val && styles.manualPillTextSelected,
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Duration */}
+            <Text style={styles.manualSectionLabel}>Duration (Seconds)</Text>
+            <View style={styles.manualPillsRow}>
+              {[30, 45, 60, 90].map((dur) => (
+                <TouchableOpacity
+                  key={dur}
+                  activeOpacity={0.75}
+                  onPress={() => setManualDuration(dur)}
+                  style={[
+                    styles.manualPill,
+                    manualDuration === dur && styles.manualPillSelected,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.manualPillText,
+                      manualDuration === dur && styles.manualPillTextSelected,
+                    ]}
+                  >
+                    {dur}s
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Intensity */}
+            <Text style={styles.manualSectionLabel}>Intensity</Text>
+            <View style={styles.manualPillsRow}>
+              {(['Mild', 'Moderate', 'Strong'] as const).map((lvl) => (
+                <TouchableOpacity
+                  key={lvl}
+                  activeOpacity={0.75}
+                  onPress={() => setManualIntensity(lvl)}
+                  style={[
+                    styles.manualPill,
+                    manualIntensity === lvl && styles.manualPillSelected,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.manualPillText,
+                      manualIntensity === lvl && styles.manualPillTextSelected,
+                    ]}
+                  >
+                    {lvl}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Save Button */}
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={handleAddManualEntry}
+              style={styles.manualSaveButton}
+            >
+              <Text style={styles.manualSaveButtonText}>Save to History</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -900,5 +1461,311 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontStyle: 'italic',
     lineHeight: 16,
+  },
+  // History Section Styles (matching Kick Counter Image 2)
+  historyContainer: {
+    marginBottom: 20,
+  },
+  historyHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    paddingHorizontal: 2,
+  },
+  historySectionTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#2E1065',
+    letterSpacing: -0.3,
+  },
+  historyCountBadge: {
+    backgroundColor: '#EDE9FE',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  historyCountText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#7C3AED',
+  },
+  filterDropdownBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#F5F3FF',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#DDD6FE',
+  },
+  filterDropdownText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#7C3AED',
+  },
+  historyTableCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  tableHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#7C3AED',
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+  },
+  tableHeaderCell: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    textAlign: 'center',
+    letterSpacing: 0.5,
+  },
+  tableRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+  tableTodayRow: {
+    backgroundColor: '#FAF5FF',
+    borderBottomColor: '#EDE9FE',
+  },
+  tableCellDate: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: '#1E1E1E',
+  },
+  tableCellTime: {
+    fontSize: 11,
+    color: '#94A3B8',
+    marginTop: 1,
+  },
+  tableCellBold: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: '#1E1E1E',
+    textAlign: 'center',
+  },
+  tableCellRegular: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '500',
+    textAlign: 'center',
+  },
+  intensityBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  intensityBadgeMild: {
+    backgroundColor: '#F1F5F9',
+  },
+  intensityBadgeModerate: {
+    backgroundColor: '#FEF3C7',
+  },
+  intensityBadgeStrong: {
+    backgroundColor: '#FEE2E2',
+  },
+  intensityBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  intensityTextMild: {
+    color: '#475569',
+  },
+  intensityTextModerate: {
+    color: '#D97706',
+  },
+  intensityTextStrong: {
+    color: '#DC2626',
+  },
+  emptyHistoryState: {
+    paddingVertical: 32,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyHistoryTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#475569',
+    marginTop: 8,
+  },
+  emptyHistorySubtitle: {
+    fontSize: 12,
+    color: '#94A3B8',
+    textAlign: 'center',
+    marginTop: 3,
+    lineHeight: 16,
+  },
+  historyFooterRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: '#FAF9FC',
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+  },
+  addManualButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  addManualButtonText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#7C3AED',
+  },
+  clearHistoryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  clearHistoryButtonText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#94A3B8',
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  filterModalCard: {
+    width: '80%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  filterModalTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#1E1E1E',
+    marginBottom: 12,
+  },
+  filterOptionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    marginBottom: 4,
+  },
+  filterOptionRowSelected: {
+    backgroundColor: '#F5F3FF',
+  },
+  filterOptionText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#4B5563',
+  },
+  filterOptionTextSelected: {
+    color: '#7C3AED',
+    fontWeight: '800',
+  },
+  manualModalCard: {
+    width: '92%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 22,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 8,
+  },
+  manualModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+  },
+  manualModalTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#1E1E1E',
+  },
+  manualModalCloseBtn: {
+    padding: 4,
+  },
+  manualSectionLabel: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: '#4B5563',
+    marginBottom: 8,
+    marginTop: 6,
+  },
+  manualPillsRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 12,
+  },
+  manualPill: {
+    flex: 1,
+    paddingVertical: 9,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  manualPillSelected: {
+    backgroundColor: '#7C3AED',
+    borderColor: '#7C3AED',
+  },
+  manualPillText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#4B5563',
+  },
+  manualPillTextSelected: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+  },
+  manualSaveButton: {
+    backgroundColor: '#7C3AED',
+    borderRadius: 16,
+    paddingVertical: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+    shadowColor: '#7C3AED',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  manualSaveButtonText: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
 });
