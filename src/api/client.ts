@@ -60,65 +60,15 @@ function parseJwtExp(token: string): number | null {
   }
 }
 
-export function isTokenExpired(token: string, bufferSeconds = 30): boolean {
-  const exp = parseJwtExp(token);
-  if (!exp) return false;
-  const now = Math.floor(Date.now() / 1000);
-  return exp <= now + bufferSeconds;
-}
-
-let refreshPromise: Promise<string | null> | null = null;
+import { isTokenExpired } from '@/utils/token';
+export { isTokenExpired };
 
 /**
  * Call POST /api/v1/user/auth/refresh-token using the saved refresh token.
- * Prevents race conditions by sharing a single in-flight promise.
+ * Uses centralized session refresh in useAuthStore with concurrency deduplication.
  */
 export async function refreshAccessToken(): Promise<string | null> {
-  if (refreshPromise) {
-    return refreshPromise;
-  }
-
-  refreshPromise = (async () => {
-    const currentRefreshToken = useAuthStore.getState().refreshToken;
-    if (!currentRefreshToken) {
-      await useAuthStore.getState().logout();
-      return null;
-    }
-
-    try {
-      const response = await fetch(`${BASE_URL}/auth/refresh-token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        body: JSON.stringify({
-          refreshToken: currentRefreshToken,
-        }),
-      });
-
-      const json = await response.json().catch(() => null);
-
-      if (response.ok && json?.success && json?.data?.accessToken) {
-        const newAccessToken: string = json.data.accessToken;
-        const newRefreshToken: string = json.data.refreshToken || currentRefreshToken;
-
-        await useAuthStore.getState().setTokens(newAccessToken, newRefreshToken);
-        return newAccessToken;
-      } else {
-        // Refresh token expired or revoked
-        await useAuthStore.getState().logout();
-        return null;
-      }
-    } catch (err) {
-      console.warn('Network error while refreshing token:', err);
-      return null;
-    } finally {
-      refreshPromise = null;
-    }
-  })();
-
-  return refreshPromise;
+  return useAuthStore.getState().refreshSession();
 }
 
 export async function apiClient<T>(
@@ -184,7 +134,7 @@ export async function apiClient<T>(
     }
   }
 
-  if (!response.ok || (json && json.success === false)) {
+  if (!response.ok || !json || json.success === false) {
     throw new ApiError(
       json?.message || `Request failed with status ${response.status}`,
       response.status || 400,

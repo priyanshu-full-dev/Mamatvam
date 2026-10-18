@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -50,8 +50,14 @@ export default function IuiIvfScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { pregnancyData, setPregnancyData, setStage } = useAppStore();
-  const { setOnboarding } = useAuthStore();
+  const { setOnboarding, isAuthenticated, isLoading, token } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !token)) {
+      router.replace('/(auth)/sign-in');
+    }
+  }, [isAuthenticated, token, isLoading]);
 
   const [lastPeriodDate, setLastPeriodDate] = useState(pregnancyData.lastPeriodDate || '');
   const [periodCycle, setPeriodCycle] = useState(pregnancyData.periodCycle || '28');
@@ -194,6 +200,12 @@ export default function IuiIvfScreen() {
   };
 
   const handleContinue = async () => {
+    if (!isAuthenticated || !token) {
+      Alert.alert('Session Expired', 'Please sign in to proceed.');
+      router.replace('/(auth)/sign-in');
+      return;
+    }
+
     let hasError = false;
 
     if (!lastPeriodDate.trim()) {
@@ -273,26 +285,16 @@ export default function IuiIvfScreen() {
         lastPeriodDate: isoDate,
       });
 
-      if (res?.data) {
-        await setOnboarding({
-          completed: res.data.completed,
-          nextStep: res.data.nextStep,
-          language: res.data.language?.code || null,
-          category: res.data.category?.code || 'IUI_IVF',
-          profileComplete: res.data.profileComplete,
-        });
+      if (res?.success && res?.data) {
+        await setOnboarding(res.data);
 
-        const targetRoute = getRouteForOnboardingStep({
-          completed: res.data.completed,
-          nextStep: res.data.nextStep,
-          category: res.data.category?.code || 'IUI_IVF',
-          language: res.data.language?.code || null,
-          profileComplete: res.data.profileComplete,
-        });
-
+        const targetRoute = getRouteForOnboardingStep(res.data);
         router.replace(targetRoute as any);
       } else {
-        router.replace('/(tabs)/home');
+        Alert.alert(
+          'Submission Failed',
+          res?.message || 'Could not save IUI/IVF profile. Please try again.'
+        );
       }
     } catch (err: any) {
       console.warn('Failed to save IUI/IVF profile:', err);

@@ -1,11 +1,20 @@
-import React from 'react';
-import { Tabs } from 'expo-router';
+import React, { useEffect } from 'react';
+import { Tabs, useRouter } from 'expo-router';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Home, Globe, ShoppingBag, Crown, User } from 'lucide-react-native';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const { isAuthenticated, isLoading, token } = useAuthStore();
+
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !token)) {
+      router.replace('/(auth)/sign-in');
+    }
+  }, [isAuthenticated, token, isLoading]);
 
   return (
     <Tabs

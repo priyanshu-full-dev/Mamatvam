@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, StatusBar, Dimensions } from 'react-native';
+import { View, Text, Pressable, StatusBar, Dimensions, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
@@ -76,11 +76,17 @@ export default function StageScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { stage, setStage } = useAppStore();
-  const { token, setOnboarding } = useAuthStore();
+  const { token, setOnboarding, isAuthenticated, isLoading } = useAuthStore();
 
   const [stages, setStages] = useState<StageOption[]>(DEFAULT_STAGES);
   const [selectedStage, setSelectedStage] = useState<PregnancyStage>(stage || 'conceive');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !token)) {
+      router.replace('/(auth)/sign-in');
+    }
+  }, [isAuthenticated, token, isLoading]);
 
   useEffect(() => {
     let isMounted = true;
@@ -123,6 +129,12 @@ export default function StageScreen() {
   };
 
   const handleContinue = async () => {
+    if (!isAuthenticated || !token) {
+      Alert.alert('Session Expired', 'Please sign in to proceed.');
+      router.replace('/(auth)/sign-in');
+      return;
+    }
+
     if (isSubmitting) return;
     setIsSubmitting(true);
 
@@ -131,45 +143,30 @@ export default function StageScreen() {
 
     try {
       const res = await selectCategoryApi({ categoryCode }, token || undefined);
-      if (res?.data) {
-        await setOnboarding({
-          completed: res.data.completed,
-          nextStep: res.data.nextStep,
-          language: res.data.language?.code || null,
-          category: res.data.category?.code || categoryCode,
-          profileComplete: res.data.profileComplete,
-        });
-
+      if (res?.success && res?.data) {
+        await setOnboarding(res.data);
         setStage(selectedStage);
 
         // Navigate based on API response
-        const nextRoute = getRouteForOnboardingStep({
-          completed: res.data.completed,
-          nextStep: res.data.nextStep,
-          language: res.data.language?.code || null,
-          category: res.data.category?.code || categoryCode,
-          profileComplete: res.data.profileComplete,
-        });
-        router.push(nextRoute as any);
+        const nextRoute = getRouteForOnboardingStep(res.data);
+        router.replace(nextRoute as any);
+        return;
+      } else {
+        Alert.alert(
+          'Category Selection',
+          res?.message || 'Could not save category. Please try again.'
+        );
         return;
       }
-    } catch (err) {
-      console.warn('Failed to select category on backend, proceeding locally:', err);
+    } catch (err: any) {
+      console.warn('Failed to select category on backend:', err);
+      Alert.alert(
+        'Category Selection',
+        err?.message || 'Could not save category. Please try again.'
+      );
+      return;
     } finally {
       setIsSubmitting(false);
-    }
-
-    setStage(selectedStage);
-    if (selectedStage === 'pregnant') {
-      router.push('/(auth)/pregnancy');
-    } else if (selectedStage === 'mother') {
-      router.push('/(auth)/baby-gender');
-    } else if (selectedStage === 'conceive') {
-      router.push('/(auth)/conceive');
-    } else if (selectedStage === 'explore') {
-      router.push('/(auth)/iui-ivf');
-    } else {
-      router.replace('/(tabs)/home');
     }
   };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, StatusBar, useWindowDimensions, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, StatusBar, useWindowDimensions, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
@@ -66,9 +66,15 @@ export default function LanguageScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const { language, setLanguage } = useAppStore();
-  const { token, setOnboarding } = useAuthStore();
+  const { token, setOnboarding, isAuthenticated, isLoading: authLoading } = useAuthStore();
   const insets = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
+
+  useEffect(() => {
+    if (!authLoading && (!isAuthenticated || !token)) {
+      router.replace('/(auth)/sign-in');
+    }
+  }, [isAuthenticated, token, authLoading]);
 
   const [languages, setLanguages] = useState<LanguageOption[]>(DEFAULT_LANGUAGES);
   const [selectedLang, setSelectedLang] = useState<SupportedLanguage>(language || 'en');
@@ -118,44 +124,43 @@ export default function LanguageScreen() {
   };
 
   const handleNext = async () => {
+    if (!isAuthenticated || !token) {
+      Alert.alert('Session Expired', 'Please sign in to proceed.');
+      router.replace('/(auth)/sign-in');
+      return;
+    }
+
     if (isSubmitting) return;
     setIsSubmitting(true);
 
     try {
       const res = await selectLanguageApi({ languageCode: selectedLang }, token || undefined);
-      if (res?.data) {
-        // Update user onboarding state in auth store
-        await setOnboarding({
-          completed: res.data.completed,
-          nextStep: res.data.nextStep,
-          language: res.data.language?.code || selectedLang,
-          category: res.data.category,
-          profileComplete: res.data.profileComplete,
-        });
-
-        // Set language in local app store & i18n
+      if (res?.success && res?.data) {
+        // Update user onboarding state in auth store (automatically syncs language to app store)
+        await setOnboarding(res.data);
         setLanguage(selectedLang);
 
         // Determine destination based on API nextStep (e.g. 'CATEGORY' -> /(auth)/stage)
-        const nextRoute = getRouteForOnboardingStep({
-          completed: res.data.completed,
-          nextStep: res.data.nextStep,
-          language: res.data.language?.code || selectedLang,
-          category: res.data.category,
-          profileComplete: res.data.profileComplete,
-        });
-        router.push(nextRoute as any);
+        const nextRoute = getRouteForOnboardingStep(res.data);
+        router.replace(nextRoute as any);
+        return;
+      } else {
+        Alert.alert(
+          'Language Selection',
+          res?.message || 'Failed to select language. Please try again.'
+        );
         return;
       }
     } catch (err: any) {
-      console.warn('Failed to update language on server, falling back locally:', err);
+      console.warn('Failed to update language on server:', err);
+      Alert.alert(
+        'Language Selection',
+        err?.message || 'Failed to select language. Please try again.'
+      );
+      return;
     } finally {
       setIsSubmitting(false);
     }
-
-    // Fallback: update local store and navigate to stage
-    setLanguage(selectedLang);
-    router.push('/(auth)/stage');
   };
 
   const isShortScreen = height < 750;

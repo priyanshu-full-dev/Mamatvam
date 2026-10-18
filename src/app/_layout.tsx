@@ -1,6 +1,6 @@
 import i18n from '@/i18n';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { I18nextProvider } from 'react-i18next';
@@ -8,6 +8,9 @@ import { LogBox } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import '../global.css';
+import { useAuthStore } from '@/store/useAuthStore';
+import { useAppStore } from '@/store/useAppStore';
+import { getRouteForOnboardingStep } from '@/api/onboarding.api';
 
 LogBox.ignoreLogs(['setLayoutAnimationEnabledExperimental is currently a no-op']);
 
@@ -26,6 +29,55 @@ const queryClient = new QueryClient({
   },
 });
 
+function GlobalAuthGuard() {
+  const segments = useSegments();
+  const router = useRouter();
+  const { isAuthenticated, isLoading, token, user } = useAuthStore();
+  const { hasSeenOnboarding } = useAppStore();
+
+  useEffect(() => {
+    if (isLoading) return;
+
+    const rootSegment = segments[0] as string | undefined;
+    const subSegment = segments[1] as string | undefined;
+
+    // Public routes where unauthenticated users are allowed
+    const isSplash = !rootSegment;
+    const isOnboarding = rootSegment === 'onboarding';
+    const isSignIn = rootSegment === '(auth)' && subSegment === 'sign-in';
+    const isOtp = rootSegment === '(auth)' && subSegment === 'otp';
+
+    const isPublicRoute = isSplash || isOnboarding || isSignIn || isOtp;
+
+    if (!isAuthenticated || !token) {
+      if (!isPublicRoute) {
+        if (!hasSeenOnboarding) {
+          router.replace('/onboarding/carousel');
+        } else {
+          router.replace('/(auth)/sign-in');
+        }
+      }
+    } else {
+      // If user IS authenticated and tries to visit sign-in, otp, or carousel
+      if (isOnboarding || isSignIn || isOtp) {
+        if (
+          user?.onboarding &&
+          !user.onboarding.completed &&
+          user.onboarding.nextStep &&
+          user.onboarding.nextStep !== 'DASHBOARD' &&
+          user.onboarding.nextStep !== 'HOME'
+        ) {
+          router.replace(getRouteForOnboardingStep(user.onboarding) as any);
+        } else {
+          router.replace('/(tabs)/home');
+        }
+      }
+    }
+  }, [segments, isAuthenticated, token, user, isLoading, hasSeenOnboarding]);
+
+  return null;
+}
+
 export default function RootLayout() {
   useEffect(() => {
     // Hide splash screen smoothly after app is ready
@@ -37,6 +89,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <I18nextProvider i18n={i18n}>
           <QueryClientProvider client={queryClient}>
+            <GlobalAuthGuard />
             <Stack
               screenOptions={{
                 headerShown: false,

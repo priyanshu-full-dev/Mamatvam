@@ -1,6 +1,22 @@
-import { Stack } from 'expo-router';
+import { Stack, useSegments, useRouter } from 'expo-router';
+import { useEffect } from 'react';
+import { useAuthStore } from '@/store/useAuthStore';
 
 export default function AuthLayout() {
+  const segments = useSegments();
+  const router = useRouter();
+  const { isAuthenticated, isLoading, token } = useAuthStore();
+
+  useEffect(() => {
+    if (isLoading) return;
+    const currentScreen = segments[segments.length - 1];
+    const isPublicAuthScreen = currentScreen === 'sign-in' || currentScreen === 'otp';
+
+    if ((!isAuthenticated || !token) && !isPublicAuthScreen) {
+      router.replace('/(auth)/sign-in');
+    }
+  }, [segments, isAuthenticated, token, isLoading]);
+
   return (
     <Stack
       screenOptions={{

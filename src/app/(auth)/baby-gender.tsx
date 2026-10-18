@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, Pressable, StatusBar, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Pressable, StatusBar, Dimensions, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'expo-image';
@@ -7,6 +7,7 @@ import Svg, { Path } from 'react-native-svg';
 import { Button } from '@/components/ui/Button';
 import { BottomActionBar } from '@/components/ui/BottomActionBar';
 import { useAppStore } from '@/store/useAppStore';
+import { useAuthStore } from '@/store/useAuthStore';
 
 const { width, height } = Dimensions.get('window');
 const horizontalPadding = 24;
@@ -19,14 +20,26 @@ const topGapBelowWave = Math.round(height * 0.055);
 export default function BabyGenderScreen() {
   const router = useRouter();
   const { pregnancyData, setPregnancyData } = useAppStore();
+  const { isAuthenticated, isLoading, token } = useAuthStore();
+
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !token)) {
+      router.replace('/(auth)/sign-in');
+    }
+  }, [isAuthenticated, token, isLoading]);
 
   const [selectedGender, setSelectedGender] = useState<'girl' | 'boy'>(
     pregnancyData.babyGender || 'girl'
   );
 
   const handleContinue = () => {
+    if (!isAuthenticated || !token) {
+      Alert.alert('Session Expired', 'Please sign in to proceed.');
+      router.replace('/(auth)/sign-in');
+      return;
+    }
     setPregnancyData({ babyGender: selectedGender });
-    router.push('/(auth)/mother');
+    router.replace('/(auth)/mother');
   };
 
   return (

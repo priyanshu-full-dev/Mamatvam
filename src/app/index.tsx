@@ -15,7 +15,7 @@ import { getRouteForOnboardingStep } from '@/api/onboarding.api';
 export default function SplashScreen() {
   const router = useRouter();
   const { isAuthenticated, isLoading, user, restoreSession } = useAuthStore();
-  const { hasSeenOnboarding } = useAppStore();
+  const { hasSeenOnboarding, initAppStore } = useAppStore();
 
   const opacity = useSharedValue(0);
   const scale = useSharedValue(0.9);
@@ -29,6 +29,7 @@ export default function SplashScreen() {
     opacity.value = withTiming(1, { duration: 600 });
     scale.value = withSpring(1, { damping: 12 });
 
+    initAppStore();
     restoreSession();
   }, []);
 
@@ -36,18 +37,27 @@ export default function SplashScreen() {
     if (isLoading) return;
 
     const timer = setTimeout(() => {
-      if (!hasSeenOnboarding) {
-        router.replace('/onboarding/carousel');
-      } else if (isAuthenticated) {
-        if (user?.onboarding && !user.onboarding.completed) {
+      // 1. If already logged in, immediately go to home (or incomplete step)
+      if (isAuthenticated) {
+        if (
+          user?.onboarding &&
+          !user.onboarding.completed &&
+          user.onboarding.nextStep &&
+          user.onboarding.nextStep !== 'DASHBOARD' &&
+          user.onboarding.nextStep !== 'HOME'
+        ) {
           router.replace(getRouteForOnboardingStep(user.onboarding) as any);
         } else {
           router.replace('/(tabs)/home');
         }
+      } else if (!hasSeenOnboarding) {
+        // 2. Unauthenticated first-time user -> show onboarding carousel
+        router.replace('/onboarding/carousel');
       } else {
+        // 3. Unauthenticated returning user -> go to sign-in
         router.replace('/(auth)/sign-in');
       }
-    }, 250);
+    }, 350);
 
     return () => clearTimeout(timer);
   }, [isLoading, isAuthenticated, user, hasSeenOnboarding]);

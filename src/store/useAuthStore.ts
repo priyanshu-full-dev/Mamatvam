@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import * as SecureStore from 'expo-secure-store';
+import { isTokenExpired } from '@/utils/token';
+import { useAppStore } from '@/store/useAppStore';
 
 const BASE_URL = (process.env.EXPO_PUBLIC_API_URL || 'http://130.210.30.199/api/v1/user')
   .trim()
@@ -35,8 +37,8 @@ export interface UserOnboardingCategory {
 export interface UserOnboarding {
   completed: boolean;
   nextStep: string;
-  language: string | UserOnboardingLanguage | null;
-  category: string | UserOnboardingCategory | null;
+  language?: string | UserOnboardingLanguage | null;
+  category?: string | UserOnboardingCategory | null;
   profileComplete: boolean;
 }
 
@@ -66,9 +68,12 @@ interface AuthState {
   login: (token: string, user: UserProfile, refreshToken?: string) => Promise<void>;
   setTokens: (token: string, refreshToken?: string) => Promise<void>;
   setOnboarding: (onboarding: UserOnboarding) => Promise<void>;
+  refreshSession: () => Promise<string | null>;
   logout: () => Promise<void>;
   restoreSession: () => Promise<void>;
 }
+
+let ongoingRefreshPromise: Promise<string | null> | null = null;
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   token: null,
@@ -92,6 +97,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch {
       // In case SecureStore fails in non-native environment
     }
+    useAppStore.getState().setHasSeenOnboarding(true);
     set({ token, refreshToken: refreshToken || null, user, isAuthenticated: true, isLoading: false });
   },
 
@@ -111,13 +117,90 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   setOnboarding: async (onboarding: UserOnboarding) => {
-    set((state) => {
-      const updatedUser = state.user ? { ...state.user, onboarding } : null;
-      if (updatedUser) {
-        SecureStore.setItemAsync(USER_KEY, JSON.stringify(updatedUser)).catch(() => {});
+    // Sync language to app store if provided
+    if (onboarding.language) {
+      const rawLang =
+        typeof onboarding.language === 'object' && onboarding.language !== null
+          ? (onboarding.language.code || onboarding.language.name || '')
+          : (onboarding.language || '');
+      if (rawLang) {
+        useAppStore.getState().setLanguage(String(rawLang).toLowerCase() as any);
       }
+    }
+
+    // Sync stage/category to app store if provided
+    if (onboarding.category) {
+      const rawCat =
+        typeof onboarding.category === 'object' && onboarding.category !== null
+          ? (onboarding.category.code || onboarding.category.name || '')
+          : (onboarding.category || '');
+      if (rawCat) {
+        const cat = String(rawCat).toLowerCase();
+        if (cat.includes('conceive')) useAppStore.getState().setStage('conceive');
+        else if (cat.includes('pregnant') || cat.includes('pregnancy')) useAppStore.getState().setStage('pregnant');
+        else if (cat.includes('mother') || cat.includes('post')) useAppStore.getState().setStage('mother');
+        else if (cat.includes('ivf') || cat.includes('explore') || cat.includes('iui')) useAppStore.getState().setStage('explore');
+      }
+    }
+
+    set((state) => {
+      const updatedUser: UserProfile = state.user
+        ? { ...state.user, onboarding }
+        : ({ id: '', onboarding } as unknown as UserProfile);
+      SecureStore.setItemAsync(USER_KEY, JSON.stringify(updatedUser)).catch(() => {});
       return { user: updatedUser };
     });
+  },
+
+  refreshSession: async (): Promise<string | null> => {
+    if (ongoingRefreshPromise) {
+      return ongoingRefreshPromise;
+    }
+
+    ongoingRefreshPromise = (async () => {
+      const currentRefreshToken = get().refreshToken || (await SecureStore.getItemAsync(REFRESH_TOKEN_KEY));
+      if (!currentRefreshToken) {
+        await get().logout();
+        return null;
+      }
+
+      try {
+        const response = await fetch(`${BASE_URL}/auth/refresh-token`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify({
+            refreshToken: currentRefreshToken,
+          }),
+        });
+
+        const json = await response.json().catch(() => null);
+
+        if (response.ok && json?.success && json?.data?.accessToken) {
+          const newAccessToken: string = json.data.accessToken;
+          const newRefreshToken: string = json.data.refreshToken || currentRefreshToken;
+
+          await get().setTokens(newAccessToken, newRefreshToken);
+          set({ isAuthenticated: true, isLoading: false });
+          return newAccessToken;
+        } else {
+          // If refresh token has expired or is rejected with 401/403
+          if (response.status === 401 || response.status === 403 || json?.code === 'TOKEN_EXPIRED') {
+            await get().logout();
+          }
+          return null;
+        }
+      } catch (err) {
+        console.warn('Network error while refreshing token:', err);
+        return null;
+      } finally {
+        ongoingRefreshPromise = null;
+      }
+    })();
+
+    return ongoingRefreshPromise;
   },
 
   logout: async () => {
@@ -157,19 +240,84 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const token = await SecureStore.getItemAsync(TOKEN_KEY);
       const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
       const userStr = await SecureStore.getItemAsync(USER_KEY);
-      if (token && userStr) {
+      const user = userStr ? JSON.parse(userStr) : null;
+
+      // 1. If we have a stored user profile and tokens
+      if (user && (token || refreshToken)) {
+        // Mark onboarding seen since user previously logged in
+        useAppStore.getState().setHasSeenOnboarding(true);
+
+        // Sync stored language and stage to app state if available
+        if (user.onboarding) {
+          const rawLang =
+            typeof user.onboarding.language === 'object' && user.onboarding.language !== null
+              ? (user.onboarding.language.code || user.onboarding.language.name || '')
+              : (user.onboarding.language || '');
+          if (rawLang) {
+            useAppStore.getState().setLanguage(String(rawLang).toLowerCase() as any);
+          }
+
+          const rawCat =
+            typeof user.onboarding.category === 'object' && user.onboarding.category !== null
+              ? (user.onboarding.category.code || user.onboarding.category.name || '')
+              : (user.onboarding.category || '');
+          if (rawCat) {
+            const cat = String(rawCat).toLowerCase();
+            if (cat.includes('conceive')) useAppStore.getState().setStage('conceive');
+            else if (cat.includes('pregnant') || cat.includes('pregnancy')) useAppStore.getState().setStage('pregnant');
+            else if (cat.includes('mother') || cat.includes('post')) useAppStore.getState().setStage('mother');
+            else if (cat.includes('ivf') || cat.includes('explore') || cat.includes('iui')) useAppStore.getState().setStage('explore');
+          }
+        }
+
         set({
           token,
           refreshToken,
-          user: JSON.parse(userStr),
-          isAuthenticated: true,
+          user,
+        });
+
+        // 2. Check if access token is still fresh (with 60-second buffer)
+        if (token && !isTokenExpired(token, 60)) {
+          set({
+            isAuthenticated: true,
+            isLoading: false,
+          });
+          return;
+        }
+
+        // 3. Access token is expired or missing -> use refresh token!
+        if (refreshToken) {
+          const newAccessToken = await get().refreshSession();
+          if (newAccessToken) {
+            // Successfully refreshed session with fresh token
+            set({
+              isAuthenticated: true,
+              isLoading: false,
+            });
+            return;
+          }
+        }
+
+        // 4. If refresh token is also expired or invalid
+        set({
+          token: null,
+          refreshToken: null,
+          user: null,
+          isAuthenticated: false,
           isLoading: false,
         });
         return;
       }
-    } catch {
-      // Fallback
+    } catch (e) {
+      console.warn('restoreSession error:', e);
     }
-    set({ isLoading: false });
+
+    set({
+      token: null,
+      refreshToken: null,
+      user: null,
+      isAuthenticated: false,
+      isLoading: false,
+    });
   },
 }));

@@ -56,8 +56,8 @@ export async function requestOtpApi(payload: RequestOtpPayload): Promise<Request
   const mobile = payload.mobile || payload.phone || '';
   const rawPincodeId = payload.pincodeId;
   const pincodeId = rawPincodeId !== undefined && rawPincodeId !== ''
-    ? (Number.isInteger(Number(rawPincodeId)) ? Number(rawPincodeId) : rawPincodeId)
-    : 1;
+    ? String(rawPincodeId)
+    : '1';
 
   return apiClient<RequestOtpResponse>('/auth/request-otp', {
     method: 'POST',

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -49,8 +49,14 @@ export default function MotherScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { pregnancyData, setPregnancyData, setStage } = useAppStore();
-  const { setOnboarding } = useAuthStore();
+  const { setOnboarding, isAuthenticated, isLoading, token } = useAuthStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !token)) {
+      router.replace('/(auth)/sign-in');
+    }
+  }, [isAuthenticated, token, isLoading]);
 
   const [babyBirthDate, setBabyBirthDate] = useState(pregnancyData.babyBirthDate || '');
   const [motherHeight, setMotherHeight] = useState(
@@ -241,6 +247,12 @@ export default function MotherScreen() {
   };
 
   const handleContinue = async () => {
+    if (!isAuthenticated || !token) {
+      Alert.alert('Session Expired', 'Please sign in to proceed.');
+      router.replace('/(auth)/sign-in');
+      return;
+    }
+
     if (!babyBirthDate.trim()) {
       setDateError('Please select Date of Birth of Baby');
       Alert.alert('Required Field', 'Date of Birth of Baby is mandatory. Please select a date to proceed.');
@@ -322,26 +334,16 @@ export default function MotherScreen() {
         babyDateOfBirth: isoDate,
       });
 
-      if (res?.data) {
-        await setOnboarding({
-          completed: res.data.completed,
-          nextStep: res.data.nextStep,
-          language: res.data.language?.code || null,
-          category: res.data.category?.code || 'MOTHER',
-          profileComplete: res.data.profileComplete,
-        });
+      if (res?.success && res?.data) {
+        await setOnboarding(res.data);
 
-        const targetRoute = getRouteForOnboardingStep({
-          completed: res.data.completed,
-          nextStep: res.data.nextStep,
-          category: res.data.category?.code || 'MOTHER',
-          language: res.data.language?.code || null,
-          profileComplete: res.data.profileComplete,
-        });
-
+        const targetRoute = getRouteForOnboardingStep(res.data);
         router.replace(targetRoute as any);
       } else {
-        router.replace('/(tabs)/home');
+        Alert.alert(
+          'Submission Failed',
+          res?.message || 'Could not save profile. Please try again.'
+        );
       }
     } catch (err: any) {
       console.warn('Failed to save mother profile:', err);

@@ -33,15 +33,15 @@ export type PincodeLocation = PincodeItem;
 
 const FALLBACK_PINCODES: Record<string, PincodeLocation[]> = {
   '829301': [
-    { id: 20, name: 'Arajoo', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
-    { id: 21, name: 'Bahadurpur', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
-    { id: 22, name: 'Bandhdih', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
-    { id: 23, name: 'Baroo', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
-    { id: 24, name: 'Chando', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
-    { id: 25, name: 'Chilgada', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
-    { id: 26, name: 'Gangjori', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
-    { id: 27, name: 'Jaina', district: 'Bokaro', block: 'Bermo', state: 'Jharkhand', country: 'India', pincode: '829301' },
-    { id: 28, name: 'Pathuria', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
+    { id: 11, name: 'Arajoo', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
+    { id: 12, name: 'Bahadurpur', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
+    { id: 13, name: 'Bandhdih', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
+    { id: 14, name: 'Baroo', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
+    { id: 15, name: 'Chando', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
+    { id: 16, name: 'Chilgada', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
+    { id: 17, name: 'Gangjori', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
+    { id: 18, name: 'Jaina', district: 'Bokaro', block: 'Bermo', state: 'Jharkhand', country: 'India', pincode: '829301' },
+    { id: 19, name: 'Pathuria', district: 'Bokaro', block: 'Bokaro', state: 'Jharkhand', country: 'India', pincode: '829301' },
   ],
   '826001': [
     { id: 101, name: 'Dhanbad Hirapur', district: 'Dhanbad', block: 'Dhanbad', state: 'Jharkhand', country: 'India', pincode: '826001' },
@@ -105,32 +105,36 @@ export default function SignInScreen() {
 
     if (cleanText.length === 6) {
       Keyboard.dismiss();
-      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-      if (FALLBACK_PINCODES[cleanText]) {
-        setLocations(FALLBACK_PINCODES[cleanText]);
-        setSelectedArea(FALLBACK_PINCODES[cleanText][0]);
-      }
-
       setIsLoadingPincode(true);
+
       try {
         const res = await getPincodeDataApi(cleanText);
         if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
           LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
           setLocations(res.data);
+          // Set selected area matching previous ID or default to the first area
           setSelectedArea((prev) => {
-            if (prev && res.data.some((p) => p.id === prev.id || p.name === prev.name)) {
-              return res.data.find((p) => p.id === prev.id || p.name === prev.name) || res.data[0];
+            if (prev && res.data.some((p) => p.id === prev.id)) {
+              return res.data.find((p) => p.id === prev.id) || res.data[0];
             }
             return res.data[0];
           });
-        } else if (!FALLBACK_PINCODES[cleanText]) {
+        } else if (FALLBACK_PINCODES[cleanText]) {
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+          setLocations(FALLBACK_PINCODES[cleanText]);
+          setSelectedArea(FALLBACK_PINCODES[cleanText][0]);
+        } else {
           LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
           setLocations([]);
           setSelectedArea(null);
           setPincodeError(res?.message || 'No locations found for this PIN code');
         }
       } catch (err: any) {
-        if (!FALLBACK_PINCODES[cleanText]) {
+        if (FALLBACK_PINCODES[cleanText]) {
+          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+          setLocations(FALLBACK_PINCODES[cleanText]);
+          setSelectedArea(FALLBACK_PINCODES[cleanText][0]);
+        } else {
           LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
           setLocations([]);
           setSelectedArea(null);
@@ -371,10 +375,10 @@ export default function SignInScreen() {
                     keyboardShouldPersistTaps="handled"
                   >
                     {locations.map((item, index) => {
-                      const isSelected = selectedArea?.name === item.name;
+                      const isSelected = selectedArea?.id === item.id;
                       return (
                         <TouchableOpacity
-                          key={`${item.name}-${index}`}
+                          key={`${item.id}-${index}`}
                           activeOpacity={0.8}
                           onPress={() => {
                             Keyboard.dismiss();

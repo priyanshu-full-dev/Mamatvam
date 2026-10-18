@@ -28,6 +28,8 @@ export async function getOnboardingStatusApi(token?: string): Promise<Onboarding
 }
 
 export function getRouteForOnboardingStep(status: UserOnboarding | OnboardingStatusData | any): string {
+  if (!status) return '/(auth)/language';
+
   const nextStep = (status.nextStep || '').toUpperCase();
   if (status.completed || nextStep === 'DASHBOARD' || nextStep === 'HOME') {
     return '/(tabs)/home';

@@ -116,6 +116,10 @@ export default function OTPScreen() {
         otp: codeToVerify,
       });
 
+      if (!res?.data?.accessToken) {
+        throw new Error(res?.message || 'Verification succeeded but no access token received.');
+      }
+
       const { accessToken, refreshToken, user } = res.data;
 
       // Save accessToken, refreshToken, and user info to local storage
